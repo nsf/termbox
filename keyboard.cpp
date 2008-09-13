@@ -1,0 +1,580 @@
+#include <assert.h>
+#include <stdint.h>
+#include <algorithm>
+#include "termbox.h"
+
+static const unsigned char utf8_length[256] = {
+  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+  2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+  3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4,5,5,5,5,6,6,1,1
+};
+
+static const unsigned char utf8_mask[6] = {
+	0x7F,
+	0x1F,
+	0x0F,
+	0x07,
+	0x03,
+	0x01
+};
+
+static unsigned char utf8_char_length(char c)
+{
+	return utf8_length[(unsigned char)c];
+}
+
+static uint32_t utf8_char_to_unicode(const char *c)
+{
+	int i;
+	unsigned char len = utf8_char_length(*c);
+	unsigned char mask = utf8_mask[len-1];
+	uint32_t result = c[0] & mask;
+	for (i = 1; i < len; ++i) {
+		result <<= 6;
+		result |= c[i] & 0x3f;
+	}
+
+	return result;
+}
+
+struct Key {
+	unsigned char x;
+	unsigned char y;
+	uint32_t ch;
+};
+
+#define STOP {0,0,0}
+Key K_ESC[] = {{1,1,'E'},{2,1,'S'},{3,1,'C'},STOP};
+Key K_F1[] = {{6,1,'F'},{7,1,'1'},STOP};
+Key K_F2[] = {{9,1,'F'},{10,1,'2'},STOP};
+Key K_F3[] = {{12,1,'F'},{13,1,'3'},STOP};
+Key K_F4[] = {{15,1,'F'},{16,1,'4'},STOP};
+Key K_F5[] = {{19,1,'F'},{20,1,'5'},STOP};
+Key K_F6[] = {{22,1,'F'},{23,1,'6'},STOP};
+Key K_F7[] = {{25,1,'F'},{26,1,'7'},STOP};
+Key K_F8[] = {{28,1,'F'},{29,1,'8'},STOP};
+Key K_F9[] = {{33,1,'F'},{34,1,'9'},STOP};
+Key K_F10[] = {{36,1,'F'},{37,1,'1'},{38,1,'0'},STOP};
+Key K_F11[] = {{40,1,'F'},{41,1,'1'},{42,1,'1'},STOP};
+Key K_F12[] = {{44,1,'F'},{45,1,'1'},{46,1,'2'},STOP};
+Key K_PRN[] = {{50,1,'P'},{51,1,'R'},{52,1,'N'},STOP};
+Key K_SCR[] = {{54,1,'S'},{55,1,'C'},{56,1,'R'},STOP};
+Key K_BRK[] = {{58,1,'B'},{59,1,'R'},{60,1,'K'},STOP};
+Key K_LED1[] = {{65,1,'-'},STOP};
+Key K_LED2[] = {{69,1,'-'},STOP};
+Key K_LED3[] = {{73,1,'-'},STOP};
+
+Key K_TILDE[] = {{1,4,'`'},STOP};
+Key K_TILDE_SHIFT[] = {{1,4,'~'},STOP};
+Key K_1[] = {{4,4,'1'},STOP};
+Key K_1_SHIFT[] = {{4,4,'!'},STOP};
+Key K_2[] = {{7,4,'2'},STOP};
+Key K_2_SHIFT[] = {{7,4,'@'},STOP};
+Key K_3[] = {{10,4,'3'},STOP};
+Key K_3_SHIFT[] = {{10,4,'#'},STOP};
+Key K_4[] = {{13,4,'4'},STOP};
+Key K_4_SHIFT[] = {{13,4,'$'},STOP};
+Key K_5[] = {{16,4,'5'},STOP};
+Key K_5_SHIFT[] = {{16,4,'%'},STOP};
+Key K_6[] = {{19,4,'6'},STOP};
+Key K_6_SHIFT[] = {{19,4,'^'},STOP};
+Key K_7[] = {{22,4,'7'},STOP};
+Key K_7_SHIFT[] = {{22,4,'&'},STOP};
+Key K_8[] = {{25,4,'8'},STOP};
+Key K_8_SHIFT[] = {{25,4,'*'},STOP};
+Key K_9[] = {{28,4,'9'},STOP};
+Key K_9_SHIFT[] = {{28,4,'('},STOP};
+Key K_0[] = {{31,4,'0'},STOP};
+Key K_0_SHIFT[] = {{31,4,')'},STOP};
+Key K_MINUS[] = {{34,4,'-'},STOP};
+Key K_MINUS_SHIFT[] = {{34,4,'_'},STOP};
+Key K_EQUALS[] = {{37,4,'='},STOP};
+Key K_EQUALS_SHIFT[] = {{37,4,'+'},STOP};
+Key K_BACKSLASH[] = {{40,4,'\\'},STOP};
+Key K_BACKSLASH_SHIFT[] = {{40,4,'|'},STOP};
+Key K_BACKSPACE[] = {{44,4,0x2190},{45,4,0x2500},{46,4,0x2500},STOP};
+Key K_INS[] = {{50,4,'I'},{51,4,'N'},{52,4,'S'},STOP};
+Key K_HOM[] = {{54,4,'H'},{55,4,'O'},{56,4,'M'},STOP};
+Key K_PGU[] = {{58,4,'P'},{59,4,'G'},{60,4,'U'},STOP};
+Key K_K_NUMLOCK[] = {{64,4,'N'},STOP};
+Key K_K_SLASH[] = {{67,4,'/'},STOP};
+Key K_K_STAR[] = {{70,4,'*'},STOP};
+Key K_K_MINUS[] = {{73,4,'-'},STOP};
+
+Key K_TAB[] = {{1,6,'T'},{2,6,'A'},{3,6,'B'},STOP};
+Key K_q[] = {{6,6,'q'},STOP};
+Key K_Q[] = {{6,6,'Q'},STOP};
+Key K_w[] = {{9,6,'w'},STOP};
+Key K_W[] = {{9,6,'W'},STOP};
+Key K_e[] = {{12,6,'e'},STOP};
+Key K_E[] = {{12,6,'E'},STOP};
+Key K_r[] = {{15,6,'r'},STOP};
+Key K_R[] = {{15,6,'R'},STOP};
+Key K_t[] = {{18,6,'t'},STOP};
+Key K_T[] = {{18,6,'T'},STOP};
+Key K_y[] = {{21,6,'y'},STOP};
+Key K_Y[] = {{21,6,'Y'},STOP};
+Key K_u[] = {{24,6,'u'},STOP};
+Key K_U[] = {{24,6,'U'},STOP};
+Key K_i[] = {{27,6,'i'},STOP};
+Key K_I[] = {{27,6,'I'},STOP};
+Key K_o[] = {{30,6,'o'},STOP};
+Key K_O[] = {{30,6,'O'},STOP};
+Key K_p[] = {{33,6,'p'},STOP};
+Key K_P[] = {{33,6,'P'},STOP};
+Key K_LSQB[] = {{36,6,'['},STOP};
+Key K_LCUB[] = {{36,6,'{'},STOP};
+Key K_RSQB[] = {{39,6,']'},STOP};
+Key K_RCUB[] = {{39,6,'}'},STOP};
+Key K_ENTER[] = {
+	{43,6,0x2591},{44,6,0x2591},{45,6,0x2591},{46,6,0x2591},
+	{43,7,0x2591},{44,7,0x2591},{45,7,0x21B5},{46,7,0x2591},
+	{41,8,0x2591},{42,8,0x2591},{43,8,0x2591},{44,8,0x2591},
+	{45,8,0x2591},{46,8,0x2591},STOP
+};
+Key K_DEL[] = {{50,6,'D'},{51,6,'E'},{52,6,'L'},STOP};
+Key K_END[] = {{54,6,'E'},{55,6,'N'},{56,6,'D'},STOP};
+Key K_PGD[] = {{58,6,'P'},{59,6,'G'},{60,6,'D'},STOP};
+Key K_K_7[] = {{64,6,'7'},STOP};
+Key K_K_8[] = {{67,6,'8'},STOP};
+Key K_K_9[] = {{70,6,'9'},STOP};
+Key K_K_PLUS[] = {{73,6,' '},{73,7,'+'},{73,8,' '},STOP};
+
+Key K_CAPS[] = {{1,8,'C'},{2,8,'A'},{3,8,'P'},{4,8,'S'},STOP};
+Key K_a[] = {{7,8,'a'},STOP};
+Key K_A[] = {{7,8,'A'},STOP};
+Key K_s[] = {{10,8,'s'},STOP};
+Key K_S[] = {{10,8,'S'},STOP};
+Key K_d[] = {{13,8,'d'},STOP};
+Key K_D[] = {{13,8,'D'},STOP};
+Key K_f[] = {{16,8,'f'},STOP};
+Key K_F[] = {{16,8,'F'},STOP};
+Key K_g[] = {{19,8,'g'},STOP};
+Key K_G[] = {{19,8,'G'},STOP};
+Key K_h[] = {{22,8,'h'},STOP};
+Key K_H[] = {{22,8,'H'},STOP};
+Key K_j[] = {{25,8,'j'},STOP};
+Key K_J[] = {{25,8,'J'},STOP};
+Key K_k[] = {{28,8,'k'},STOP};
+Key K_K[] = {{28,8,'K'},STOP};
+Key K_l[] = {{31,8,'l'},STOP};
+Key K_L[] = {{31,8,'L'},STOP};
+Key K_SEMICOLON[] = {{34,8,';'},STOP};
+Key K_PARENTHESIS[] = {{34,8,':'},STOP};
+Key K_QUOTE[] = {{37,8,'\''},STOP};
+Key K_DOUBLEQUOTE[] = {{37,8,'"'},STOP};
+Key K_K_4[] = {{64,8,'4'},STOP};
+Key K_K_5[] = {{67,8,'5'},STOP};
+Key K_K_6[] = {{70,8,'6'},STOP};
+
+Key K_LSHIFT[] = {{1,10,'S'},{2,10,'H'},{3,10,'I'},{4,10,'F'},{5,10,'T'},STOP};
+Key K_z[] = {{9,10,'z'},STOP};
+Key K_Z[] = {{9,10,'Z'},STOP};
+Key K_x[] = {{12,10,'x'},STOP};
+Key K_X[] = {{12,10,'X'},STOP};
+Key K_c[] = {{15,10,'c'},STOP};
+Key K_C[] = {{15,10,'C'},STOP};
+Key K_v[] = {{18,10,'v'},STOP};
+Key K_V[] = {{18,10,'V'},STOP};
+Key K_b[] = {{21,10,'b'},STOP};
+Key K_B[] = {{21,10,'B'},STOP};
+Key K_n[] = {{24,10,'n'},STOP};
+Key K_N[] = {{24,10,'N'},STOP};
+Key K_m[] = {{27,10,'m'},STOP};
+Key K_M[] = {{27,10,'M'},STOP};
+Key K_COMMA[] = {{30,10,','},STOP};
+Key K_LANB[] = {{30,10,'<'},STOP};
+Key K_PERIOD[] = {{33,10,'.'},STOP};
+Key K_RANB[] = {{33,10,'>'},STOP};
+Key K_SLASH[] = {{36,10,'/'},STOP};
+Key K_QUESTION[] = {{36,10,'?'},STOP};
+Key K_RSHIFT[] = {{42,10,'S'},{43,10,'H'},{44,10,'I'},{45,10,'F'},{46,10,'T'},STOP};
+Key K_ARROW_UP[] = {{54,10,'('},{55,10,0x2191},{56,10,')'},STOP};
+Key K_K_1[] = {{64,10,'1'},STOP};
+Key K_K_2[] = {{67,10,'2'},STOP};
+Key K_K_3[] = {{70,10,'3'},STOP};
+Key K_K_ENTER[] = {{73,10,0x2591},{73,11,0x2591},{73,12,0x2591},STOP};
+
+Key K_LCTRL[] = {{1,12,'C'},{2,12,'T'},{3,12,'R'},{4,12,'L'},STOP};
+Key K_LWIN[] = {{6,12,'W'},{7,12,'I'},{8,12,'N'},STOP};
+Key K_LALT[] = {{10,12,'A'},{11,12,'L'},{12,12,'T'},STOP};
+Key K_SPACE[] = {
+	{14,12,' '},{15,12,' '},{16,12,' '},{17,12,' '},{18,12,' '},
+	{19,12,'S'},{20,12,'P'},{21,12,'A'},{22,12,'C'},{23,12,'E'},
+	{24,12,' '},{25,12,' '},{26,12,' '},{27,12,' '},{28,12,' '},
+	STOP
+};
+Key K_RALT[] = {{30,12,'A'},{31,12,'L'},{32,12,'T'},STOP};
+Key K_RWIN[] = {{34,12,'W'},{35,12,'I'},{36,12,'N'},STOP};
+Key K_RPROP[] = {{38,12,'P'},{39,12,'R'},{40,12,'O'},{41,12,'P'},STOP};
+Key K_RCTRL[] = {{43,12,'C'},{44,12,'T'},{45,12,'R'},{46,12,'L'},STOP};
+Key K_ARROW_LEFT[] = {{50,12,'('},{51,12,0x2190},{52,12,')'},STOP};
+Key K_ARROW_DOWN[] = {{54,12,'('},{55,12,0x2193},{56,12,')'},STOP};
+Key K_ARROW_RIGHT[] = {{58,12,'('},{59,12,0x2192},{60,12,')'},STOP};
+Key K_K_0[] = {{64,12,' '},{65,12,'0'},{66,12,' '},{67,12,' '},STOP};
+Key K_K_PERIOD[] = {{70,12,'.'},STOP};
+
+struct Combo {
+	unsigned char combo;
+	Key *keys[32];
+
+	bool operator<(const Combo &r) { return combo < r.combo; }
+	bool operator==(const Combo &r) { return combo == r.combo; }
+};
+
+Combo combos[] = {
+	{'`', {K_TILDE,0}},
+	{'~', {K_TILDE_SHIFT,K_LSHIFT,K_RSHIFT,0}},
+	{'1', {K_1,K_K_1,0}},
+	{'!', {K_1_SHIFT,K_LSHIFT,K_RSHIFT,0}},
+	{'2', {K_2,K_K_2,0}},
+	{'@', {K_2_SHIFT,K_LSHIFT,K_RSHIFT,0}},
+	{'3', {K_3,K_K_3,0}},
+	{'#', {K_3_SHIFT,K_LSHIFT,K_RSHIFT,0}},
+	{'4', {K_4,K_K_4,0}},
+	{'$', {K_4_SHIFT,K_LSHIFT,K_RSHIFT,0}},
+	{'5', {K_5,K_K_5,0}},
+	{'%', {K_5_SHIFT,K_LSHIFT,K_RSHIFT,0}},
+	{'6', {K_6,K_K_6,0}},
+	{'^', {K_6_SHIFT,K_LSHIFT,K_RSHIFT,0}},
+	{'7', {K_7,K_K_7,0}},
+	{'&', {K_7_SHIFT,K_LSHIFT,K_RSHIFT,0}},
+	{'8', {K_8,K_K_8,0}},
+	{'*', {K_8_SHIFT,K_K_STAR,K_LSHIFT,K_RSHIFT,0}},
+	{'9', {K_9,K_K_9,0}},
+	{'(', {K_9_SHIFT,K_LSHIFT,K_RSHIFT,0}},
+	{'0', {K_0,K_K_0,0}},
+	{')', {K_0_SHIFT,K_LSHIFT,K_RSHIFT,0}},
+	{'-', {K_MINUS,K_K_MINUS,0}},
+	{'_', {K_MINUS_SHIFT,K_LSHIFT,K_RSHIFT,0}},
+	{'=', {K_EQUALS,0}},
+	{'+', {K_EQUALS_SHIFT,K_K_PLUS,K_LSHIFT,K_RSHIFT,0}},
+	{'\\', {K_BACKSLASH,0}},
+	{'|', {K_BACKSLASH_SHIFT,K_LSHIFT,K_RSHIFT,0}},
+	{TB_KEY_BACKSPACE, {K_H, K_BACKSPACE, K_LCTRL, K_RCTRL, 0}},
+	{TB_KEY_BACKSPACE2, {K_8, K_BACKSPACE, K_LCTRL, K_RCTRL, 0}},
+	{TB_KEY_CTRL_4, {K_4, K_BACKSLASH, K_LCTRL, K_RCTRL, 0}},
+	{'/', {K_SLASH,K_K_SLASH,0}},
+
+	{'q', {K_q,0}},
+	{'w', {K_w,0}},
+	{'e', {K_e,0}},
+	{'r', {K_r,0}},
+	{'t', {K_t,0}},
+	{'y', {K_y,0}},
+	{'u', {K_u,0}},
+	{'i', {K_i,0}},
+	{'o', {K_o,0}},
+	{'p', {K_p,0}},
+	{'a', {K_a,0}},
+	{'s', {K_s,0}},
+	{'d', {K_d,0}},
+	{'f', {K_f,0}},
+	{'g', {K_g,0}},
+	{'h', {K_h,0}},
+	{'j', {K_j,0}},
+	{'k', {K_k,0}},
+	{'l', {K_l,0}},
+	{'z', {K_z,0}},
+	{'x', {K_x,0}},
+	{'c', {K_c,0}},
+	{'v', {K_v,0}},
+	{'b', {K_b,0}},
+	{'n', {K_n,0}},
+	{'m', {K_m,0}},
+	{'Q', {K_Q,K_LSHIFT,K_RSHIFT,0}},
+	{'W', {K_W,K_LSHIFT,K_RSHIFT,0}},
+	{'E', {K_E,K_LSHIFT,K_RSHIFT,0}},
+	{'R', {K_R,K_LSHIFT,K_RSHIFT,0}},
+	{'T', {K_T,K_LSHIFT,K_RSHIFT,0}},
+	{'Y', {K_Y,K_LSHIFT,K_RSHIFT,0}},
+	{'U', {K_U,K_LSHIFT,K_RSHIFT,0}},
+	{'I', {K_I,K_LSHIFT,K_RSHIFT,0}},
+	{'O', {K_O,K_LSHIFT,K_RSHIFT,0}},
+	{'P', {K_P,K_LSHIFT,K_RSHIFT,0}},
+	{'A', {K_A,K_LSHIFT,K_RSHIFT,0}},
+	{'S', {K_S,K_LSHIFT,K_RSHIFT,0}},
+	{'D', {K_D,K_LSHIFT,K_RSHIFT,0}},
+	{'F', {K_F,K_LSHIFT,K_RSHIFT,0}},
+	{'G', {K_G,K_LSHIFT,K_RSHIFT,0}},
+	{'H', {K_H,K_LSHIFT,K_RSHIFT,0}},
+	{'J', {K_J,K_LSHIFT,K_RSHIFT,0}},
+	{'K', {K_K,K_LSHIFT,K_RSHIFT,0}},
+	{'L', {K_L,K_LSHIFT,K_RSHIFT,0}},
+	{'Z', {K_Z,K_LSHIFT,K_RSHIFT,0}},
+	{'X', {K_X,K_LSHIFT,K_RSHIFT,0}},
+	{'C', {K_C,K_LSHIFT,K_RSHIFT,0}},
+	{'V', {K_V,K_LSHIFT,K_RSHIFT,0}},
+	{'B', {K_B,K_LSHIFT,K_RSHIFT,0}},
+	{'N', {K_N,K_LSHIFT,K_RSHIFT,0}},
+	{'M', {K_M,K_LSHIFT,K_RSHIFT,0}},
+	{'[', {K_LSQB,0}},
+	{']', {K_RSQB,0}},
+	{'{', {K_LCUB,K_LSHIFT,K_RSHIFT,0}},
+	{'}', {K_RCUB,K_LSHIFT,K_RSHIFT,0}},
+	{';', {K_SEMICOLON,0}},
+	{':', {K_PARENTHESIS,K_LSHIFT,K_RSHIFT,0}},
+	{'\'', {K_QUOTE,0}},
+	{'"', {K_DOUBLEQUOTE,K_LSHIFT,K_RSHIFT,0}},
+	{',', {K_COMMA,0}},
+	{'.', {K_PERIOD,K_K_PERIOD,0}},
+	{'<', {K_LANB,K_LSHIFT,K_RSHIFT,0}},
+	{'>', {K_RANB,K_LSHIFT,K_RSHIFT,0}},
+	{'?', {K_QUESTION,K_LSHIFT,K_RSHIFT,0}},
+	{TB_KEY_SPACE, {K_SPACE,0}},
+	{TB_KEY_CTRL_TILDE, {K_TILDE, K_2, K_LCTRL, K_RCTRL, 0}},
+	{TB_KEY_CTRL_A, {K_A, K_LCTRL, K_RCTRL, 0}},
+	{TB_KEY_CTRL_B, {K_B, K_LCTRL, K_RCTRL, 0}},
+	{TB_KEY_CTRL_C, {K_C, K_LCTRL, K_RCTRL, 0}},
+	{TB_KEY_CTRL_D, {K_D, K_LCTRL, K_RCTRL, 0}},
+	{TB_KEY_CTRL_E, {K_E, K_LCTRL, K_RCTRL, 0}},
+	{TB_KEY_CTRL_F, {K_F, K_LCTRL, K_RCTRL, 0}},
+	{TB_KEY_CTRL_G, {K_G, K_LCTRL, K_RCTRL, 0}},
+	{TB_KEY_CTRL_I, {K_I, K_TAB, K_LCTRL, K_RCTRL, 0}},
+	{TB_KEY_CTRL_J, {K_J, K_LCTRL, K_RCTRL, 0}},
+	{TB_KEY_CTRL_K, {K_K, K_LCTRL, K_RCTRL, 0}},
+	{TB_KEY_CTRL_L, {K_L, K_LCTRL, K_RCTRL, 0}},
+	{TB_KEY_CTRL_M, {K_M, K_ENTER, K_K_ENTER, K_LCTRL, K_RCTRL, 0}},
+	{TB_KEY_CTRL_N, {K_N, K_LCTRL, K_RCTRL, 0}},
+	{TB_KEY_CTRL_O, {K_O, K_LCTRL, K_RCTRL, 0}},
+	{TB_KEY_CTRL_P, {K_P, K_LCTRL, K_RCTRL, 0}},
+	{TB_KEY_CTRL_Q, {K_Q, K_LCTRL, K_RCTRL, 0}},
+	{TB_KEY_CTRL_R, {K_R, K_LCTRL, K_RCTRL, 0}},
+	{TB_KEY_CTRL_S, {K_S, K_LCTRL, K_RCTRL, 0}},
+	{TB_KEY_CTRL_T, {K_T, K_LCTRL, K_RCTRL, 0}},
+	{TB_KEY_CTRL_U, {K_U, K_LCTRL, K_RCTRL, 0}},
+	{TB_KEY_CTRL_V, {K_V, K_LCTRL, K_RCTRL, 0}},
+	{TB_KEY_CTRL_W, {K_W, K_LCTRL, K_RCTRL, 0}},
+	{TB_KEY_CTRL_X, {K_X, K_LCTRL, K_RCTRL, 0}},
+	{TB_KEY_CTRL_Y, {K_Y, K_LCTRL, K_RCTRL, 0}},
+	{TB_KEY_CTRL_Z, {K_Z, K_LCTRL, K_RCTRL, 0}},
+	{TB_KEY_CTRL_LSQ_BRACKET, {K_LSQB, K_ESC, K_3, K_LCTRL, K_RCTRL, 0}},
+	{TB_KEY_CTRL_RSQ_BRACKET, {K_RSQB, K_5, K_LCTRL, K_RCTRL, 0}},
+	{TB_KEY_CTRL_6, {K_6, K_LCTRL, K_RCTRL, 0}},
+	{TB_KEY_CTRL_7, {K_7, K_SLASH, K_MINUS_SHIFT, K_LCTRL, K_RCTRL, 0}}
+};
+
+Combo funccombos[] = {
+	{0, {K_F1,0}},
+	{1, {K_F2,0}},
+	{2, {K_F3,0}},
+	{3, {K_F4,0}},
+	{4, {K_F5,0}},
+	{5, {K_F6,0}},
+	{6, {K_F7,0}},
+	{7, {K_F8,0}},
+	{8, {K_F9,0}},
+	{9, {K_F10,0}},
+	{10, {K_F11,0}},
+	{11, {K_F12,0}},
+	{12, {K_INS,0}},
+	{13, {K_DEL,0}},
+	{14, {K_HOM,0}},
+	{15, {K_END,0}},
+	{16, {K_PGU,0}},
+	{17, {K_PGD,0}},
+	{18, {K_ARROW_UP,0}},
+	{19, {K_ARROW_DOWN,0}},
+	{20, {K_ARROW_LEFT,0}},
+	{21, {K_ARROW_RIGHT,0}}
+};
+
+void print_tb(const char *str, unsigned int x, unsigned int y, uint16_t fg, uint16_t bg)
+{
+	while (*str) {
+		uint32_t uni = utf8_char_to_unicode(str);
+		str += utf8_char_length(*str);
+		tb_change_cell(x, y, uni, fg, bg);
+		x++;
+	}
+}
+
+
+void draw_key(Key *k, uint16_t fg, uint16_t bg)
+{
+	while (k->x) {
+		tb_change_cell(k->x+2, k->y, k->ch, fg, bg);
+		k++;
+	}
+}
+
+void draw_keyboard()
+{
+	draw_key(K_ESC, TB_WHITE, TB_BLUE);
+	draw_key(K_F1, TB_WHITE, TB_BLUE);
+	draw_key(K_F2, TB_WHITE, TB_BLUE);
+	draw_key(K_F3, TB_WHITE, TB_BLUE);
+	draw_key(K_F4, TB_WHITE, TB_BLUE);
+	draw_key(K_F5, TB_WHITE, TB_BLUE);
+	draw_key(K_F6, TB_WHITE, TB_BLUE);
+	draw_key(K_F7, TB_WHITE, TB_BLUE);
+	draw_key(K_F8, TB_WHITE, TB_BLUE);
+	draw_key(K_F9, TB_WHITE, TB_BLUE);
+	draw_key(K_F10, TB_WHITE, TB_BLUE);
+	draw_key(K_F11, TB_WHITE, TB_BLUE);
+	draw_key(K_F12, TB_WHITE, TB_BLUE);
+	draw_key(K_PRN, TB_WHITE, TB_BLUE);
+	draw_key(K_SCR, TB_WHITE, TB_BLUE);
+	draw_key(K_BRK, TB_WHITE, TB_BLUE);
+	draw_key(K_LED1, TB_WHITE, TB_BLUE);
+	draw_key(K_LED2, TB_WHITE, TB_BLUE);
+	draw_key(K_LED3, TB_WHITE, TB_BLUE);
+
+	draw_key(K_TILDE, TB_WHITE, TB_BLUE);
+	draw_key(K_1, TB_WHITE, TB_BLUE);
+	draw_key(K_2, TB_WHITE, TB_BLUE);
+	draw_key(K_3, TB_WHITE, TB_BLUE);
+	draw_key(K_4, TB_WHITE, TB_BLUE);
+	draw_key(K_5, TB_WHITE, TB_BLUE);
+	draw_key(K_6, TB_WHITE, TB_BLUE);
+	draw_key(K_7, TB_WHITE, TB_BLUE);
+	draw_key(K_8, TB_WHITE, TB_BLUE);
+	draw_key(K_9, TB_WHITE, TB_BLUE);
+	draw_key(K_0, TB_WHITE, TB_BLUE);
+	draw_key(K_MINUS, TB_WHITE, TB_BLUE);
+	draw_key(K_EQUALS, TB_WHITE, TB_BLUE);
+	draw_key(K_BACKSLASH, TB_WHITE, TB_BLUE);
+	draw_key(K_BACKSPACE, TB_WHITE, TB_BLUE);
+	draw_key(K_INS, TB_WHITE, TB_BLUE);
+	draw_key(K_HOM, TB_WHITE, TB_BLUE);
+	draw_key(K_PGU, TB_WHITE, TB_BLUE);
+	draw_key(K_K_NUMLOCK, TB_WHITE, TB_BLUE);
+	draw_key(K_K_SLASH, TB_WHITE, TB_BLUE);
+	draw_key(K_K_STAR, TB_WHITE, TB_BLUE);
+	draw_key(K_K_MINUS, TB_WHITE, TB_BLUE);
+	
+	draw_key(K_TAB, TB_WHITE, TB_BLUE);
+	draw_key(K_q, TB_WHITE, TB_BLUE);
+	draw_key(K_w, TB_WHITE, TB_BLUE);
+	draw_key(K_e, TB_WHITE, TB_BLUE);
+	draw_key(K_r, TB_WHITE, TB_BLUE);
+	draw_key(K_t, TB_WHITE, TB_BLUE);
+	draw_key(K_y, TB_WHITE, TB_BLUE);
+	draw_key(K_u, TB_WHITE, TB_BLUE);
+	draw_key(K_i, TB_WHITE, TB_BLUE);
+	draw_key(K_o, TB_WHITE, TB_BLUE);
+	draw_key(K_p, TB_WHITE, TB_BLUE);
+	draw_key(K_LSQB, TB_WHITE, TB_BLUE);
+	draw_key(K_RSQB, TB_WHITE, TB_BLUE);
+	draw_key(K_ENTER, TB_WHITE, TB_BLUE);
+	draw_key(K_DEL, TB_WHITE, TB_BLUE);
+	draw_key(K_END, TB_WHITE, TB_BLUE);
+	draw_key(K_PGD, TB_WHITE, TB_BLUE);
+	draw_key(K_K_7, TB_WHITE, TB_BLUE);
+	draw_key(K_K_8, TB_WHITE, TB_BLUE);
+	draw_key(K_K_9, TB_WHITE, TB_BLUE);
+	draw_key(K_K_PLUS, TB_WHITE, TB_BLUE);
+	
+	draw_key(K_CAPS, TB_WHITE, TB_BLUE);
+	draw_key(K_a, TB_WHITE, TB_BLUE);
+	draw_key(K_s, TB_WHITE, TB_BLUE);
+	draw_key(K_d, TB_WHITE, TB_BLUE);
+	draw_key(K_f, TB_WHITE, TB_BLUE);
+	draw_key(K_g, TB_WHITE, TB_BLUE);
+	draw_key(K_h, TB_WHITE, TB_BLUE);
+	draw_key(K_j, TB_WHITE, TB_BLUE);
+	draw_key(K_k, TB_WHITE, TB_BLUE);
+	draw_key(K_l, TB_WHITE, TB_BLUE);
+	draw_key(K_SEMICOLON, TB_WHITE, TB_BLUE);
+	draw_key(K_QUOTE, TB_WHITE, TB_BLUE);
+	draw_key(K_K_4, TB_WHITE, TB_BLUE);
+	draw_key(K_K_5, TB_WHITE, TB_BLUE);
+	draw_key(K_K_6, TB_WHITE, TB_BLUE);
+	
+	draw_key(K_LSHIFT, TB_WHITE, TB_BLUE);
+	draw_key(K_z, TB_WHITE, TB_BLUE);
+	draw_key(K_x, TB_WHITE, TB_BLUE);
+	draw_key(K_c, TB_WHITE, TB_BLUE);
+	draw_key(K_v, TB_WHITE, TB_BLUE);
+	draw_key(K_b, TB_WHITE, TB_BLUE);
+	draw_key(K_n, TB_WHITE, TB_BLUE);
+	draw_key(K_m, TB_WHITE, TB_BLUE);
+	draw_key(K_COMMA, TB_WHITE, TB_BLUE);
+	draw_key(K_PERIOD, TB_WHITE, TB_BLUE);
+	draw_key(K_SLASH, TB_WHITE, TB_BLUE);
+	draw_key(K_RSHIFT, TB_WHITE, TB_BLUE);
+	draw_key(K_ARROW_UP, TB_WHITE, TB_BLUE);
+	draw_key(K_K_1, TB_WHITE, TB_BLUE);
+	draw_key(K_K_2, TB_WHITE, TB_BLUE);
+	draw_key(K_K_3, TB_WHITE, TB_BLUE);
+	draw_key(K_K_ENTER, TB_WHITE, TB_BLUE);
+	
+	draw_key(K_LCTRL, TB_WHITE, TB_BLUE);
+	draw_key(K_LWIN, TB_WHITE, TB_BLUE);
+	draw_key(K_LALT, TB_WHITE, TB_BLUE);
+	draw_key(K_SPACE, TB_WHITE, TB_BLUE);
+	draw_key(K_RCTRL, TB_WHITE, TB_BLUE);
+	draw_key(K_RPROP, TB_WHITE, TB_BLUE);
+	draw_key(K_RWIN, TB_WHITE, TB_BLUE);
+	draw_key(K_RALT, TB_WHITE, TB_BLUE);
+	draw_key(K_ARROW_LEFT, TB_WHITE, TB_BLUE);
+	draw_key(K_ARROW_DOWN, TB_WHITE, TB_BLUE);
+	draw_key(K_ARROW_RIGHT, TB_WHITE, TB_BLUE);
+	draw_key(K_K_0, TB_WHITE, TB_BLUE);
+	draw_key(K_K_PERIOD, TB_WHITE, TB_BLUE);
+
+	print_tb("Keyboard demo!", 33, 16, TB_MAGENTA | TB_BOLD, TB_BLACK);
+	print_tb("by nsf, for termbox", 37, 17, TB_MAGENTA, TB_BLACK);
+}
+
+Combo *findcombo(Combo *combos, int size, unsigned char key)
+{
+	for (int i = 0; i < size; ++i) {
+		if (combos[i].combo == key)
+			return &combos[i];
+	}
+	return 0;
+}
+
+void dispatch_press(struct tb_key_event *ev)
+{
+	if (ev->mod & TB_MOD_ALT) {
+		draw_key(K_LALT, TB_WHITE, TB_RED);
+		draw_key(K_RALT, TB_WHITE, TB_RED);
+	}
+
+	/* searches here isn't fast, but I don't care, it's demonstration anyway 
+	 * of couse it is possible to make a lookup table here
+	 */
+	Combo *k;
+	if (ev->key >= TB_KEY_ARROW_RIGHT && ev->key <= 0xFFFF)
+		k = findcombo(funccombos, sizeof(funccombos)/sizeof(funccombos[0]), 0xFFFF-ev->key);
+	else if (ev->ch < 256)
+		k = findcombo(combos, sizeof(combos)/sizeof(combos[0]), ev->ch);
+	if (!k)
+		return;
+
+	Key **keys = k->keys;
+	while (*keys) {
+		draw_key(*keys, TB_WHITE, TB_RED);
+		keys++;
+	}
+}
+
+int main(int argc, char **argv)
+{
+	assert(tb_init() == 0);
+	tb_select_input_mode(TB_INPUT_ESC);
+	struct tb_key_event ev;
+
+	tb_clear();
+	draw_keyboard();
+	tb_present();
+
+	while (tb_poll_event(&ev)) {
+		if (ev.key == TB_KEY_ESC || (ev.ch == 'q' && ev.mod & TB_MOD_ALT))
+			break;
+
+		tb_clear();
+		draw_keyboard();
+		dispatch_press(&ev);
+		tb_present();
+	}
+	tb_shutdown();
+	return 0;
+}
