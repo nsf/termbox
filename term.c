@@ -65,6 +65,26 @@ const char *xterm_funcs[] = {
         [T_MOVE_CURSOR] = "\033[%u;%uH"
 };
 
+/* gnu screen */
+const char *screen_keys[] = {
+        "\033OP","\033OQ","\033OR","\033OS","\033[15~","\033[17~","\033[18~","\033[19~","\033[20~",
+	"\033[21~","\033[23~","\033[24~","\033[2~","\033[3~","\033[1~","\033[4~","\033[5~","\033[6~",
+	"\033[A","\033[B","\033[D","\033[C", 0
+};
+const char *screen_funcs[] = {
+        [T_ENTER_CA] = "\033[?1049h",
+        [T_EXIT_CA] = "\033[?1049l",
+        [T_SHOW_CURSOR] = "\033[34h\033[?25h",
+        [T_HIDE_CURSOR] = "\033[?25l",
+        [T_CLEAR_SCREEN] = "\033[H\033[J",
+        [T_SGR] = "\033[3%u;4%um",
+        [T_SGR0] = "\033[m",
+        [T_UNDERLINE] = "\033[4m",
+        [T_BOLD] = "\033[1m",
+        [T_BLINK] = "\033[5m",
+        [T_MOVE_CURSOR] = "\033[%u;%uH"
+};
+
 struct term {
 	const char *name;
 	const char **keys;
@@ -74,6 +94,7 @@ struct term {
 	{"rxvt-256color", rxvt_unicode_keys, rxvt_unicode_funcs},
 	{"linux", linux_keys, linux_funcs},
 	{"xterm", xterm_keys, xterm_funcs},
+	{"screen", screen_keys, screen_funcs},
 /*	{"gnome", gnome_keys, gnome_funcs}, unsupported now, terminal is a peace of shit, sorry */
 	{0,0,0} /* sentinel */
 };

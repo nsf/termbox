@@ -4,13 +4,13 @@ check() {
 	TERM=$1 ./checkterm.py
 }
 
-check linux
+check linux # done
 check rxvt
-check rxvt-unicode
-check xterm
-check konsole
+check rxvt-unicode # done
+check xterm # done
+check konsole # dip
 check putty
 check Eterm
-check gnome
+check gnome # fail
 check xfce
-check screen
+check screen # done
