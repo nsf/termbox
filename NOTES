@@ -42,3 +42,25 @@ You can switch between these two modes using tb_select_input_mode() func.
 4. Termbox supports *only* the UTF-8 encoding on input and on output. Get a 
 decent terminal emulator with support! Also it means that it will probably
 work with ASCII keymaps. UTF-8 is backward compatible with ASCII.
+
+5. Probably you don't want to port existing applications to this library.
+But you might want to develop new applications with it. Despite the fact
+that library isn't super portable and super stable like ncurses, it will
+do the job. If you complain about different Shift+F1, Ctrl+KEY_LEFT 
+combinations and other lacking capabilites, take a look at vim! It uses
+very strict set of default keybindings.
+
+(http://hea-www.harvard.edu/~fine/Tech/vi.html)
+
+As you can see, it's generally all letters, their upper-case variants, and
+ASCII control combinations. There are even no F1, F2, F3, etc. And hey, vim
+has pretty nice interface. But on the other hand, other programs which
+try to clone Windows apps or DOS apps, like Midnight Commander, just 
+completly fail. MC has this ugly ESC key (via ncurses) and all other
+issues, it's plainly unusable and ugly. I personally prefer CLI over mc
+for example and I bet a lot of people too.
+
+So, the point is - turn on your imagination, you can create really nice
+interface with this tiny set of available keys (khm.. tiny? it's pretty 
+big actually!).
+
