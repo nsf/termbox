@@ -28,6 +28,8 @@ Some terminals emit ASCII 'DELETE' as BACKSPACE, and real BACKSPACE
 as CTRL+BACKSPACE. The point is, it is possible that some terminals
 do thing in a different ways. I'm not sure right now, should I fix this.
 
+You should keep these things in mind when developing a termbox application.
+
 3. Termbox supports two input parsing mode.
    - TB_INPUT_ESC - It checks known ESC sequences and if there is no match
      0x1B (ESC) symbol is TB_KEY_ESC. Alt+<KEY> combinations don't work.

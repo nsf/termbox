@@ -1,0 +1,5 @@
+This is a termbox library package. It is created by nsf.
+It's general purpose to serve as the simplest ncurses alternative.
+
+See NOTES for few important notes.
+See WHEREWHAT to know where things are located.
