@@ -5,8 +5,8 @@ check() {
 }
 
 check linux # done
-check rxvt
 check rxvt-unicode # done
+check rxvt-256color
 check xterm # done
 check konsole # uses xterm
 check putty
