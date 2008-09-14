@@ -78,8 +78,8 @@ int tb_init()
 	tios.c_cc[VTIME] = 0;
 	tcsetattr(fileno(out), TCSAFLUSH, &tios);
 
-
 	fputs(funcs[T_ENTER_CA], out);
+	fputs(funcs[T_ENTER_KEYPAD], out);
 	fputs(funcs[T_HIDE_CURSOR], out);
 	fputs(funcs[T_CLEAR_SCREEN], out);
 
@@ -100,6 +100,7 @@ void tb_shutdown()
 	fputs(funcs[T_SGR0], out);
 	fputs(funcs[T_CLEAR_SCREEN], out);
 	fputs(funcs[T_EXIT_CA], out);
+	fputs(funcs[T_EXIT_KEYPAD], out);
 	fflush(out);
 	tcsetattr(fileno(out), TCSAFLUSH, &orig_tios);
 

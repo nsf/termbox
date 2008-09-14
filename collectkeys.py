@@ -11,79 +11,99 @@ def puttc(str):
 		else:
 			sys.stdout.write(c)
 
+terminals = {
+	'xterm' : 'xterm',
+	'rxvt-256color' : 'rxvt_256color',
+	'rxvt-unicode' : 'rxvt_unicode',
+	'linux' : 'linux',
+	'Eterm' : 'Eterm',
+	'screen' : 'screen'
+}
+
 keys = [
-	"F1",
-	"F2",
-	"F3",
-	"F4",
-	"F5",
-	"F6",
-	"F7",
-	"F8",
-	"F9",
-	"F10",
-	"F11",
-	"F12",
-	"INSERT",
-	"DELETE",
-	"HOME",
-	"END",
-	"PGUP",
-	"PGDN",
-	"KEY_UP",
-	"KEY_DOWN",
-	"KEY_LEFT",
-	"KEY_RIGHT"
+	"F1", 		"kf1",
+	"F2",		"kf2",	
+	"F3",		"kf3",	
+	"F4",		"kf4",	
+	"F5",		"kf5",	
+	"F6",		"kf6",	
+	"F7",		"kf7",	
+	"F8",		"kf8",	
+	"F9",		"kf9",	
+	"F10",		"kf10",	
+	"F11",		"kf11",	
+	"F12",		"kf12",	
+	"INSERT",	"kich1",
+	"DELETE",	"kdch1",
+	"HOME",		"khome",
+	"END",		"kend",
+	"PGUP",		"kpp",
+	"PGDN",		"knp",
+	"KEY_UP",	"kcuu1",
+	"KEY_DOWN",	"kcud1",
+	"KEY_LEFT",	"kcub1",
+	"KEY_RIGHT",	"kcuf1"
 ]
 
 funcs = [
-	"T_ENTER_CA", "smcup",
-	"T_EXIT_CA", "rmcup",
-	"T_SHOW_CURSOR", "cnorm",
-	"T_HIDE_CURSOR", "civis",
-	"T_CLEAR_SCREEN", "clear",
-	"T_SGR", "sgr",
-	"T_SGR0", "sgr0",
-	"T_UNDERLINE", "smul",
-	"T_BOLD", "bold",
-	"T_BLINK", "blink",
-	"T_MOVE_CURSOR", "cup"
+	"T_ENTER_CA",		"smcup",
+	"T_EXIT_CA",		"rmcup",
+	"T_SHOW_CURSOR",	"cnorm",
+	"T_HIDE_CURSOR",	"civis",
+	"T_CLEAR_SCREEN",	"clear",
+	"T_SGR",		"sgr",
+	"T_SGR0",		"sgr0",
+	"T_UNDERLINE",		"smul",
+	"T_BOLD",		"bold",
+	"T_BLINK",		"blink",
+	"T_MOVE_CURSOR",	"cup",
+	"T_ENTER_KEYPAD",	"smkx",
+	"T_EXIT_KEYPAD",	"rmkx"
 ]
 
-def pairsiter(iterable):
+def iter_pairs(iterable):
 	iterable = iter(iterable)
 	while True:
 		yield (iterable.next(), iterable.next())
 
-answers = []
+def do_term(term, nick):
+	curses.setupterm(term)
+	sys.stdout.write("/* %s */\n" % term)
+	sys.stdout.write("const char *%s_keys[] = {\n\t" % nick)
+	for k,v in iter_pairs(keys):
+		sys.stdout.write("\"")
+		puttc(curses.tigetstr(v))
+		sys.stdout.write("\",")
+	sys.stdout.write(" 0\n};\n")
+	sys.stdout.write("const char *%s_funcs[] = {\n" % nick)
+	for k,v in iter_pairs(funcs):
+		sys.stdout.write("\t[%s] = \"" % k)
+		if v == "sgr":
+			sys.stdout.write("\\033[3%u;4%um")
+		elif v == "cup":
+			sys.stdout.write("\\033[%u;%uH")
+		else:
+			tc = curses.tigetstr(v)
+			puttc(tc)
+		if v == "rmkx":
+			sys.stdout.write("\"\n")
+		else:
+			sys.stdout.write("\",\n")
+	sys.stdout.write("};\n\n")
 
-for i in keys:
-	answers.append(raw_input("Press %s and Enter: " % i))
+def do_terms(d):
+	sys.stdout.write("struct term {\n")
+	sys.stdout.write("\tconst char *name;\n")
+	sys.stdout.write("\tconst char **keys;\n")
+	sys.stdout.write("\tconst char **funcs;\n")
+	sys.stdout.write("} terms[] = {\n")
 
-print "Collecting done, result:"
-print "----------------cut_and_paste_it_to_nsf-------------------"
+	for k,v in d.iteritems():
+		sys.stdout.write("\t{\"%s\", %s_keys, %s_funcs},\n" % (k, v, v))
+	sys.stdout.write("\t{0,0,0}\n};\n")
 
-sys.stdout.write("const char *%s_keys[] = {\n\t" % os.getenv("TERM"))
-for i in answers:
-	sys.stdout.write("\"")
-	puttc(i)
-	sys.stdout.write("\",")
-sys.stdout.write(" 0\n};\n")
-curses.setupterm()
-sys.stdout.write("const char *%s_funcs[] = {\n" % os.getenv("TERM"))
-for k,v in pairsiter(funcs):
-	sys.stdout.write("\t[%s] = \"" % k)
-	if v == "sgr":
-		sys.stdout.write("\\033[3%u;4%um")
-	elif v == "cup":
-		sys.stdout.write("\\033[%u;%uH")
-	else:
-		tc = curses.tigetstr(v)
-		puttc(tc)
-	if v == "cup":
-		sys.stdout.write("\"\n")
-	else:
-		sys.stdout.write("\",\n")
-sys.stdout.write("};\n")
-print "----------------------------------------------------------"
+for k,v in terminals.iteritems():
+	do_term(k, v)
+
+do_terms(terminals)
 

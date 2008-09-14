@@ -45,6 +45,8 @@ check_cap('UNDERLINE', 'smul', prn)
 check_cap('BOLD', 'bold', prn)
 check_cap('BLINK', 'blink', prn)
 check_cap('MOVE_CURSOR', 'cup', prn)
+check_cap('ENTER_KEYPAD', 'smkx', prn)
+check_cap('EXIT_KEYPAD', 'rmkx', prn)
 
 check_cap('F1', 'kf1', prn)
 check_cap('F2', 'kf2', prn)
