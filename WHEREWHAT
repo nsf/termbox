@@ -36,6 +36,6 @@ in term.c.
 DEMOS
 -----
 
-keyboard.cpp - This is a demo of keyboard. It draws nice ASCII-art keyboard
+keyboard.c - This is a demo of keyboard. It draws nice ASCII-art keyboard
 using termbox library ofcourse and reacts on user input by highlighting
 pressed keys and combos. Just try it, it's really nice.

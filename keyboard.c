@@ -1,6 +1,5 @@
 #include <assert.h>
 #include <stdint.h>
-#include <algorithm>
 #include "termbox.h"
 
 static const unsigned char utf8_length[256] = {
@@ -42,192 +41,188 @@ static uint32_t utf8_char_to_unicode(const char *c)
 	return result;
 }
 
-struct Key {
+struct key {
 	unsigned char x;
 	unsigned char y;
 	uint32_t ch;
 };
 
 #define STOP {0,0,0}
-Key K_ESC[] = {{1,1,'E'},{2,1,'S'},{3,1,'C'},STOP};
-Key K_F1[] = {{6,1,'F'},{7,1,'1'},STOP};
-Key K_F2[] = {{9,1,'F'},{10,1,'2'},STOP};
-Key K_F3[] = {{12,1,'F'},{13,1,'3'},STOP};
-Key K_F4[] = {{15,1,'F'},{16,1,'4'},STOP};
-Key K_F5[] = {{19,1,'F'},{20,1,'5'},STOP};
-Key K_F6[] = {{22,1,'F'},{23,1,'6'},STOP};
-Key K_F7[] = {{25,1,'F'},{26,1,'7'},STOP};
-Key K_F8[] = {{28,1,'F'},{29,1,'8'},STOP};
-Key K_F9[] = {{33,1,'F'},{34,1,'9'},STOP};
-Key K_F10[] = {{36,1,'F'},{37,1,'1'},{38,1,'0'},STOP};
-Key K_F11[] = {{40,1,'F'},{41,1,'1'},{42,1,'1'},STOP};
-Key K_F12[] = {{44,1,'F'},{45,1,'1'},{46,1,'2'},STOP};
-Key K_PRN[] = {{50,1,'P'},{51,1,'R'},{52,1,'N'},STOP};
-Key K_SCR[] = {{54,1,'S'},{55,1,'C'},{56,1,'R'},STOP};
-Key K_BRK[] = {{58,1,'B'},{59,1,'R'},{60,1,'K'},STOP};
-Key K_LED1[] = {{65,1,'-'},STOP};
-Key K_LED2[] = {{69,1,'-'},STOP};
-Key K_LED3[] = {{73,1,'-'},STOP};
+struct key K_ESC[] = {{1,1,'E'},{2,1,'S'},{3,1,'C'},STOP};
+struct key K_F1[] = {{6,1,'F'},{7,1,'1'},STOP};
+struct key K_F2[] = {{9,1,'F'},{10,1,'2'},STOP};
+struct key K_F3[] = {{12,1,'F'},{13,1,'3'},STOP};
+struct key K_F4[] = {{15,1,'F'},{16,1,'4'},STOP};
+struct key K_F5[] = {{19,1,'F'},{20,1,'5'},STOP};
+struct key K_F6[] = {{22,1,'F'},{23,1,'6'},STOP};
+struct key K_F7[] = {{25,1,'F'},{26,1,'7'},STOP};
+struct key K_F8[] = {{28,1,'F'},{29,1,'8'},STOP};
+struct key K_F9[] = {{33,1,'F'},{34,1,'9'},STOP};
+struct key K_F10[] = {{36,1,'F'},{37,1,'1'},{38,1,'0'},STOP};
+struct key K_F11[] = {{40,1,'F'},{41,1,'1'},{42,1,'1'},STOP};
+struct key K_F12[] = {{44,1,'F'},{45,1,'1'},{46,1,'2'},STOP};
+struct key K_PRN[] = {{50,1,'P'},{51,1,'R'},{52,1,'N'},STOP};
+struct key K_SCR[] = {{54,1,'S'},{55,1,'C'},{56,1,'R'},STOP};
+struct key K_BRK[] = {{58,1,'B'},{59,1,'R'},{60,1,'K'},STOP};
+struct key K_LED1[] = {{65,1,'-'},STOP};
+struct key K_LED2[] = {{69,1,'-'},STOP};
+struct key K_LED3[] = {{73,1,'-'},STOP};
 
-Key K_TILDE[] = {{1,4,'`'},STOP};
-Key K_TILDE_SHIFT[] = {{1,4,'~'},STOP};
-Key K_1[] = {{4,4,'1'},STOP};
-Key K_1_SHIFT[] = {{4,4,'!'},STOP};
-Key K_2[] = {{7,4,'2'},STOP};
-Key K_2_SHIFT[] = {{7,4,'@'},STOP};
-Key K_3[] = {{10,4,'3'},STOP};
-Key K_3_SHIFT[] = {{10,4,'#'},STOP};
-Key K_4[] = {{13,4,'4'},STOP};
-Key K_4_SHIFT[] = {{13,4,'$'},STOP};
-Key K_5[] = {{16,4,'5'},STOP};
-Key K_5_SHIFT[] = {{16,4,'%'},STOP};
-Key K_6[] = {{19,4,'6'},STOP};
-Key K_6_SHIFT[] = {{19,4,'^'},STOP};
-Key K_7[] = {{22,4,'7'},STOP};
-Key K_7_SHIFT[] = {{22,4,'&'},STOP};
-Key K_8[] = {{25,4,'8'},STOP};
-Key K_8_SHIFT[] = {{25,4,'*'},STOP};
-Key K_9[] = {{28,4,'9'},STOP};
-Key K_9_SHIFT[] = {{28,4,'('},STOP};
-Key K_0[] = {{31,4,'0'},STOP};
-Key K_0_SHIFT[] = {{31,4,')'},STOP};
-Key K_MINUS[] = {{34,4,'-'},STOP};
-Key K_MINUS_SHIFT[] = {{34,4,'_'},STOP};
-Key K_EQUALS[] = {{37,4,'='},STOP};
-Key K_EQUALS_SHIFT[] = {{37,4,'+'},STOP};
-Key K_BACKSLASH[] = {{40,4,'\\'},STOP};
-Key K_BACKSLASH_SHIFT[] = {{40,4,'|'},STOP};
-Key K_BACKSPACE[] = {{44,4,0x2190},{45,4,0x2500},{46,4,0x2500},STOP};
-Key K_INS[] = {{50,4,'I'},{51,4,'N'},{52,4,'S'},STOP};
-Key K_HOM[] = {{54,4,'H'},{55,4,'O'},{56,4,'M'},STOP};
-Key K_PGU[] = {{58,4,'P'},{59,4,'G'},{60,4,'U'},STOP};
-Key K_K_NUMLOCK[] = {{64,4,'N'},STOP};
-Key K_K_SLASH[] = {{67,4,'/'},STOP};
-Key K_K_STAR[] = {{70,4,'*'},STOP};
-Key K_K_MINUS[] = {{73,4,'-'},STOP};
+struct key K_TILDE[] = {{1,4,'`'},STOP};
+struct key K_TILDE_SHIFT[] = {{1,4,'~'},STOP};
+struct key K_1[] = {{4,4,'1'},STOP};
+struct key K_1_SHIFT[] = {{4,4,'!'},STOP};
+struct key K_2[] = {{7,4,'2'},STOP};
+struct key K_2_SHIFT[] = {{7,4,'@'},STOP};
+struct key K_3[] = {{10,4,'3'},STOP};
+struct key K_3_SHIFT[] = {{10,4,'#'},STOP};
+struct key K_4[] = {{13,4,'4'},STOP};
+struct key K_4_SHIFT[] = {{13,4,'$'},STOP};
+struct key K_5[] = {{16,4,'5'},STOP};
+struct key K_5_SHIFT[] = {{16,4,'%'},STOP};
+struct key K_6[] = {{19,4,'6'},STOP};
+struct key K_6_SHIFT[] = {{19,4,'^'},STOP};
+struct key K_7[] = {{22,4,'7'},STOP};
+struct key K_7_SHIFT[] = {{22,4,'&'},STOP};
+struct key K_8[] = {{25,4,'8'},STOP};
+struct key K_8_SHIFT[] = {{25,4,'*'},STOP};
+struct key K_9[] = {{28,4,'9'},STOP};
+struct key K_9_SHIFT[] = {{28,4,'('},STOP};
+struct key K_0[] = {{31,4,'0'},STOP};
+struct key K_0_SHIFT[] = {{31,4,')'},STOP};
+struct key K_MINUS[] = {{34,4,'-'},STOP};
+struct key K_MINUS_SHIFT[] = {{34,4,'_'},STOP};
+struct key K_EQUALS[] = {{37,4,'='},STOP};
+struct key K_EQUALS_SHIFT[] = {{37,4,'+'},STOP};
+struct key K_BACKSLASH[] = {{40,4,'\\'},STOP};
+struct key K_BACKSLASH_SHIFT[] = {{40,4,'|'},STOP};
+struct key K_BACKSPACE[] = {{44,4,0x2190},{45,4,0x2500},{46,4,0x2500},STOP};
+struct key K_INS[] = {{50,4,'I'},{51,4,'N'},{52,4,'S'},STOP};
+struct key K_HOM[] = {{54,4,'H'},{55,4,'O'},{56,4,'M'},STOP};
+struct key K_PGU[] = {{58,4,'P'},{59,4,'G'},{60,4,'U'},STOP};
+struct key K_K_NUMLOCK[] = {{64,4,'N'},STOP};
+struct key K_K_SLASH[] = {{67,4,'/'},STOP};
+struct key K_K_STAR[] = {{70,4,'*'},STOP};
+struct key K_K_MINUS[] = {{73,4,'-'},STOP};
 
-Key K_TAB[] = {{1,6,'T'},{2,6,'A'},{3,6,'B'},STOP};
-Key K_q[] = {{6,6,'q'},STOP};
-Key K_Q[] = {{6,6,'Q'},STOP};
-Key K_w[] = {{9,6,'w'},STOP};
-Key K_W[] = {{9,6,'W'},STOP};
-Key K_e[] = {{12,6,'e'},STOP};
-Key K_E[] = {{12,6,'E'},STOP};
-Key K_r[] = {{15,6,'r'},STOP};
-Key K_R[] = {{15,6,'R'},STOP};
-Key K_t[] = {{18,6,'t'},STOP};
-Key K_T[] = {{18,6,'T'},STOP};
-Key K_y[] = {{21,6,'y'},STOP};
-Key K_Y[] = {{21,6,'Y'},STOP};
-Key K_u[] = {{24,6,'u'},STOP};
-Key K_U[] = {{24,6,'U'},STOP};
-Key K_i[] = {{27,6,'i'},STOP};
-Key K_I[] = {{27,6,'I'},STOP};
-Key K_o[] = {{30,6,'o'},STOP};
-Key K_O[] = {{30,6,'O'},STOP};
-Key K_p[] = {{33,6,'p'},STOP};
-Key K_P[] = {{33,6,'P'},STOP};
-Key K_LSQB[] = {{36,6,'['},STOP};
-Key K_LCUB[] = {{36,6,'{'},STOP};
-Key K_RSQB[] = {{39,6,']'},STOP};
-Key K_RCUB[] = {{39,6,'}'},STOP};
-Key K_ENTER[] = {
+struct key K_TAB[] = {{1,6,'T'},{2,6,'A'},{3,6,'B'},STOP};
+struct key K_q[] = {{6,6,'q'},STOP};
+struct key K_Q[] = {{6,6,'Q'},STOP};
+struct key K_w[] = {{9,6,'w'},STOP};
+struct key K_W[] = {{9,6,'W'},STOP};
+struct key K_e[] = {{12,6,'e'},STOP};
+struct key K_E[] = {{12,6,'E'},STOP};
+struct key K_r[] = {{15,6,'r'},STOP};
+struct key K_R[] = {{15,6,'R'},STOP};
+struct key K_t[] = {{18,6,'t'},STOP};
+struct key K_T[] = {{18,6,'T'},STOP};
+struct key K_y[] = {{21,6,'y'},STOP};
+struct key K_Y[] = {{21,6,'Y'},STOP};
+struct key K_u[] = {{24,6,'u'},STOP};
+struct key K_U[] = {{24,6,'U'},STOP};
+struct key K_i[] = {{27,6,'i'},STOP};
+struct key K_I[] = {{27,6,'I'},STOP};
+struct key K_o[] = {{30,6,'o'},STOP};
+struct key K_O[] = {{30,6,'O'},STOP};
+struct key K_p[] = {{33,6,'p'},STOP};
+struct key K_P[] = {{33,6,'P'},STOP};
+struct key K_LSQB[] = {{36,6,'['},STOP};
+struct key K_LCUB[] = {{36,6,'{'},STOP};
+struct key K_RSQB[] = {{39,6,']'},STOP};
+struct key K_RCUB[] = {{39,6,'}'},STOP};
+struct key K_ENTER[] = {
 	{43,6,0x2591},{44,6,0x2591},{45,6,0x2591},{46,6,0x2591},
 	{43,7,0x2591},{44,7,0x2591},{45,7,0x21B5},{46,7,0x2591},
 	{41,8,0x2591},{42,8,0x2591},{43,8,0x2591},{44,8,0x2591},
 	{45,8,0x2591},{46,8,0x2591},STOP
 };
-Key K_DEL[] = {{50,6,'D'},{51,6,'E'},{52,6,'L'},STOP};
-Key K_END[] = {{54,6,'E'},{55,6,'N'},{56,6,'D'},STOP};
-Key K_PGD[] = {{58,6,'P'},{59,6,'G'},{60,6,'D'},STOP};
-Key K_K_7[] = {{64,6,'7'},STOP};
-Key K_K_8[] = {{67,6,'8'},STOP};
-Key K_K_9[] = {{70,6,'9'},STOP};
-Key K_K_PLUS[] = {{73,6,' '},{73,7,'+'},{73,8,' '},STOP};
+struct key K_DEL[] = {{50,6,'D'},{51,6,'E'},{52,6,'L'},STOP};
+struct key K_END[] = {{54,6,'E'},{55,6,'N'},{56,6,'D'},STOP};
+struct key K_PGD[] = {{58,6,'P'},{59,6,'G'},{60,6,'D'},STOP};
+struct key K_K_7[] = {{64,6,'7'},STOP};
+struct key K_K_8[] = {{67,6,'8'},STOP};
+struct key K_K_9[] = {{70,6,'9'},STOP};
+struct key K_K_PLUS[] = {{73,6,' '},{73,7,'+'},{73,8,' '},STOP};
 
-Key K_CAPS[] = {{1,8,'C'},{2,8,'A'},{3,8,'P'},{4,8,'S'},STOP};
-Key K_a[] = {{7,8,'a'},STOP};
-Key K_A[] = {{7,8,'A'},STOP};
-Key K_s[] = {{10,8,'s'},STOP};
-Key K_S[] = {{10,8,'S'},STOP};
-Key K_d[] = {{13,8,'d'},STOP};
-Key K_D[] = {{13,8,'D'},STOP};
-Key K_f[] = {{16,8,'f'},STOP};
-Key K_F[] = {{16,8,'F'},STOP};
-Key K_g[] = {{19,8,'g'},STOP};
-Key K_G[] = {{19,8,'G'},STOP};
-Key K_h[] = {{22,8,'h'},STOP};
-Key K_H[] = {{22,8,'H'},STOP};
-Key K_j[] = {{25,8,'j'},STOP};
-Key K_J[] = {{25,8,'J'},STOP};
-Key K_k[] = {{28,8,'k'},STOP};
-Key K_K[] = {{28,8,'K'},STOP};
-Key K_l[] = {{31,8,'l'},STOP};
-Key K_L[] = {{31,8,'L'},STOP};
-Key K_SEMICOLON[] = {{34,8,';'},STOP};
-Key K_PARENTHESIS[] = {{34,8,':'},STOP};
-Key K_QUOTE[] = {{37,8,'\''},STOP};
-Key K_DOUBLEQUOTE[] = {{37,8,'"'},STOP};
-Key K_K_4[] = {{64,8,'4'},STOP};
-Key K_K_5[] = {{67,8,'5'},STOP};
-Key K_K_6[] = {{70,8,'6'},STOP};
+struct key K_CAPS[] = {{1,8,'C'},{2,8,'A'},{3,8,'P'},{4,8,'S'},STOP};
+struct key K_a[] = {{7,8,'a'},STOP};
+struct key K_A[] = {{7,8,'A'},STOP};
+struct key K_s[] = {{10,8,'s'},STOP};
+struct key K_S[] = {{10,8,'S'},STOP};
+struct key K_d[] = {{13,8,'d'},STOP};
+struct key K_D[] = {{13,8,'D'},STOP};
+struct key K_f[] = {{16,8,'f'},STOP};
+struct key K_F[] = {{16,8,'F'},STOP};
+struct key K_g[] = {{19,8,'g'},STOP};
+struct key K_G[] = {{19,8,'G'},STOP};
+struct key K_h[] = {{22,8,'h'},STOP};
+struct key K_H[] = {{22,8,'H'},STOP};
+struct key K_j[] = {{25,8,'j'},STOP};
+struct key K_J[] = {{25,8,'J'},STOP};
+struct key K_k[] = {{28,8,'k'},STOP};
+struct key K_K[] = {{28,8,'K'},STOP};
+struct key K_l[] = {{31,8,'l'},STOP};
+struct key K_L[] = {{31,8,'L'},STOP};
+struct key K_SEMICOLON[] = {{34,8,';'},STOP};
+struct key K_PARENTHESIS[] = {{34,8,':'},STOP};
+struct key K_QUOTE[] = {{37,8,'\''},STOP};
+struct key K_DOUBLEQUOTE[] = {{37,8,'"'},STOP};
+struct key K_K_4[] = {{64,8,'4'},STOP};
+struct key K_K_5[] = {{67,8,'5'},STOP};
+struct key K_K_6[] = {{70,8,'6'},STOP};
+struct key K_LSHIFT[] = {{1,10,'S'},{2,10,'H'},{3,10,'I'},{4,10,'F'},{5,10,'T'},STOP};
+struct key K_z[] = {{9,10,'z'},STOP};
+struct key K_Z[] = {{9,10,'Z'},STOP};
+struct key K_x[] = {{12,10,'x'},STOP};
+struct key K_X[] = {{12,10,'X'},STOP};
+struct key K_c[] = {{15,10,'c'},STOP};
+struct key K_C[] = {{15,10,'C'},STOP};
+struct key K_v[] = {{18,10,'v'},STOP};
+struct key K_V[] = {{18,10,'V'},STOP};
+struct key K_b[] = {{21,10,'b'},STOP};
+struct key K_B[] = {{21,10,'B'},STOP};
+struct key K_n[] = {{24,10,'n'},STOP};
+struct key K_N[] = {{24,10,'N'},STOP};
+struct key K_m[] = {{27,10,'m'},STOP};
+struct key K_M[] = {{27,10,'M'},STOP};
+struct key K_COMMA[] = {{30,10,','},STOP};
+struct key K_LANB[] = {{30,10,'<'},STOP};
+struct key K_PERIOD[] = {{33,10,'.'},STOP};
+struct key K_RANB[] = {{33,10,'>'},STOP};
+struct key K_SLASH[] = {{36,10,'/'},STOP};
+struct key K_QUESTION[] = {{36,10,'?'},STOP};
+struct key K_RSHIFT[] = {{42,10,'S'},{43,10,'H'},{44,10,'I'},{45,10,'F'},{46,10,'T'},STOP};
+struct key K_ARROW_UP[] = {{54,10,'('},{55,10,0x2191},{56,10,')'},STOP};
+struct key K_K_1[] = {{64,10,'1'},STOP};
+struct key K_K_2[] = {{67,10,'2'},STOP};
+struct key K_K_3[] = {{70,10,'3'},STOP};
+struct key K_K_ENTER[] = {{73,10,0x2591},{73,11,0x2591},{73,12,0x2591},STOP};
 
-Key K_LSHIFT[] = {{1,10,'S'},{2,10,'H'},{3,10,'I'},{4,10,'F'},{5,10,'T'},STOP};
-Key K_z[] = {{9,10,'z'},STOP};
-Key K_Z[] = {{9,10,'Z'},STOP};
-Key K_x[] = {{12,10,'x'},STOP};
-Key K_X[] = {{12,10,'X'},STOP};
-Key K_c[] = {{15,10,'c'},STOP};
-Key K_C[] = {{15,10,'C'},STOP};
-Key K_v[] = {{18,10,'v'},STOP};
-Key K_V[] = {{18,10,'V'},STOP};
-Key K_b[] = {{21,10,'b'},STOP};
-Key K_B[] = {{21,10,'B'},STOP};
-Key K_n[] = {{24,10,'n'},STOP};
-Key K_N[] = {{24,10,'N'},STOP};
-Key K_m[] = {{27,10,'m'},STOP};
-Key K_M[] = {{27,10,'M'},STOP};
-Key K_COMMA[] = {{30,10,','},STOP};
-Key K_LANB[] = {{30,10,'<'},STOP};
-Key K_PERIOD[] = {{33,10,'.'},STOP};
-Key K_RANB[] = {{33,10,'>'},STOP};
-Key K_SLASH[] = {{36,10,'/'},STOP};
-Key K_QUESTION[] = {{36,10,'?'},STOP};
-Key K_RSHIFT[] = {{42,10,'S'},{43,10,'H'},{44,10,'I'},{45,10,'F'},{46,10,'T'},STOP};
-Key K_ARROW_UP[] = {{54,10,'('},{55,10,0x2191},{56,10,')'},STOP};
-Key K_K_1[] = {{64,10,'1'},STOP};
-Key K_K_2[] = {{67,10,'2'},STOP};
-Key K_K_3[] = {{70,10,'3'},STOP};
-Key K_K_ENTER[] = {{73,10,0x2591},{73,11,0x2591},{73,12,0x2591},STOP};
-
-Key K_LCTRL[] = {{1,12,'C'},{2,12,'T'},{3,12,'R'},{4,12,'L'},STOP};
-Key K_LWIN[] = {{6,12,'W'},{7,12,'I'},{8,12,'N'},STOP};
-Key K_LALT[] = {{10,12,'A'},{11,12,'L'},{12,12,'T'},STOP};
-Key K_SPACE[] = {
+struct key K_LCTRL[] = {{1,12,'C'},{2,12,'T'},{3,12,'R'},{4,12,'L'},STOP};
+struct key K_LWIN[] = {{6,12,'W'},{7,12,'I'},{8,12,'N'},STOP};
+struct key K_LALT[] = {{10,12,'A'},{11,12,'L'},{12,12,'T'},STOP};
+struct key K_SPACE[] = {
 	{14,12,' '},{15,12,' '},{16,12,' '},{17,12,' '},{18,12,' '},
 	{19,12,'S'},{20,12,'P'},{21,12,'A'},{22,12,'C'},{23,12,'E'},
 	{24,12,' '},{25,12,' '},{26,12,' '},{27,12,' '},{28,12,' '},
 	STOP
 };
-Key K_RALT[] = {{30,12,'A'},{31,12,'L'},{32,12,'T'},STOP};
-Key K_RWIN[] = {{34,12,'W'},{35,12,'I'},{36,12,'N'},STOP};
-Key K_RPROP[] = {{38,12,'P'},{39,12,'R'},{40,12,'O'},{41,12,'P'},STOP};
-Key K_RCTRL[] = {{43,12,'C'},{44,12,'T'},{45,12,'R'},{46,12,'L'},STOP};
-Key K_ARROW_LEFT[] = {{50,12,'('},{51,12,0x2190},{52,12,')'},STOP};
-Key K_ARROW_DOWN[] = {{54,12,'('},{55,12,0x2193},{56,12,')'},STOP};
-Key K_ARROW_RIGHT[] = {{58,12,'('},{59,12,0x2192},{60,12,')'},STOP};
-Key K_K_0[] = {{64,12,' '},{65,12,'0'},{66,12,' '},{67,12,' '},STOP};
-Key K_K_PERIOD[] = {{70,12,'.'},STOP};
+struct key K_RALT[] = {{30,12,'A'},{31,12,'L'},{32,12,'T'},STOP};
+struct key K_RWIN[] = {{34,12,'W'},{35,12,'I'},{36,12,'N'},STOP};
+struct key K_RPROP[] = {{38,12,'P'},{39,12,'R'},{40,12,'O'},{41,12,'P'},STOP};
+struct key K_RCTRL[] = {{43,12,'C'},{44,12,'T'},{45,12,'R'},{46,12,'L'},STOP};
+struct key K_ARROW_LEFT[] = {{50,12,'('},{51,12,0x2190},{52,12,')'},STOP};
+struct key K_ARROW_DOWN[] = {{54,12,'('},{55,12,0x2193},{56,12,')'},STOP};
+struct key K_ARROW_RIGHT[] = {{58,12,'('},{59,12,0x2192},{60,12,')'},STOP};
+struct key K_K_0[] = {{64,12,' '},{65,12,'0'},{66,12,' '},{67,12,' '},STOP};
+struct key K_K_PERIOD[] = {{70,12,'.'},STOP};
 
-struct Combo {
+struct combo {
 	unsigned char combo;
-	Key *keys[32];
-
-	bool operator<(const Combo &r) { return combo < r.combo; }
-	bool operator==(const Combo &r) { return combo == r.combo; }
+	struct key *keys[10];
 };
 
-Combo combos[] = {
+struct combo combos[] = {
 	{'`', {K_TILDE,0}},
 	{'~', {K_TILDE_SHIFT,K_LSHIFT,K_RSHIFT,0}},
 	{'1', {K_1,K_K_1,0}},
@@ -359,7 +354,7 @@ Combo combos[] = {
 	{TB_KEY_CTRL_7, {K_7, K_SLASH, K_MINUS_SHIFT, K_LCTRL, K_RCTRL, 0}}
 };
 
-Combo funccombos[] = {
+struct combo funccombos[] = {
 	{0, {K_F1,0}},
 	{1, {K_F2,0}},
 	{2, {K_F3,0}},
@@ -395,7 +390,7 @@ void print_tb(const char *str, unsigned int x, unsigned int y, uint16_t fg, uint
 }
 
 
-void draw_key(Key *k, uint16_t fg, uint16_t bg)
+void draw_key(struct key *k, uint16_t fg, uint16_t bg)
 {
 	while (k->x) {
 		tb_change_cell(k->x+2, k->y, k->ch, fg, bg);
@@ -519,12 +514,13 @@ void draw_keyboard()
 	draw_key(K_K_PERIOD, TB_WHITE, TB_BLUE);
 
 	print_tb("Keyboard demo!", 33, 16, TB_MAGENTA | TB_BOLD, TB_BLACK);
-	print_tb("by nsf, for termbox", 37, 17, TB_MAGENTA, TB_BLACK);
+	print_tb("(press ESCAPE to exit)", 29, 17, TB_MAGENTA, TB_BLACK);
 }
 
-Combo *findcombo(Combo *combos, int size, unsigned char key)
+struct combo *findcombo(struct combo *combos, int size, unsigned char key)
 {
-	for (int i = 0; i < size; ++i) {
+	int i;
+	for (i = 0; i < size; ++i) {
 		if (combos[i].combo == key)
 			return &combos[i];
 	}
@@ -541,15 +537,15 @@ void dispatch_press(struct tb_key_event *ev)
 	/* searches here isn't fast, but I don't care, it's demonstration anyway 
 	 * of couse it is possible to make a lookup table here
 	 */
-	Combo *k;
+	struct combo *k;
 	if (ev->key >= TB_KEY_ARROW_RIGHT && ev->key <= 0xFFFF)
-		k = findcombo(funccombos, sizeof(funccombos)/sizeof(funccombos[0]), 0xFFFF-ev->key);
+		k = &funccombos[0xFFFF-ev->key];
 	else if (ev->ch < 256)
 		k = findcombo(combos, sizeof(combos)/sizeof(combos[0]), ev->ch);
 	if (!k)
 		return;
 
-	Key **keys = k->keys;
+	struct key **keys = k->keys;
 	while (*keys) {
 		draw_key(*keys, TB_WHITE, TB_RED);
 		keys++;

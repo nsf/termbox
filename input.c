@@ -3,13 +3,6 @@
 #include <stdio.h>
 #include "term.h"
 
-#define debug(...)						\
-	do {							\
-		FILE *f = fopen("debug.txt", "a");		\
-		fprintf(f, __VA_ARGS__);			\
-		fclose(f);					\
-	} while (0)	
-
 #define BUFFER_SIZE_MAX 16
 #define SUCCESS 0
 #define FAILURE -1
@@ -81,7 +74,6 @@ int extract_event(struct tb_key_event *event, struct ringbuffer *inbuf, int inpu
 
 	ringbuffer_read(inbuf, buf, nbytes);
 	buf[nbytes] = '\0';
-	debug("%s\n", buf);
 
 	if (buf[0] == '\033') {
 		int n = parse_escape_seq(event, buf);
