@@ -127,6 +127,9 @@ void tb_present()
 		for (x = 0; x < front_buffer.width; ++x) {
 			back = &CELL(&back_buffer, x, y);
 			front = &CELL(&front_buffer, x, y);
+			/* what's faster? */
+/*			if (*((uint32_t*)back) == *((uint32_t*)front) && 
+			    *((uint32_t*)&back->fg) == *((uint32_t*)&front->fg)) */
 			if (memcmp(back, front, sizeof(struct tb_cell)) == 0)
 				continue;
 			if (lastfg != back->fg || lastbg != back->bg) {
