@@ -32,6 +32,9 @@ static struct ringbuffer inbuf;
 static FILE *out;
 static FILE *in;
 
+static int out_fileno;
+static int in_fileno;
+
 static volatile int sigwinch_r;
 
 static void cellbuf_init(struct cellbuf *buf, unsigned int width, unsigned int height);
@@ -58,13 +61,16 @@ int tb_init()
 
 	if (!out || !in) 
 		return TB_EFAILED_TO_OPEN_TTY;
+
+	out_fileno = fileno(out);
+	in_fileno = fileno(in);
 	
 	if (init_term() < 0)
 		return TB_EUNSUPPORTED_TERMINAL;
 
 	signal(SIGWINCH, sigwinch_handler);
 
-	tcgetattr(fileno(out), &orig_tios);
+	tcgetattr(out_fileno, &orig_tios);
 	struct termios tios;
 	memset(&tios, 0, sizeof(tios));
 	
@@ -76,7 +82,7 @@ int tb_init()
 	tios.c_cflag |= CS8;
 	tios.c_cc[VMIN] = 0;
 	tios.c_cc[VTIME] = 0;
-	tcsetattr(fileno(out), TCSAFLUSH, &tios);
+	tcsetattr(out_fileno, TCSAFLUSH, &tios);
 
 	fputs(funcs[T_ENTER_CA], out);
 	fputs(funcs[T_ENTER_KEYPAD], out);
@@ -102,7 +108,7 @@ void tb_shutdown()
 	fputs(funcs[T_EXIT_CA], out);
 	fputs(funcs[T_EXIT_KEYPAD], out);
 	fflush(out);
-	tcsetattr(fileno(out), TCSAFLUSH, &orig_tios);
+	tcsetattr(out_fileno, TCSAFLUSH, &orig_tios);
 
 	fclose(out);
 	fclose(in);
@@ -115,8 +121,6 @@ void tb_shutdown()
 void tb_present()
 {
 	unsigned int x,y;
-	uint16_t lastfg = 0xFFFF;
-	uint16_t lastbg = 0xFFFF;
 	struct tb_cell *back, *front;
 
 	check_sigwinch();
@@ -132,11 +136,7 @@ void tb_present()
 			    *((uint32_t*)&back->fg) == *((uint32_t*)&front->fg)) */
 			if (memcmp(back, front, sizeof(struct tb_cell)) == 0)
 				continue;
-			if (lastfg != back->fg || lastbg != back->bg) {
-				lastfg = back->fg;
-				lastbg = back->bg;
-				send_attr(lastfg, lastbg);
-			}
+			send_attr(back->fg, back->bg);
 			send_char(x, y, back->ch);
 			memcpy(front, back, sizeof(struct tb_cell));
 		}
@@ -172,10 +172,10 @@ int tb_poll_event(struct tb_key_event *event)
 
 	while (1) {
 		FD_ZERO(&events);
-		FD_SET(fileno(in), &events);
-		select(fileno(in)+1, &events, 0, 0, 0);
+		FD_SET(in_fileno, &events);
+		select(in_fileno+1, &events, 0, 0, 0);
 
-		if (FD_ISSET(fileno(in), &events)) {
+		if (FD_ISSET(in_fileno, &events)) {
 			int r = fread(buf, 1, 32, in);
 			/* if it's zero read, this is a resize message */
 			if (r == 0)
@@ -269,7 +269,7 @@ static void update_term_size()
 	struct winsize sz;
 	memset(&sz, 0, sizeof(sz));
 	
-	ioctl(fileno(out), TIOCGWINSZ, &sz);
+	ioctl(out_fileno, TIOCGWINSZ, &sz);
 
 	termw = sz.ws_col;
 	termh = sz.ws_row;
@@ -277,7 +277,7 @@ static void update_term_size()
 
 static int utf8_unicode_to_char(char *out, uint32_t c)
 {
-	uint len = 0;    
+	int len = 0;    
 	int first;
 	int i;
 
@@ -312,20 +312,32 @@ static int utf8_unicode_to_char(char *out, uint32_t c)
 
 static void send_attr(uint16_t fg, uint16_t bg)
 {
-	fputs(funcs[T_SGR0], out);
-	fprintf(out, funcs[T_SGR], fg & 0x0F, bg & 0x0F);
-	if (fg & TB_BOLD)
-		fputs(funcs[T_BOLD], out);
-	if (bg & TB_BOLD)
-		fputs(funcs[T_BLINK], out);
+#define LAST_ATTR_INIT 0xFFFF
+	static uint16_t lastfg = LAST_ATTR_INIT, lastbg = LAST_ATTR_INIT;
+	if (fg != lastfg || bg != lastbg) {
+		fputs(funcs[T_SGR0], out);
+		/* TODO: get rid of fprintf */
+		fprintf(out, funcs[T_SGR], fg & 0x0F, bg & 0x0F);
+		if (fg & TB_BOLD)
+			fputs(funcs[T_BOLD], out);
+		if (bg & TB_BOLD)
+			fputs(funcs[T_BLINK], out);
+
+		lastfg = fg;
+		lastbg = bg;
+	}
 }
 
 static void send_char(unsigned int x, unsigned int y, uint32_t c)
 {
+#define LAST_COORD_INIT 0xFFFFFFFE
+	static int lastx = LAST_COORD_INIT, lasty = LAST_COORD_INIT;
 	char buf[7];
 	int bw = utf8_unicode_to_char(buf, c);
 	buf[bw] = '\0';
-	fprintf(out, funcs[T_MOVE_CURSOR], y+1, x+1);
+	if (((int)x-1) != lastx || y != lasty)
+		fprintf(out, funcs[T_MOVE_CURSOR], y+1, x+1); /* TODO: get rid of fprintf */
+	lastx = x; lasty = y;
 	fputs(buf, out);
 }
 

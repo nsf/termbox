@@ -46,13 +46,20 @@ static uint32_t utf8_char_to_unicode(const char *c)
 	return result;
 }
 
+/* if s1 starts with s2 returns 1, else 0 */
+static int starts_with(const char *s1, const char *s2)
+{
+	/* nice huh? */
+	while (*s2) if (*s1++ != *s2++) return 0; return 1;
+}
+
 /* convert escape sequence to event, and return consumed bytes on success (failure == 0) */
 static int parse_escape_seq(struct tb_key_event *event, const char *buf)
 {
 	/* it's pretty simple here, find 'starts_with' match and return success, else return failure */
 	int i;
 	for (i = 0; keys[i]; i++) {
-		if (strstr(buf, keys[i])) {
+		if (starts_with(buf, keys[i])) {
 			event->ch = 0;
 			event->key = 0xFFFF-i;
 			return strlen(keys[i]);
