@@ -514,7 +514,7 @@ void draw_keyboard()
 	draw_key(K_K_PERIOD, TB_WHITE, TB_BLUE);
 
 	print_tb("Keyboard demo!", 33, 16, TB_MAGENTA | TB_BOLD, TB_BLACK);
-	print_tb("(press ESCAPE to exit)", 29, 17, TB_MAGENTA, TB_BLACK);
+	print_tb("(press CTRL+Q and then ESCAPE to exit)", 21, 17, TB_MAGENTA, TB_BLACK);
 }
 
 struct combo *findcombo(struct combo *combos, int size, unsigned char key)
@@ -561,10 +561,15 @@ int main(int argc, char **argv)
 	tb_clear();
 	draw_keyboard();
 	tb_present();
+	int ctrlqpressed = 0;
 
 	while (tb_poll_event(&ev)) {
-		if (ev.key == TB_KEY_ESC || (ev.ch == 'q' && ev.mod & TB_MOD_ALT))
+		if (ev.key == TB_KEY_ESC && ctrlqpressed)
 			break;
+		if (ev.key == TB_KEY_CTRL_Q)
+			ctrlqpressed = 1;
+		else
+			ctrlqpressed = 0;
 
 		tb_clear();
 		draw_keyboard();
