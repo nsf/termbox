@@ -92,7 +92,7 @@ int extract_event(struct tb_key_event *event, struct ringbuffer *inbuf, int inpu
 			switch (inputmode) {
 			case TB_INPUT_ESC:
 				/* if we're in escape mode, fill ESC event, pop buffer, return success */
-				event->ch = TB_KEY_ESC;
+				event->ch = 0;
 				event->key = TB_KEY_ESC;
 				event->mod = 0;
 				ringbuffer_pop(inbuf, 0, 1);
@@ -116,9 +116,11 @@ int extract_event(struct tb_key_event *event, struct ringbuffer *inbuf, int inpu
 	 */
 
 	/* first of all check if it's a functional key */
-	if ((unsigned char)buf[0] <= TB_KEY_SPACE || (unsigned char)buf[0] == TB_KEY_BACKSPACE) {
+	if ((unsigned char)buf[0] <= TB_KEY_SPACE || 
+	    (unsigned char)buf[0] == TB_KEY_BACKSPACE2) 
+	{
 		/* fill event, pop buffer, return success */
-		event->ch = (uint32_t)buf[0];
+		event->ch = 0;
 		event->key = (uint16_t)buf[0];
 		ringbuffer_pop(inbuf, 0, 1);
 		return SUCCESS;

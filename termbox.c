@@ -207,9 +207,11 @@ void tb_clear()
 	cellbuf_clear(&back_buffer);
 }
 
-void tb_select_input_mode(int mode)
+int tb_select_input_mode(int mode)
 {
-	inputmode = mode;
+	if (mode)
+		inputmode = mode;
+	return inputmode;
 }
 
 /* -------------------------------------------------------- */

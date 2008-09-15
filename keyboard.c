@@ -1,5 +1,7 @@
 #include <assert.h>
 #include <stdint.h>
+#include <stdarg.h>
+#include <stdio.h>
 #include "termbox.h"
 
 static const unsigned char utf8_length[256] = {
@@ -41,6 +43,41 @@ static uint32_t utf8_char_to_unicode(const char *c)
 	return result;
 }
 
+static int utf8_unicode_to_char(char *out, uint32_t c)
+{
+	int len = 0;    
+	int first;
+	int i;
+
+	if (c < 0x80) {
+		first = 0;
+		len = 1;	
+	} else if (c < 0x800) {
+		first = 0xc0;
+		len = 2;
+	} else if (c < 0x10000) {
+		first = 0xe0;
+		len = 3;
+	} else if (c < 0x200000) {
+		first = 0xf0;
+		len = 4;
+	} else if (c < 0x4000000) {
+		first = 0xf8;
+		len = 5;
+	} else {
+		first = 0xfc;
+		len = 6;
+	}
+
+	for (i = len - 1; i > 0; --i) {
+		out[i] = (c & 0x3f) | 0x80;
+		c >>= 6;
+	}
+	out[0] = c | first;
+
+	return len;
+}
+
 struct key {
 	unsigned char x;
 	unsigned char y;
@@ -64,9 +101,9 @@ struct key K_F12[] = {{44,1,'F'},{45,1,'1'},{46,1,'2'},STOP};
 struct key K_PRN[] = {{50,1,'P'},{51,1,'R'},{52,1,'N'},STOP};
 struct key K_SCR[] = {{54,1,'S'},{55,1,'C'},{56,1,'R'},STOP};
 struct key K_BRK[] = {{58,1,'B'},{59,1,'R'},{60,1,'K'},STOP};
-struct key K_LED1[] = {{65,1,'-'},STOP};
-struct key K_LED2[] = {{69,1,'-'},STOP};
-struct key K_LED3[] = {{73,1,'-'},STOP};
+struct key K_LED1[] = {{66,1,'-'},STOP};
+struct key K_LED2[] = {{70,1,'-'},STOP};
+struct key K_LED3[] = {{74,1,'-'},STOP};
 
 struct key K_TILDE[] = {{1,4,'`'},STOP};
 struct key K_TILDE_SHIFT[] = {{1,4,'~'},STOP};
@@ -100,10 +137,10 @@ struct key K_BACKSPACE[] = {{44,4,0x2190},{45,4,0x2500},{46,4,0x2500},STOP};
 struct key K_INS[] = {{50,4,'I'},{51,4,'N'},{52,4,'S'},STOP};
 struct key K_HOM[] = {{54,4,'H'},{55,4,'O'},{56,4,'M'},STOP};
 struct key K_PGU[] = {{58,4,'P'},{59,4,'G'},{60,4,'U'},STOP};
-struct key K_K_NUMLOCK[] = {{64,4,'N'},STOP};
-struct key K_K_SLASH[] = {{67,4,'/'},STOP};
-struct key K_K_STAR[] = {{70,4,'*'},STOP};
-struct key K_K_MINUS[] = {{73,4,'-'},STOP};
+struct key K_K_NUMLOCK[] = {{65,4,'N'},STOP};
+struct key K_K_SLASH[] = {{68,4,'/'},STOP};
+struct key K_K_STAR[] = {{71,4,'*'},STOP};
+struct key K_K_MINUS[] = {{74,4,'-'},STOP};
 
 struct key K_TAB[] = {{1,6,'T'},{2,6,'A'},{3,6,'B'},STOP};
 struct key K_q[] = {{6,6,'q'},STOP};
@@ -139,10 +176,10 @@ struct key K_ENTER[] = {
 struct key K_DEL[] = {{50,6,'D'},{51,6,'E'},{52,6,'L'},STOP};
 struct key K_END[] = {{54,6,'E'},{55,6,'N'},{56,6,'D'},STOP};
 struct key K_PGD[] = {{58,6,'P'},{59,6,'G'},{60,6,'D'},STOP};
-struct key K_K_7[] = {{64,6,'7'},STOP};
-struct key K_K_8[] = {{67,6,'8'},STOP};
-struct key K_K_9[] = {{70,6,'9'},STOP};
-struct key K_K_PLUS[] = {{73,6,' '},{73,7,'+'},{73,8,' '},STOP};
+struct key K_K_7[] = {{65,6,'7'},STOP};
+struct key K_K_8[] = {{68,6,'8'},STOP};
+struct key K_K_9[] = {{71,6,'9'},STOP};
+struct key K_K_PLUS[] = {{74,6,' '},{74,7,'+'},{74,8,' '},STOP};
 
 struct key K_CAPS[] = {{1,8,'C'},{2,8,'A'},{3,8,'P'},{4,8,'S'},STOP};
 struct key K_a[] = {{7,8,'a'},STOP};
@@ -167,9 +204,10 @@ struct key K_SEMICOLON[] = {{34,8,';'},STOP};
 struct key K_PARENTHESIS[] = {{34,8,':'},STOP};
 struct key K_QUOTE[] = {{37,8,'\''},STOP};
 struct key K_DOUBLEQUOTE[] = {{37,8,'"'},STOP};
-struct key K_K_4[] = {{64,8,'4'},STOP};
-struct key K_K_5[] = {{67,8,'5'},STOP};
-struct key K_K_6[] = {{70,8,'6'},STOP};
+struct key K_K_4[] = {{65,8,'4'},STOP};
+struct key K_K_5[] = {{68,8,'5'},STOP};
+struct key K_K_6[] = {{71,8,'6'},STOP};
+
 struct key K_LSHIFT[] = {{1,10,'S'},{2,10,'H'},{3,10,'I'},{4,10,'F'},{5,10,'T'},STOP};
 struct key K_z[] = {{9,10,'z'},STOP};
 struct key K_Z[] = {{9,10,'Z'},STOP};
@@ -193,10 +231,10 @@ struct key K_SLASH[] = {{36,10,'/'},STOP};
 struct key K_QUESTION[] = {{36,10,'?'},STOP};
 struct key K_RSHIFT[] = {{42,10,'S'},{43,10,'H'},{44,10,'I'},{45,10,'F'},{46,10,'T'},STOP};
 struct key K_ARROW_UP[] = {{54,10,'('},{55,10,0x2191},{56,10,')'},STOP};
-struct key K_K_1[] = {{64,10,'1'},STOP};
-struct key K_K_2[] = {{67,10,'2'},STOP};
-struct key K_K_3[] = {{70,10,'3'},STOP};
-struct key K_K_ENTER[] = {{73,10,0x2591},{73,11,0x2591},{73,12,0x2591},STOP};
+struct key K_K_1[] = {{65,10,'1'},STOP};
+struct key K_K_2[] = {{68,10,'2'},STOP};
+struct key K_K_3[] = {{71,10,'3'},STOP};
+struct key K_K_ENTER[] = {{74,10,0x2591},{74,11,0x2591},{74,12,0x2591},STOP};
 
 struct key K_LCTRL[] = {{1,12,'C'},{2,12,'T'},{3,12,'R'},{4,12,'L'},STOP};
 struct key K_LWIN[] = {{6,12,'W'},{7,12,'I'},{8,12,'N'},STOP};
@@ -214,8 +252,8 @@ struct key K_RCTRL[] = {{43,12,'C'},{44,12,'T'},{45,12,'R'},{46,12,'L'},STOP};
 struct key K_ARROW_LEFT[] = {{50,12,'('},{51,12,0x2190},{52,12,')'},STOP};
 struct key K_ARROW_DOWN[] = {{54,12,'('},{55,12,0x2193},{56,12,')'},STOP};
 struct key K_ARROW_RIGHT[] = {{58,12,'('},{59,12,0x2192},{60,12,')'},STOP};
-struct key K_K_0[] = {{64,12,' '},{65,12,'0'},{66,12,' '},{67,12,' '},STOP};
-struct key K_K_PERIOD[] = {{70,12,'.'},STOP};
+struct key K_K_0[] = {{65,12,' '},{66,12,'0'},{67,12,' '},{68,12,' '},STOP};
+struct key K_K_PERIOD[] = {{71,12,'.'},STOP};
 
 struct combo {
 	unsigned char combo;
@@ -389,17 +427,51 @@ void print_tb(const char *str, unsigned int x, unsigned int y, uint16_t fg, uint
 	}
 }
 
+void printf_tb(unsigned int x, unsigned int y, uint16_t fg, uint16_t bg, const char *fmt, ...)
+{
+	char buf[4096];
+	va_list vl;
+	va_start(vl, fmt);
+	vsnprintf(buf, sizeof(buf), fmt, vl);
+	va_end(vl);
+	print_tb(buf, x, y, fg, bg);
+}
 
 void draw_key(struct key *k, uint16_t fg, uint16_t bg)
 {
 	while (k->x) {
-		tb_change_cell(k->x+2, k->y, k->ch, fg, bg);
+		tb_change_cell(k->x+2, k->y+4, k->ch, fg, bg);
 		k++;
 	}
 }
 
 void draw_keyboard()
 {
+	int i;
+	tb_change_cell(0, 0, 0x250C, TB_WHITE, TB_BLACK);
+	tb_change_cell(79, 0, 0x2510, TB_WHITE, TB_BLACK);
+	tb_change_cell(0, 23, 0x2514, TB_WHITE, TB_BLACK);
+	tb_change_cell(79, 23, 0x2518, TB_WHITE, TB_BLACK);
+
+	for (i = 1; i < 79; ++i) {
+		tb_change_cell(i, 0, 0x2500, TB_WHITE, TB_BLACK);
+		tb_change_cell(i, 23, 0x2500, TB_WHITE, TB_BLACK);
+		tb_change_cell(i, 17, 0x2500, TB_WHITE, TB_BLACK);
+		tb_change_cell(i, 4, 0x2500, TB_WHITE, TB_BLACK);
+	}
+	for (i = 1; i < 23; ++i) {
+		tb_change_cell(0, i, 0x2502, TB_WHITE, TB_BLACK);
+		tb_change_cell(79, i, 0x2502, TB_WHITE, TB_BLACK);
+	}
+	tb_change_cell(0, 17, 0x251C, TB_WHITE, TB_BLACK);
+	tb_change_cell(79, 17, 0x2524, TB_WHITE, TB_BLACK);
+	tb_change_cell(0, 4, 0x251C, TB_WHITE, TB_BLACK);
+	tb_change_cell(79, 4, 0x2524, TB_WHITE, TB_BLACK);
+	for (i = 5; i < 17; ++i) {
+		tb_change_cell(1, i, 0x2588, TB_YELLOW, TB_YELLOW);
+		tb_change_cell(78, i, 0x2588, TB_YELLOW, TB_YELLOW);
+	}
+
 	draw_key(K_ESC, TB_WHITE, TB_BLUE);
 	draw_key(K_F1, TB_WHITE, TB_BLUE);
 	draw_key(K_F2, TB_WHITE, TB_BLUE);
@@ -513,8 +585,17 @@ void draw_keyboard()
 	draw_key(K_K_0, TB_WHITE, TB_BLUE);
 	draw_key(K_K_PERIOD, TB_WHITE, TB_BLUE);
 
-	print_tb("Keyboard demo!", 33, 16, TB_MAGENTA | TB_BOLD, TB_BLACK);
-	print_tb("(press CTRL+Q and then ESCAPE to exit)", 21, 17, TB_MAGENTA, TB_BLACK);
+	printf_tb(33, 1, TB_MAGENTA | TB_BOLD, TB_BLACK, "Keyboard demo!");
+	printf_tb(21, 2, TB_MAGENTA, TB_BLACK, "(press CTRL+X and then CTRL+Q to exit)");
+	printf_tb(15, 3, TB_MAGENTA, TB_BLACK, "(press CTRL+X and then CTRL+C to change input mode)");
+	
+	static const char *inputmodemap[] = {
+		0,
+		"TB_INPUT_ESC",
+		"TB_INPUT_ALT"
+	};
+	printf_tb(3, 18, TB_WHITE, TB_BLACK, "Input mode: %s",
+			inputmodemap[tb_select_input_mode(0)]);
 }
 
 struct combo *findcombo(struct combo *combos, int size, unsigned char key)
@@ -525,6 +606,98 @@ struct combo *findcombo(struct combo *combos, int size, unsigned char key)
 			return &combos[i];
 	}
 	return 0;
+}
+
+const char *funckeymap(unsigned int k)
+{
+	static const char *fcmap[] = {
+		"CTRL+2, CTRL+~",
+		"CTRL+A",
+		"CTRL+B",
+		"CTRL+C",
+		"CTRL+D",
+		"CTRL+E",
+		"CTRL+F",
+		"CTRL+G",
+		"CTRL+H, BACKSPACE",
+		"CTRL+I, TAB",
+		"CTRL+J",
+		"CTRL+K",
+		"CTRL+L",
+		"CTRL+M, ENTER",
+		"CTRL+N",
+		"CTRL+O",
+		"CTRL+P",
+		"CTRL+Q",
+		"CTRL+R",
+		"CTRL+S",
+		"CTRL+T",
+		"CTRL+U",
+		"CTRL+V",
+		"CTRL+W",
+		"CTRL+X",
+		"CTRL+Y",
+		"CTRL+Z",
+		"CTRL+3, ESC, CTRL+[",
+		"CTRL+4, CTRL+\\",
+		"CTRL+5, CTRL+]",
+		"CTRL+6",
+		"CTRL+7, CTRL+/, CTRL+_",
+		"SPACE"
+	};
+	static const char *fkmap[] = {
+		"F1",
+		"F2",
+		"F3",
+		"F4",
+		"F5",
+		"F6",
+		"F7",
+		"F8",
+		"F9",
+		"F10",
+		"F11",
+		"F12",
+		"INSERT",
+		"DELETE",
+		"HOME",
+		"END",
+		"PGUP",
+		"PGDN",
+		"ARROW UP",
+		"ARROW DOWN",
+		"ARROW LEFT",
+		"ARROW RIGHT"
+	};
+	
+	if (k == TB_KEY_CTRL_8)
+		return "CTRL+8, BACKSPACE 2"; /* 0x7F */
+	else if (k >= TB_KEY_ARROW_RIGHT && k <= 0xFFFF)
+		return fkmap[0xFFFF-k];
+	else if (k <= TB_KEY_SPACE)
+		return fcmap[k];
+	return "UNKNOWN";
+}
+
+void pretty_print_press(struct tb_key_event *ev)
+{
+	char buf[7];
+	buf[utf8_unicode_to_char(buf, ev->ch)] = '\0';
+	printf_tb(3, 19, TB_WHITE , TB_BLACK, "Key: ");
+	printf_tb(8, 19, TB_YELLOW, TB_BLACK, "decimal: %d", ev->key);
+	printf_tb(8, 20, TB_GREEN , TB_BLACK, "hex:     0x%X", ev->key);
+	printf_tb(8, 21, TB_CYAN  , TB_BLACK, "octal:   0%o", ev->key);
+	printf_tb(8, 22, TB_RED   , TB_BLACK, "string:  %s", funckeymap(ev->key));
+	
+	printf_tb(43, 19, TB_WHITE , TB_BLACK, "Char: ");
+	printf_tb(49, 19, TB_YELLOW, TB_BLACK, "decimal: %d", ev->ch);
+	printf_tb(49, 20, TB_GREEN , TB_BLACK, "hex:     0x%X", ev->ch);
+	printf_tb(49, 21, TB_CYAN  , TB_BLACK, "octal:   0%o", ev->ch);
+	printf_tb(49, 22, TB_RED   , TB_BLACK, "string:  %s", buf);
+
+	printf_tb(43, 18, TB_WHITE, TB_BLACK, "Modifier: %s", 
+			(ev->mod) ? "TB_MOD_ALT" : "none");
+	
 }
 
 void dispatch_press(struct tb_key_event *ev)
@@ -541,7 +714,10 @@ void dispatch_press(struct tb_key_event *ev)
 	if (ev->key >= TB_KEY_ARROW_RIGHT && ev->key <= 0xFFFF)
 		k = &funccombos[0xFFFF-ev->key];
 	else if (ev->ch < 256)
-		k = findcombo(combos, sizeof(combos)/sizeof(combos[0]), ev->ch);
+		if (ev->ch == 0 && ev->key < 256)
+			k = findcombo(combos, sizeof(combos)/sizeof(combos[0]), ev->key);
+		else
+			k = findcombo(combos, sizeof(combos)/sizeof(combos[0]), ev->ch);
 	if (!k)
 		return;
 
@@ -561,19 +737,28 @@ int main(int argc, char **argv)
 	tb_clear();
 	draw_keyboard();
 	tb_present();
-	int ctrlqpressed = 0;
+	int ctrlxpressed = 0;
 
 	while (tb_poll_event(&ev)) {
-		if (ev.key == TB_KEY_ESC && ctrlqpressed)
+		if (ev.key == TB_KEY_CTRL_Q && ctrlxpressed)
 			break;
-		if (ev.key == TB_KEY_CTRL_Q)
-			ctrlqpressed = 1;
+		if (ev.key == TB_KEY_CTRL_C && ctrlxpressed) {
+			static int chmap[] = {
+				0,
+				2,
+				1
+			};
+			tb_select_input_mode(chmap[tb_select_input_mode(0)]);
+		}
+		if (ev.key == TB_KEY_CTRL_X)
+			ctrlxpressed = 1;
 		else
-			ctrlqpressed = 0;
+			ctrlxpressed = 0;
 
 		tb_clear();
 		draw_keyboard();
 		dispatch_press(&ev);
+		pretty_print_press(&ev);
 		tb_present();
 	}
 	tb_shutdown();

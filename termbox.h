@@ -137,7 +137,8 @@ void tb_blit(unsigned int x, unsigned int y, unsigned int w, unsigned int h, con
 
 #define TB_INPUT_ESC 1
 #define TB_INPUT_ALT 2
-void tb_select_input_mode(int mode);
+/* with 0 returns current input mode */
+int tb_select_input_mode(int mode);
 
 /* returns:
 	0 - no events, no errors,
