@@ -130,7 +130,6 @@ unsigned int tb_height();
 void tb_clear();
 void tb_present();
 
-struct tb_cell *tb_get_cell(unsigned int x, unsigned int y);
 void tb_put_cell(unsigned int x, unsigned int y, const struct tb_cell *cell);
 void tb_change_cell(unsigned int x, unsigned int y, uint32_t ch, uint16_t fg, uint16_t bg);
 void tb_blit(unsigned int x, unsigned int y, unsigned int w, unsigned int h, const struct tb_cell *cells);
