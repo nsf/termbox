@@ -49,6 +49,7 @@ static void send_char(unsigned int x, unsigned int y, uint32_t c);
 static void send_clear();
 static void sigwinch_handler(int xxx);
 static void check_sigwinch();
+static int wait_fill_event(struct tb_key_event *event, struct timeval *timeout);
 
 static void fill_inbuf();
 
@@ -175,36 +176,15 @@ void tb_blit(unsigned int x, unsigned int y, unsigned int w, unsigned int h, con
 
 int tb_poll_event(struct tb_key_event *event)
 {
-	int i;
-	char buf[32];
-	fd_set events;
-	memset(event, 0, sizeof(struct tb_key_event));
+	return wait_fill_event(event, 0);
+}
 
-	/* try to extract event from input buffer, return on success */
-	if (extract_event(event, &inbuf, inputmode) == 0)
-		return 1;
-
-	/* it looks like input buffer is empty, wait for input and fill it */
-
-	while (1) {
-		FD_ZERO(&events);
-		FD_SET(in_fileno, &events);
-		select(in_fileno+1, &events, 0, 0, 0);
-
-		if (FD_ISSET(in_fileno, &events)) {
-			int r = fread(buf, 1, 32, in);
-			/* if it's zero read, this is a resize message */
-			if (r == 0)
-				continue;
-			/* if there is no free space in input buffer, return error */
-			if (ringbuffer_free_space(&inbuf) < r)
-				return -1;
-			/* fill buffer */
-			ringbuffer_push(&inbuf, buf, r);
-			if (extract_event(event, &inbuf, inputmode) == 0)
-				return 1;
-		}
-	}
+int tb_peek_event(struct tb_key_event *event, unsigned int timeout)
+{
+	struct timeval tv;
+	tv.tv_sec = timeout / 1000;
+	tv.tv_usec = (timeout - (tv.tv_sec * 1000)) * 1000;
+	return wait_fill_event(event, &tv);
 }
 
 unsigned int tb_width() 
@@ -382,6 +362,42 @@ static void check_sigwinch()
 		send_clear();
 		
 		sigwinch_r = 0;
+	}
+}
+
+static int wait_fill_event(struct tb_key_event *event, struct timeval *timeout)
+{
+	int i, result;
+	char buf[32];
+	fd_set events;
+	memset(event, 0, sizeof(struct tb_key_event));
+
+	/* try to extract event from input buffer, return on success */
+	if (extract_event(event, &inbuf, inputmode) == 0)
+		return 1;
+
+	/* it looks like input buffer is empty, wait for input and fill it */
+
+	while (1) {
+		FD_ZERO(&events);
+		FD_SET(in_fileno, &events);
+		result = select(in_fileno+1, &events, 0, 0, timeout);
+		if (!result)
+			return 0;
+
+		if (FD_ISSET(in_fileno, &events)) {
+			int r = fread(buf, 1, 32, in);
+			/* if it's zero read, this is a resize message */
+			if (r == 0)
+				continue;
+			/* if there is no free space in input buffer, return error */
+			if (ringbuffer_free_space(&inbuf) < r)
+				return -1;
+			/* fill buffer */
+			ringbuffer_push(&inbuf, buf, r);
+			if (extract_event(event, &inbuf, inputmode) == 0)
+				return 1;
+		}
 	}
 }
 

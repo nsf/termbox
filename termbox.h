@@ -142,6 +142,7 @@ int tb_select_input_mode(int mode);
 /* returns:
 	0 - no events, no errors,
 	1 - key event
+	-1 - error (input buffer overflow, discarded input)
 
    timeout in milliseconds
 */
