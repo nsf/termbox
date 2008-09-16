@@ -157,6 +157,22 @@ void tb_change_cell(unsigned int x, unsigned int y, uint32_t ch, uint16_t fg, ui
 	tb_put_cell(x, y, &c);
 }
 
+void tb_blit(unsigned int x, unsigned int y, unsigned int w, unsigned int h, const struct tb_cell *cells)
+{
+	if (x+w >= back_buffer.width || y+h >= back_buffer.height)
+		return;
+
+	int sy;
+	struct tb_cell *dst = &CELL(&back_buffer, x, y);
+	size_t size = sizeof(struct tb_cell) * w;
+
+	for (sy = 0; sy < h; ++sy) {
+		memcpy(dst, cells, size);
+		dst += back_buffer.width;
+		cells += w;
+	}
+}
+
 int tb_poll_event(struct tb_key_event *event)
 {
 	int i;
