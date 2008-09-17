@@ -597,16 +597,6 @@ void draw_keyboard()
 			inputmodemap[tb_select_input_mode(0)]);
 }
 
-struct combo *findcombo(struct combo *combos, int size, unsigned char key)
-{
-	int i;
-	for (i = 0; i < size; ++i) {
-		if (combos[i].combo == key)
-			return &combos[i];
-	}
-	return 0;
-}
-
 const char *funckeymap(unsigned int k)
 {
 	static const char *fcmap[] = {
