@@ -214,7 +214,7 @@ int tb_select_input_mode(int mode)
 	
 static void cellbuf_init(struct cellbuf *buf, unsigned int width, unsigned int height)
 {
-	buf->cells = malloc(sizeof(struct tb_cell) * width * height);
+	buf->cells = (struct tb_cell*)malloc(sizeof(struct tb_cell) * width * height);
 	assert(buf->cells);
 	buf->width = width;
 	buf->height = height;
@@ -320,6 +320,8 @@ static void send_attr(uint16_t fg, uint16_t bg)
 			fputs(funcs[T_BOLD], out);
 		if (bg & TB_BOLD)
 			fputs(funcs[T_BLINK], out);
+		if (fg & TB_UNDERLINE)
+			fputs(funcs[T_UNDERLINE], out);
 
 		lastfg = fg;
 		lastbg = bg;

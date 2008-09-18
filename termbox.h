@@ -104,7 +104,6 @@ extern "C" {
 /* attributes */
 #define TB_BOLD		0x10
 #define TB_UNDERLINE	0x20
-#define TB_BLINK	0x40
 
 struct tb_cell {
 	uint32_t ch;

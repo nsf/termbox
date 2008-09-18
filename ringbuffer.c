@@ -5,7 +5,7 @@
 
 int init_ringbuffer(struct ringbuffer *r, size_t size)
 {
-	r->buf = malloc(size);
+	r->buf = (char*)malloc(size);
 	if (!r->buf)
 		return ERINGBUFFER_ALLOC_FAIL;
 	r->size = size;
@@ -69,7 +69,7 @@ void ringbuffer_push(struct ringbuffer *r, const void *data, size_t size)
 			size_t s = r->buf + r->size - r->end;
 			memcpy(r->end, data, s);
 			size -= s;
-			memcpy(r->buf, data+s, size);
+			memcpy(r->buf, (char*)data+s, size);
 			r->end = r->buf + size - 1;
 		}
 	} else {
@@ -98,7 +98,7 @@ void ringbuffer_pop(struct ringbuffer *r, void *data, size_t size)
 			size_t s = r->buf + r->size - r->begin;
 			if (data) memcpy(data, r->begin, s);
 			size -= s;
-			if (data) memcpy(data+s, r->buf, size);
+			if (data) memcpy((char*)data+s, r->buf, size);
 			r->begin = r->buf + size;
 		}
 	}
@@ -121,7 +121,7 @@ void ringbuffer_read(struct ringbuffer *r, void *data, size_t size)
 			size_t s = r->buf + r->size - r->begin;
 			memcpy(data, r->begin, s);
 			size -= s;
-			memcpy(data+s, r->buf, size);
+			memcpy((char*)data+s, r->buf, size);
 		}
 	}
 }

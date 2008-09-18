@@ -75,9 +75,10 @@ def do_term(term, nick):
 		puttc(curses.tigetstr(v))
 		sys.stdout.write("\",")
 	sys.stdout.write(" 0\n};\n")
-	sys.stdout.write("const char *%s_funcs[] = {\n" % nick)
+	sys.stdout.write("const char *%s_funcs[] = {\n\t" % nick)
 	for k,v in iter_pairs(funcs):
-		sys.stdout.write("\t[%s] = \"" % k)
+		#sys.stdout.write("\t[%s] = \"" % k)
+		sys.stdout.write("\"")
 		if v == "sgr":
 			sys.stdout.write("\\033[3%u;4%um")
 		elif v == "cup":
@@ -88,7 +89,7 @@ def do_term(term, nick):
 		if v == "rmkx":
 			sys.stdout.write("\"\n")
 		else:
-			sys.stdout.write("\",\n")
+			sys.stdout.write("\",")
 	sys.stdout.write("};\n\n")
 
 def do_terms(d):
