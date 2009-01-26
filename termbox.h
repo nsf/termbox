@@ -148,6 +148,11 @@ int tb_select_input_mode(int mode);
 int tb_peek_event(struct tb_key_event *event, unsigned int timeout);
 int tb_poll_event(struct tb_key_event *event);
 
+/* utility utf8 functions */
+int utf8_char_length(char c);
+int utf8_char_to_unicode(uint32_t *out, const char *c);
+int utf8_unicode_to_char(char *out, uint32_t c);
+
 #ifdef __cplusplus
 }
 #endif

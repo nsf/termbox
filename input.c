@@ -7,45 +7,6 @@
 #define SUCCESS 0
 #define FAILURE -1
 
-static const unsigned char utf8_length[256] = {
-  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-  2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
-  3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4,5,5,5,5,6,6,1,1
-};
-
-static const unsigned char utf8_mask[6] = {
-	0x7F,
-	0x1F,
-	0x0F,
-	0x07,
-	0x03,
-	0x01
-};
-
-static unsigned char utf8_char_length(char c)
-{
-	return utf8_length[(unsigned char)c];
-}
-
-static uint32_t utf8_char_to_unicode(const char *c)
-{
-	int i;
-	unsigned char len = utf8_char_length(*c);
-	unsigned char mask = utf8_mask[len-1];
-	uint32_t result = c[0] & mask;
-	for (i = 1; i < len; ++i) {
-		result <<= 6;
-		result |= c[i] & 0x3f;
-	}
-
-	return result;
-}
-
 /* if s1 starts with s2 returns 1, else 0 */
 static int starts_with(const char *s1, const char *s2)
 {
@@ -131,7 +92,7 @@ int extract_event(struct tb_key_event *event, struct ringbuffer *inbuf, int inpu
 	/* check if there is all bytes */
 	if (nbytes >= utf8_char_length(buf[0])) {
 		/* everything ok, fill event, pop buffer, return success */
-		event->ch = utf8_char_to_unicode(buf);
+		utf8_char_to_unicode(&event->ch, buf);
 		event->key = 0;
 		ringbuffer_pop(inbuf, 0, utf8_char_length(buf[0]));
 		return SUCCESS;
