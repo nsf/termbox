@@ -111,14 +111,18 @@ struct tb_cell {
 	uint16_t bg;
 };
 
-struct tb_key_event {
+struct tb_event {
+	uint16_t type;
 	uint32_t ch;
 	uint16_t key;
 	uint16_t mod;
+	int32_t w;
+	int32_t h;
 };
 
 #define TB_EUNSUPPORTED_TERMINAL	-1
 #define TB_EFAILED_TO_OPEN_TTY		-2
+#define TB_EPIPE_TRAP_ERROR		-3
 
 int tb_init();
 void tb_shutdown();
@@ -141,14 +145,20 @@ int tb_select_input_mode(int mode);
 /* returns:
 	0 - no events, no errors,
 	1 - key event
+	2 - resize event
 	-1 - error (input buffer overflow, discarded input)
 
    timeout in milliseconds
 */
-int tb_peek_event(struct tb_key_event *event, unsigned int timeout);
-int tb_poll_event(struct tb_key_event *event);
+
+#define TB_EVENT_KEY 1
+#define TB_EVENT_RESIZE 2
+
+int tb_peek_event(struct tb_event *event, unsigned int timeout);
+int tb_poll_event(struct tb_event *event);
 
 /* utility utf8 functions */
+#define TB_EOF -1
 int utf8_char_length(char c);
 int utf8_char_to_unicode(uint32_t *out, const char *c);
 int utf8_unicode_to_char(char *out, uint32_t c);

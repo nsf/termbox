@@ -593,7 +593,7 @@ const char *funckeymap(unsigned int k)
 	return "UNKNOWN";
 }
 
-void pretty_print_press(struct tb_key_event *ev)
+void pretty_print_press(struct tb_event *ev)
 {
 	char buf[7];
 	buf[utf8_unicode_to_char(buf, ev->ch)] = '\0';
@@ -614,7 +614,12 @@ void pretty_print_press(struct tb_key_event *ev)
 	
 }
 
-void dispatch_press(struct tb_key_event *ev)
+void pretty_print_resize(struct tb_event *ev)
+{
+	printf_tb(3, 19, TB_WHITE, TB_BLACK, "Resize event: %d x %d", ev->w, ev->h);
+}
+
+void dispatch_press(struct tb_event *ev)
 {
 	if (ev->mod & TB_MOD_ALT) {
 		draw_key(K_LALT, TB_WHITE, TB_RED);
@@ -644,7 +649,7 @@ int main(int argc, char **argv)
 {
 	assert(tb_init() == 0);
 	tb_select_input_mode(TB_INPUT_ESC);
-	struct tb_key_event ev;
+	struct tb_event ev;
 
 	tb_clear();
 	draw_keyboard();
@@ -652,26 +657,40 @@ int main(int argc, char **argv)
 	int ctrlxpressed = 0;
 
 	while (tb_poll_event(&ev)) {
-		if (ev.key == TB_KEY_CTRL_Q && ctrlxpressed)
-			break;
-		if (ev.key == TB_KEY_CTRL_C && ctrlxpressed) {
-			static int chmap[] = {
-				0,
-				2,
-				1
-			};
-			tb_select_input_mode(chmap[tb_select_input_mode(0)]);
-		}
-		if (ev.key == TB_KEY_CTRL_X)
-			ctrlxpressed = 1;
-		else
-			ctrlxpressed = 0;
+		switch (ev.type) {
+		case TB_EVENT_KEY:
+			if (ev.key == TB_KEY_CTRL_Q && ctrlxpressed) {
+				tb_shutdown();
+				return 0;
+			}
+			if (ev.key == TB_KEY_CTRL_C && ctrlxpressed) {
+				static int chmap[] = {
+					0,
+					2,
+					1
+				};
+				tb_select_input_mode(chmap[tb_select_input_mode(0)]);
+			}
+			if (ev.key == TB_KEY_CTRL_X)
+				ctrlxpressed = 1;
+			else
+				ctrlxpressed = 0;
 
-		tb_clear();
-		draw_keyboard();
-		dispatch_press(&ev);
-		pretty_print_press(&ev);
-		tb_present();
+			tb_clear();
+			draw_keyboard();
+			dispatch_press(&ev);
+			pretty_print_press(&ev);
+			tb_present();
+			break;
+		case TB_EVENT_RESIZE:
+			tb_clear();
+			draw_keyboard();
+			pretty_print_resize(&ev);
+			tb_present();
+			break;
+		default:
+			break;
+		}
 	}
 	tb_shutdown();
 	return 0;

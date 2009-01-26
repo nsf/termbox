@@ -15,7 +15,7 @@ static int starts_with(const char *s1, const char *s2)
 }
 
 /* convert escape sequence to event, and return consumed bytes on success (failure == 0) */
-static int parse_escape_seq(struct tb_key_event *event, const char *buf)
+static int parse_escape_seq(struct tb_event *event, const char *buf)
 {
 	/* it's pretty simple here, find 'starts_with' match and return success, else return failure */
 	int i;
@@ -29,7 +29,7 @@ static int parse_escape_seq(struct tb_key_event *event, const char *buf)
 	return 0;
 }
 
-int extract_event(struct tb_key_event *event, struct ringbuffer *inbuf, int inputmode)
+int extract_event(struct tb_event *event, struct ringbuffer *inbuf, int inputmode)
 {
 	char buf[BUFFER_SIZE_MAX+1];
 	int nbytes = ringbuffer_data_size(inbuf);

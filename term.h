@@ -25,7 +25,7 @@ enum {
 int init_term();
 
 /* 0 on success, -1 on failure */
-int extract_event(struct tb_key_event *event, struct ringbuffer *inbuf, int inputmode);
+int extract_event(struct tb_event *event, struct ringbuffer *inbuf, int inputmode);
 
 extern const char **keys;
 extern const char **funcs;

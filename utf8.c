@@ -27,6 +27,9 @@ int utf8_char_length(char c)
 
 int utf8_char_to_unicode(uint32_t *out, const char *c)
 {
+	if (*c == 0)
+		return TB_EOF;
+
 	int i;
 	unsigned char len = utf8_char_length(*c);
 	unsigned char mask = utf8_mask[len-1];

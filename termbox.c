@@ -35,7 +35,7 @@ static FILE *in;
 static int out_fileno;
 static int in_fileno;
 
-static volatile int sigwinch_r;
+static int winch_fds[2];
 
 static void cellbuf_init(struct cellbuf *buf, unsigned int width, unsigned int height);
 static void cellbuf_resize(struct cellbuf *buf, unsigned int width, unsigned int height);
@@ -47,8 +47,7 @@ static void send_attr(uint16_t fg, uint16_t bg);
 static void send_char(unsigned int x, unsigned int y, uint32_t c);
 static void send_clear();
 static void sigwinch_handler(int xxx);
-static void check_sigwinch();
-static int wait_fill_event(struct tb_key_event *event, struct timeval *timeout);
+static int wait_fill_event(struct tb_event *event, struct timeval *timeout);
 
 static void fill_inbuf();
 
@@ -67,6 +66,9 @@ int tb_init()
 	
 	if (init_term() < 0)
 		return TB_EUNSUPPORTED_TERMINAL;
+
+	if (pipe(winch_fds) < 0)
+		return TB_EPIPE_TRAP_ERROR;
 
 	signal(SIGWINCH, sigwinch_handler);
 
@@ -87,9 +89,8 @@ int tb_init()
 	fputs(funcs[T_ENTER_CA], out);
 	fputs(funcs[T_ENTER_KEYPAD], out);
 	fputs(funcs[T_HIDE_CURSOR], out);
-	fputs(funcs[T_CLEAR_SCREEN], out);
-
-	fflush(out);
+	send_clear();
+	
 	update_term_size();
 	cellbuf_init(&back_buffer, termw, termh);
 	cellbuf_init(&front_buffer, termw, termh);
@@ -112,6 +113,8 @@ void tb_shutdown()
 
 	fclose(out);
 	fclose(in);
+	close(winch_fds[0]);
+	close(winch_fds[1]);
 
 	cellbuf_free(&back_buffer);
 	cellbuf_free(&front_buffer);
@@ -123,17 +126,12 @@ void tb_present()
 	unsigned int x,y;
 	struct tb_cell *back, *front;
 
-	check_sigwinch();
-
 	for (y = 0; y < front_buffer.height; ++y) {
 		back = &CELL(&back_buffer, 0, y);
 		front = &CELL(&front_buffer, 0, y);
 		for (x = 0; x < front_buffer.width; ++x) {
 			back = &CELL(&back_buffer, x, y);
 			front = &CELL(&front_buffer, x, y);
-			/* what's faster? */
-/*			if (*((uint32_t*)back) == *((uint32_t*)front) && 
-			    *((uint32_t*)&back->fg) == *((uint32_t*)&front->fg)) */
 			if (memcmp(back, front, sizeof(struct tb_cell)) == 0)
 				continue;
 			send_attr(back->fg, back->bg);
@@ -173,12 +171,12 @@ void tb_blit(unsigned int x, unsigned int y, unsigned int w, unsigned int h, con
 	}
 }
 
-int tb_poll_event(struct tb_key_event *event)
+int tb_poll_event(struct tb_event *event)
 {
 	return wait_fill_event(event, 0);
 }
 
-int tb_peek_event(struct tb_key_event *event, unsigned int timeout)
+int tb_peek_event(struct tb_event *event, unsigned int timeout)
 {
 	struct timeval tv;
 	tv.tv_sec = timeout / 1000;
@@ -198,7 +196,6 @@ unsigned int tb_height()
 
 void tb_clear()
 {
-	check_sigwinch();
 	cellbuf_clear(&back_buffer);
 }
 
@@ -314,29 +311,25 @@ static void send_clear()
 
 static void sigwinch_handler(int xxx)
 {
-	sigwinch_r = 1;
+	const int zzz = 1;
+	write(winch_fds[1], &zzz, sizeof(int));
 }
 
-static void check_sigwinch()
+static void update_size()
 {
-	if (sigwinch_r) {
-		update_term_size();
-		cellbuf_resize(&back_buffer, termw, termh);
-		cellbuf_resize(&front_buffer, termw, termh);
-		cellbuf_clear(&front_buffer);
-
-		send_clear();
-		
-		sigwinch_r = 0;
-	}
+	update_term_size();
+	cellbuf_resize(&back_buffer, termw, termh);
+	cellbuf_resize(&front_buffer, termw, termh);
+	cellbuf_clear(&front_buffer);
+	send_clear();
 }
 
-static int wait_fill_event(struct tb_key_event *event, struct timeval *timeout)
+static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
 {
 	int i, result;
 	char buf[32];
 	fd_set events;
-	memset(event, 0, sizeof(struct tb_key_event));
+	memset(event, 0, sizeof(struct tb_event));
 
 	/* try to extract event from input buffer, return on success */
 	if (extract_event(event, &inbuf, inputmode) == 0)
@@ -347,13 +340,15 @@ static int wait_fill_event(struct tb_key_event *event, struct timeval *timeout)
 	while (1) {
 		FD_ZERO(&events);
 		FD_SET(in_fileno, &events);
-		result = select(in_fileno+1, &events, 0, 0, timeout);
+		FD_SET(winch_fds[0], &events);
+		int maxfd = (winch_fds[0] > in_fileno) ? winch_fds[0] : in_fileno;
+		result = select(maxfd+1, &events, 0, 0, timeout);
 		if (!result)
 			return 0;
 
 		if (FD_ISSET(in_fileno, &events)) {
+			event->type = TB_EVENT_KEY;
 			int r = fread(buf, 1, 32, in);
-			/* if it's zero read, this is a resize message */
 			if (r == 0)
 				continue;
 			/* if there is no free space in input buffer, return error */
@@ -362,7 +357,16 @@ static int wait_fill_event(struct tb_key_event *event, struct timeval *timeout)
 			/* fill buffer */
 			ringbuffer_push(&inbuf, buf, r);
 			if (extract_event(event, &inbuf, inputmode) == 0)
-				return 1;
+				return TB_EVENT_KEY;
+		}
+		if (FD_ISSET(winch_fds[0], &events)) {
+			event->type = TB_EVENT_RESIZE;
+			int zzz = 0;
+			int r = read(winch_fds[0], &zzz, sizeof(int));
+			update_size();
+			event->w = termw;
+			event->h = termh;
+			return TB_EVENT_RESIZE;
 		}
 	}
 }
