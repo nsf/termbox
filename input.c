@@ -1,6 +1,7 @@
 #include <assert.h>
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
+
 #include "term.h"
 
 #define BUFFER_SIZE_MAX 16

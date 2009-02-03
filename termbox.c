@@ -1,12 +1,15 @@
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
-#include <termios.h>
-#include <signal.h>
+
 #include <fcntl.h>
+#include <signal.h>
 #include <sys/ioctl.h>
+#include <sys/time.h>
+#include <termios.h>
 #include <unistd.h>
+
 #include "term.h"
 #include "termbox.h"
 
@@ -160,7 +163,7 @@ void tb_blit(unsigned int x, unsigned int y, unsigned int w, unsigned int h, con
 	if (x+w >= back_buffer.width || y+h >= back_buffer.height)
 		return;
 
-	int sy;
+	unsigned int sy;
 	struct tb_cell *dst = &CELL(&back_buffer, x, y);
 	size_t size = sizeof(struct tb_cell) * w;
 
@@ -292,11 +295,11 @@ static void send_attr(uint16_t fg, uint16_t bg)
 static void send_char(unsigned int x, unsigned int y, uint32_t c)
 {
 #define LAST_COORD_INIT 0xFFFFFFFE
-	static int lastx = LAST_COORD_INIT, lasty = LAST_COORD_INIT;
+	static unsigned int lastx = LAST_COORD_INIT, lasty = LAST_COORD_INIT;
 	char buf[7];
 	int bw = utf8_unicode_to_char(buf, c);
 	buf[bw] = '\0';
-	if (((int)x-1) != lastx || y != lasty)
+	if (x-1 != lastx || y != lasty)
 		fprintf(out, funcs[T_MOVE_CURSOR], y+1, x+1); /* TODO: get rid of fprintf */
 	lastx = x; lasty = y;
 	fputs(buf, out);
@@ -348,7 +351,7 @@ static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
 
 		if (FD_ISSET(in_fileno, &events)) {
 			event->type = TB_EVENT_KEY;
-			int r = fread(buf, 1, 32, in);
+			size_t r = fread(buf, 1, 32, in);
 			if (r == 0)
 				continue;
 			/* if there is no free space in input buffer, return error */

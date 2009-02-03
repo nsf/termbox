@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "ringbuffer.h"
 
 int init_ringbuffer(struct ringbuffer *r, size_t size)
@@ -10,6 +11,8 @@ int init_ringbuffer(struct ringbuffer *r, size_t size)
 		return ERINGBUFFER_ALLOC_FAIL;
 	r->size = size;
 	clear_ringbuffer(r);
+
+    return 0;
 }
 
 void free_ringbuffer(struct ringbuffer *r)
@@ -60,7 +63,7 @@ void ringbuffer_push(struct ringbuffer *r, const void *data, size_t size)
 
 	r->end++;
 	if (r->begin < r->end) {
-		if (r->buf + r->size - r->end >= size) {
+		if ((size_t)(r->buf - r->begin) + r->size >= size) {
 			/* we can fit without cut */
 			memcpy(r->end, data, size);
 			r->end += size - 1;
@@ -91,7 +94,7 @@ void ringbuffer_pop(struct ringbuffer *r, void *data, size_t size)
 		if (data) memcpy(data, r->begin, size);
 		r->begin += size;
 	} else {
-		if (r->buf + r->size - r->begin >= size) {
+		if ((size_t)(r->buf - r->begin) + r->size >= size) {
 			if (data) memcpy(data, r->begin, size);
 			r->begin += size;
 		} else {
@@ -115,7 +118,7 @@ void ringbuffer_read(struct ringbuffer *r, void *data, size_t size)
 	if (r->begin < r->end)
 		memcpy(data, r->begin, size);
 	else {
-		if (r->buf + r->size - r->begin >= size)
+		if ((size_t)(r->buf - r->begin) + r->size >= size)
 			memcpy(data, r->begin, size);
 		else {
 			size_t s = r->buf + r->size - r->begin;

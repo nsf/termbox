@@ -627,7 +627,7 @@ void dispatch_press(struct tb_event *ev)
 	}
 
 	struct combo *k = 0;
-	if (ev->key >= TB_KEY_ARROW_RIGHT && ev->key <= 0xFFFF)
+	if (ev->key >= TB_KEY_ARROW_RIGHT)
 		k = &func_combos[0xFFFF-ev->key];
 	else if (ev->ch < 128) {
 		if (ev->ch == 0 && ev->key < 128)
