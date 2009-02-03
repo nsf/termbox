@@ -13,6 +13,7 @@ def puttc(str):
 
 terminals = {
 	'xterm' : 'xterm',
+	'xterm-256color' : 'xterm_256color',
 	'rxvt-256color' : 'rxvt_256color',
 	'rxvt-unicode' : 'rxvt_unicode',
 	'linux' : 'linux',

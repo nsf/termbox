@@ -50,6 +50,14 @@ const char *rxvt_256color_funcs[] = {
 	"\0337\033[?47h","\033[2J\033[?47l\0338","\033[?25h","\033[?25l","\033[H\033[2J","\033[3%u;4%um","\033[m","\033[4m","\033[1m","\033[5m","\033[%u;%uH","\033=","\033>"
 };
 
+/* xterm-256color */
+const char *xterm_256color_keys[] = {
+	"\033OP","\033OQ","\033OR","\033OS","\033[15~","\033[17~","\033[18~","\033[19~","\033[20~","\033[21~","\033[23~","\033[24~","\033[2~","\033[3~","\033OH","\033OF","\033[5~","\033[6~","\033OA","\033OB","\033OD","\033OC", 0
+};
+const char *xterm_256color_funcs[] = {
+	"\033[?1049h","\033[?1049l","\033[?12l\033[?25h","\033[?25l","\033[H\033[2J","\033[3%u;4%um","\033(B\033[m","\033[4m","\033[1m","\033[5m","\033[%u;%uH","\033[?1h\033=","\033[?1l\033>"
+};
+
 struct term {
 	const char *name;
 	const char **keys;
@@ -61,6 +69,7 @@ struct term {
 	{"rxvt-unicode", rxvt_unicode_keys, rxvt_unicode_funcs},
 	{"linux", linux_keys, linux_funcs},
 	{"rxvt-256color", rxvt_256color_keys, rxvt_256color_funcs},
+	{"xterm-256color", xterm_256color_keys, xterm_256color_funcs},
 	{0,0,0}
 };
 
