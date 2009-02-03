@@ -647,7 +647,14 @@ void dispatch_press(struct tb_event *ev)
 
 int main(int argc, char **argv)
 {
-	assert(tb_init() == 0);
+    int ret;
+
+    ret = tb_init();
+    if (ret) {
+        fprintf(stderr, "tb_init() failed with error code %d\n", ret);
+        return 1;
+    }
+
 	tb_select_input_mode(TB_INPUT_ESC);
 	struct tb_event ev;
 
