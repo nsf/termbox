@@ -73,7 +73,10 @@ int tb_init()
 	if (pipe(winch_fds) < 0)
 		return TB_EPIPE_TRAP_ERROR;
 
-	signal(SIGWINCH, sigwinch_handler);
+	struct sigaction sa;
+	sa.sa_handler = sigwinch_handler;
+	sa.sa_flags = 0;
+	sigaction(SIGWINCH, &sa, 0);
 
 	tcgetattr(out_fileno, &orig_tios);
 	struct termios tios;
@@ -339,7 +342,6 @@ static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
 		return 1;
 
 	/* it looks like input buffer is empty, wait for input and fill it */
-
 	while (1) {
 		FD_ZERO(&events);
 		FD_SET(in_fileno, &events);
