@@ -52,8 +52,6 @@ static void send_clear();
 static void sigwinch_handler(int xxx);
 static int wait_fill_event(struct tb_event *event, struct timeval *timeout);
 
-static void fill_inbuf();
-
 /* -------------------------------------------------------- */
 
 int tb_init()
@@ -332,7 +330,7 @@ static void update_size()
 
 static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
 {
-	int i, result;
+	int result;
 	char buf[32];
 	fd_set events;
 	memset(event, 0, sizeof(struct tb_event));
@@ -367,7 +365,7 @@ static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
 		if (FD_ISSET(winch_fds[0], &events)) {
 			event->type = TB_EVENT_RESIZE;
 			int zzz = 0;
-			int r = read(winch_fds[0], &zzz, sizeof(int));
+			read(winch_fds[0], &zzz, sizeof(int));
 			update_size();
 			event->w = termw;
 			event->h = termh;
