@@ -20,6 +20,7 @@ struct cellbuf {
 };
 
 #define CELL(buf, x, y) (buf)->cells[(y) * (buf)->width + (x)]
+#define IS_CURSOR_HIDDEN(cx, cy) (cx == -1 || cy == -1)
 
 static struct termios orig_tios;
 
@@ -39,6 +40,9 @@ static int out_fileno;
 static int in_fileno;
 
 static int winch_fds[2];
+
+static int cursor_x = -1;
+static int cursor_y = -1;
 
 static void cellbuf_init(struct cellbuf *buf, unsigned int width, unsigned int height);
 static void cellbuf_resize(struct cellbuf *buf, unsigned int width, unsigned int height);
@@ -143,7 +147,23 @@ void tb_present()
 			memcpy(front, back, sizeof(struct tb_cell));
 		}
 	}
+	if (!IS_CURSOR_HIDDEN(cursor_x, cursor_y))
+		fprintf(out, funcs[T_MOVE_CURSOR], cursor_y+1, cursor_x+1);
 	fflush(out);
+}
+
+void tb_set_cursor(int cx, int cy)
+{
+	if (IS_CURSOR_HIDDEN(cursor_x, cursor_y) && !IS_CURSOR_HIDDEN(cx, cy))
+		fputs(funcs[T_SHOW_CURSOR], out);
+	
+	if (!IS_CURSOR_HIDDEN(cursor_x, cursor_y) && IS_CURSOR_HIDDEN(cx, cy))
+		fputs(funcs[T_HIDE_CURSOR], out);
+
+	cursor_x = cx;
+	cursor_y = cy;
+	if (!IS_CURSOR_HIDDEN(cursor_x, cursor_y))
+		fprintf(out, funcs[T_MOVE_CURSOR], cursor_y+1, cursor_x+1);
 }
 
 void tb_put_cell(unsigned int x, unsigned int y, const struct tb_cell *cell)

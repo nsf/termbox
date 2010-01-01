@@ -133,6 +133,9 @@ unsigned int tb_height();
 void tb_clear();
 void tb_present();
 
+#define TB_HIDE_CURSOR			-1
+void tb_set_cursor(int cx, int cy);
+
 void tb_put_cell(unsigned int x, unsigned int y, const struct tb_cell *cell);
 void tb_change_cell(unsigned int x, unsigned int y, uint32_t ch, uint16_t fg, uint16_t bg);
 void tb_blit(unsigned int x, unsigned int y, unsigned int w, unsigned int h, const struct tb_cell *cells);
@@ -156,6 +159,9 @@ int tb_select_input_mode(int mode);
 
 int tb_peek_event(struct tb_event *event, unsigned int timeout);
 int tb_poll_event(struct tb_event *event);
+
+/* glib based interface */
+/* TODO */
 
 /* utility utf8 functions */
 #define TB_EOF -1
