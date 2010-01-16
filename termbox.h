@@ -37,7 +37,7 @@ extern "C" {
 
 /* These are all keys below SPACE character and BACKSPACE */
 #define TB_KEY_CTRL_TILDE	0x00
-#define TB_KEY_CTRL_2 		0x00 /* clash with 'CTRL_TILDE' */
+#define TB_KEY_CTRL_2		0x00 /* clash with 'CTRL_TILDE' */
 #define TB_KEY_CTRL_A		0x01
 #define TB_KEY_CTRL_B		0x02
 #define TB_KEY_CTRL_C		0x03

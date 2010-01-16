@@ -63,12 +63,12 @@ int tb_init()
 	out = fopen("/dev/tty", "w");
 	in = fopen("/dev/tty", "r");
 
-	if (!out || !in) 
+	if (!out || !in)
 		return TB_EFAILED_TO_OPEN_TTY;
 
 	out_fileno = fileno(out);
 	in_fileno = fileno(in);
-	
+
 	if (init_term() < 0)
 		return TB_EUNSUPPORTED_TERMINAL;
 
@@ -83,7 +83,7 @@ int tb_init()
 	tcgetattr(out_fileno, &orig_tios);
 	struct termios tios;
 	memset(&tios, 0, sizeof(tios));
-	
+
 	tios.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP
                            | INLCR | IGNCR | ICRNL | IXON);
 	tios.c_oflag &= ~OPOST;
@@ -98,7 +98,7 @@ int tb_init()
 	fputs(funcs[T_ENTER_KEYPAD], out);
 	fputs(funcs[T_HIDE_CURSOR], out);
 	send_clear();
-	
+
 	update_term_size();
 	cellbuf_init(&back_buffer, termw, termh);
 	cellbuf_init(&front_buffer, termw, termh);
@@ -156,7 +156,7 @@ void tb_set_cursor(int cx, int cy)
 {
 	if (IS_CURSOR_HIDDEN(cursor_x, cursor_y) && !IS_CURSOR_HIDDEN(cx, cy))
 		fputs(funcs[T_SHOW_CURSOR], out);
-	
+
 	if (!IS_CURSOR_HIDDEN(cursor_x, cursor_y) && IS_CURSOR_HIDDEN(cx, cy))
 		fputs(funcs[T_HIDE_CURSOR], out);
 
@@ -208,7 +208,7 @@ int tb_peek_event(struct tb_event *event, unsigned int timeout)
 	return wait_fill_event(event, &tv);
 }
 
-unsigned int tb_width() 
+unsigned int tb_width()
 {
 	return termw;
 }
@@ -231,7 +231,7 @@ int tb_select_input_mode(int mode)
 }
 
 /* -------------------------------------------------------- */
-	
+
 static void cellbuf_init(struct cellbuf *buf, unsigned int width, unsigned int height)
 {
 	buf->cells = (struct tb_cell*)malloc(sizeof(struct tb_cell) * width * height);
@@ -286,7 +286,7 @@ static void update_term_size()
 {
 	struct winsize sz;
 	memset(&sz, 0, sizeof(sz));
-	
+
 	ioctl(out_fileno, TIOCGWINSZ, &sz);
 
 	termw = sz.ws_col;

@@ -45,13 +45,13 @@ int utf8_char_to_unicode(uint32_t *out, const char *c)
 
 int utf8_unicode_to_char(char *out, uint32_t c)
 {
-	int len = 0;    
+	int len = 0;
 	int first;
 	int i;
 
 	if (c < 0x80) {
 		first = 0;
-		len = 1;	
+		len = 1;
 	} else if (c < 0x800) {
 		first = 0xc0;
 		len = 2;

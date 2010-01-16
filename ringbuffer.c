@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 /* for ptrdiff_t */
-#include <stddef.h> 
+#include <stddef.h>
 
 #include <string.h>
 
@@ -35,7 +35,7 @@ size_t ringbuffer_free_space(struct ringbuffer *r)
 	if (r->begin == 0 && r->end == 0)
 		return r->size;
 
-	if (r->begin < r->end) 
+	if (r->begin < r->end)
 		return r->size - (r->end - r->begin) - 1;
 	else
 		return r->begin - r->end - 1;
@@ -46,12 +46,12 @@ size_t ringbuffer_data_size(struct ringbuffer *r)
 	if (r->begin == 0 && r->end == 0)
 		return 0;
 
-	if (r->begin <= r->end) 
-		return r->end - r->begin + 1; 
-	else 
+	if (r->begin <= r->end)
+		return r->end - r->begin + 1;
+	else
 		return r->size - (r->begin - r->end) + 1;
 }
-	
+
 
 void ringbuffer_push(struct ringbuffer *r, const void *data, size_t size)
 {

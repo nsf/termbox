@@ -35,7 +35,7 @@ int extract_event(struct tb_event *event, struct ringbuffer *inbuf, int inputmod
 	char buf[BUFFER_SIZE_MAX+1];
 	int nbytes = ringbuffer_data_size(inbuf);
 
-	if (nbytes > BUFFER_SIZE_MAX) 
+	if (nbytes > BUFFER_SIZE_MAX)
 		nbytes = BUFFER_SIZE_MAX;
 
 	if (nbytes == 0)
@@ -73,13 +73,13 @@ int extract_event(struct tb_event *event, struct ringbuffer *inbuf, int inputmod
 		}
 	}
 
-	/* if we're here, this is not an escape sequence and not an alt sequence 
+	/* if we're here, this is not an escape sequence and not an alt sequence
 	 * so, it's a FUNCTIONAL KEY or a UNICODE character
 	 */
 
 	/* first of all check if it's a functional key */
-	if ((unsigned char)buf[0] <= TB_KEY_SPACE || 
-	    (unsigned char)buf[0] == TB_KEY_BACKSPACE2) 
+	if ((unsigned char)buf[0] <= TB_KEY_SPACE ||
+	    (unsigned char)buf[0] == TB_KEY_BACKSPACE2)
 	{
 		/* fill event, pop buffer, return success */
 		event->ch = 0;
@@ -89,7 +89,7 @@ int extract_event(struct tb_event *event, struct ringbuffer *inbuf, int inputmod
 	}
 
 	/* feh... we got utf8 here */
-	
+
 	/* check if there is all bytes */
 	if (nbytes >= utf8_char_length(buf[0])) {
 		/* everything ok, fill event, pop buffer, return success */
