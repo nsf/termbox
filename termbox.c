@@ -356,8 +356,9 @@ static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
 	memset(event, 0, sizeof(struct tb_event));
 
 	/* try to extract event from input buffer, return on success */
+	event->type = TB_EVENT_KEY;
 	if (extract_event(event, &inbuf, inputmode) == 0)
-		return 1;
+		return TB_EVENT_KEY;
 
 	/* it looks like input buffer is empty, wait for input and fill it */
 	while (1) {
