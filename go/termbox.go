@@ -6,15 +6,6 @@ import "unsafe"
 
 type struct_tb_event_ptr *_Cstruct_tb_event
 
-type Event struct {
-	Type uint16
-	Ch uint32
-	Key uint16
-	Mod uint16
-	W int32
-	H int32
-}
-
 const (
 	KEY_F1			= (0xFFFF-0)
 	KEY_F2			= (0xFFFF-1)
