@@ -49,12 +49,16 @@ static void cellbuf_resize(struct cellbuf *buf, unsigned int width, unsigned int
 static void cellbuf_clear(struct cellbuf *buf);
 static void cellbuf_free(struct cellbuf *buf);
 
+static void update_size();
 static void update_term_size();
 static void send_attr(uint16_t fg, uint16_t bg);
 static void send_char(unsigned int x, unsigned int y, uint32_t c);
 static void send_clear();
 static void sigwinch_handler(int xxx);
 static int wait_fill_event(struct tb_event *event, struct timeval *timeout);
+
+/* may happen in a different thread */
+static volatile int buffer_size_change_request;
 
 /* -------------------------------------------------------- */
 
@@ -133,6 +137,11 @@ void tb_present()
 {
 	unsigned int x,y;
 	struct tb_cell *back, *front;
+
+	if (buffer_size_change_request) {
+		update_size();
+		buffer_size_change_request = 0;
+	}
 
 	for (y = 0; y < front_buffer.height; ++y) {
 		back = &CELL(&back_buffer, 0, y);
@@ -220,6 +229,10 @@ unsigned int tb_height()
 
 void tb_clear()
 {
+	if (buffer_size_change_request) {
+		update_size();
+		buffer_size_change_request = 0;
+	}
 	cellbuf_clear(&back_buffer);
 }
 
@@ -280,6 +293,17 @@ static void cellbuf_clear(struct cellbuf *buf)
 static void cellbuf_free(struct cellbuf *buf)
 {
 	free(buf->cells);
+}
+
+static void get_term_size(int *w, int *h)
+{
+	struct winsize sz;
+	memset(&sz, 0, sizeof(sz));
+
+	ioctl(out_fileno, TIOCGWINSZ, &sz);
+
+	if (w) *w = sz.ws_col;
+	if (h) *h = sz.ws_row;
 }
 
 static void update_term_size()
@@ -387,9 +411,8 @@ static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
 			event->type = TB_EVENT_RESIZE;
 			int zzz = 0;
 			read(winch_fds[0], &zzz, sizeof(int));
-			update_size();
-			event->w = termw;
-			event->h = termh;
+			buffer_size_change_request = 1;
+			get_term_size(&event->w, &event->h);
 			return TB_EVENT_RESIZE;
 		}
 	}
