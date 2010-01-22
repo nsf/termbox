@@ -153,7 +153,7 @@ _cgo_.so: $(GCC_OFILES)
 	gcc $(_CGO_CFLAGS_$(GOARCH)) -o $@ $(GCC_OFILES) $(CGO_LDFLAGS)  $(_CGO_LDFLAGS_$(GOOS))
 
 $(pkgdir)/$(TARG).so: _cgo_.so
-	@test -d $(QUOTED_GOROOT/pkg && mkdir -p $(pkgdir)/$(dir)
+	@test -d $(QUOTED_GOROOT)/pkg && mkdir -p $(pkgdir)/$(dir)
 	cp _cgo_.so "$@"
 
 # Generic build rules.
