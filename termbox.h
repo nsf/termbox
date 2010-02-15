@@ -3,6 +3,13 @@
 
 #include <stdint.h>
 
+/* for shared objects */
+#if __GNUC__ >= 4
+ #define SO_IMPORT __attribute__((visibility("default")))
+#else
+ #define SO_IMPORT
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -124,26 +131,26 @@ struct tb_event {
 #define TB_EFAILED_TO_OPEN_TTY		-2
 #define TB_EPIPE_TRAP_ERROR		-3
 
-int tb_init();
-void tb_shutdown();
+SO_IMPORT int tb_init();
+SO_IMPORT void tb_shutdown();
 
-unsigned int tb_width();
-unsigned int tb_height();
+SO_IMPORT unsigned int tb_width();
+SO_IMPORT unsigned int tb_height();
 
-void tb_clear();
-void tb_present();
+SO_IMPORT void tb_clear();
+SO_IMPORT void tb_present();
 
 #define TB_HIDE_CURSOR			-1
-void tb_set_cursor(int cx, int cy);
+SO_IMPORT void tb_set_cursor(int cx, int cy);
 
-void tb_put_cell(unsigned int x, unsigned int y, const struct tb_cell *cell);
-void tb_change_cell(unsigned int x, unsigned int y, uint32_t ch, uint16_t fg, uint16_t bg);
-void tb_blit(unsigned int x, unsigned int y, unsigned int w, unsigned int h, const struct tb_cell *cells);
+SO_IMPORT void tb_put_cell(unsigned int x, unsigned int y, const struct tb_cell *cell);
+SO_IMPORT void tb_change_cell(unsigned int x, unsigned int y, uint32_t ch, uint16_t fg, uint16_t bg);
+SO_IMPORT void tb_blit(unsigned int x, unsigned int y, unsigned int w, unsigned int h, const struct tb_cell *cells);
 
 #define TB_INPUT_ESC 1
 #define TB_INPUT_ALT 2
 /* with 0 returns current input mode */
-int tb_select_input_mode(int mode);
+SO_IMPORT int tb_select_input_mode(int mode);
 
 /* returns:
 	0 - no events, no errors,
@@ -157,17 +164,17 @@ int tb_select_input_mode(int mode);
 #define TB_EVENT_KEY 1
 #define TB_EVENT_RESIZE 2
 
-int tb_peek_event(struct tb_event *event, unsigned int timeout);
-int tb_poll_event(struct tb_event *event);
+SO_IMPORT int tb_peek_event(struct tb_event *event, unsigned int timeout);
+SO_IMPORT int tb_poll_event(struct tb_event *event);
 
 /* glib based interface */
 /* TODO */
 
 /* utility utf8 functions */
 #define TB_EOF -1
-int utf8_char_length(char c);
-int utf8_char_to_unicode(uint32_t *out, const char *c);
-int utf8_unicode_to_char(char *out, uint32_t c);
+SO_IMPORT int utf8_char_length(char c);
+SO_IMPORT int utf8_char_to_unicode(uint32_t *out, const char *c);
+SO_IMPORT int utf8_unicode_to_char(char *out, uint32_t c);
 
 #ifdef __cplusplus
 }
