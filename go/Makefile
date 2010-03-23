@@ -12,7 +12,7 @@ CGOFILES=\
 
 CLEANFILES+=_cmake_build structures.$(O).go
 
-include Make.pkg
+include $(GOROOT)/src/Make.pkg
 
 $(TERMBOX_LIB):
 	bash make_libtermbox.bash
