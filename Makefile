@@ -9,6 +9,7 @@ SRC=termbox.c term.c input.c ringbuffer.c utf8.c
 OBJ=$(subst .c,.o,$(SRC))
 LIB=libtermbox.a
 INC=termbox.h
+SHARED=libtermbox.so
 
 TEST_CFLAGS=-std=c99 -Wall -Wextra -Wno-unused -O2 -I.
 TEST_LDFLAGS=-L.
@@ -20,11 +21,16 @@ TEST_BIN=$(subst .c,,$(TEST_SRC))
 .SUFFIXES: .a .c .h .o
 .PHONY: all clean install test uninstall
 
-all: $(LIB) $(TEST_BIN)
+all: $(LIB) $(SHARED)
+
+test: $(TEST_BIN)
 
 $(LIB): $(OBJ)
 	$(AR) cr $@ $^
 	ranlib $@
+
+$(SHARED):
+	$(CC) $(SRC) -shared -o $(SHARED)
 
 clean:
 	$(RM) $(LIB) $(TEST_BIN) $(wildcard *.o)
@@ -32,6 +38,7 @@ clean:
 install: $(LIB)
 	install -m 644 $(INC) $(includedir)
 	install -m 644 $(LIB) $(libdir)
+	install -m 644 $(SHARED) $(libdir)
 
 uninstall:
 	$(RM) $(libdir)/$(LIB)
