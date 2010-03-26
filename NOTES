@@ -47,7 +47,10 @@ probably work with ASCII keymaps. UTF-8 is backward compatible with ASCII.
 set. Even though there are 256-color terminals you will not be able to use
 additional colors.
 
-6. Probably you don't want to port existing applications to this library.
+6. No mouse support.. Ever. :) But I guess it will be possible to create
+termbox-compatible GUI library which has mouse support as an extension.
+
+7. Probably you don't want to port existing applications to this library.
 But you might want to develop new applications with it. Despite the fact
 that library isn't super portable and super stable like ncurses, it will
 do the job. If you complain about different Shift+F1, Ctrl+KEY_LEFT 
