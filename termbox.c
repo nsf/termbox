@@ -22,6 +22,8 @@ struct cellbuf {
 #define CELL(buf, x, y) (buf)->cells[(y) * (buf)->width + (x)]
 #define IS_CURSOR_HIDDEN(cx, cy) (cx == -1 || cy == -1)
 
+#define LAST_COORD_INIT 0xFFFFFFFE
+
 static struct termios orig_tios;
 
 static struct cellbuf back_buffer;
@@ -41,6 +43,8 @@ static int in_fileno;
 
 static int winch_fds[2];
 
+static unsigned int lastx = LAST_COORD_INIT;
+static unsigned int lasty = LAST_COORD_INIT;
 static int cursor_x = -1;
 static int cursor_y = -1;
 
@@ -339,8 +343,6 @@ static void send_attr(uint16_t fg, uint16_t bg)
 
 static void send_char(unsigned int x, unsigned int y, uint32_t c)
 {
-#define LAST_COORD_INIT 0xFFFFFFFE
-	static unsigned int lastx = LAST_COORD_INIT, lasty = LAST_COORD_INIT;
 	char buf[7];
 	int bw = utf8_unicode_to_char(buf, c);
 	buf[bw] = '\0';
@@ -355,6 +357,10 @@ static void send_clear()
 	send_attr(TB_WHITE, TB_BLACK);
 	fputs(funcs[T_CLEAR_SCREEN], out);
 	fflush(out);
+
+	/* we need to invalidate cursor position too */
+	lastx = LAST_COORD_INIT;
+	lasty = LAST_COORD_INIT;
 }
 
 static void sigwinch_handler(int xxx)
