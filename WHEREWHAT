@@ -4,16 +4,18 @@ SOURCES
 -------
 
 termbox.c / termbox.h - main files of termbox library, you generally only
-need to include termbox.h in you projects.
+need to include termbox.h in your projects.
 
 ringbuffer.c / ringbuffer.h - simple ring buffer, I use it for buffering
 input. Because terminals theoretically can work via network (which is
-slow and unpredictable), this feature is 'must have'.
+slow and unpredictable), this feature is a 'must have'.
 
 term.c / term.h - terminal specific database. It resembles terminfo 
 database, but only for fairly popular terminals.
 
 input.c - this is the input parsing code.
+
+utf8.c - simple utf8 <-> unicode converting code.
 
 SCRIPTS
 -------
@@ -28,6 +30,7 @@ different TERM environment variable. *this script is deprecated*
 
 compile.sh - currently I use it to compile everything. Maybe there will
 be a Makefile someday.
+*deprecated, use CMakeLists.txt or Makefile instead*
 
 collectkeys.py - this script collects keys and other terminfo capabilities
 from terminfo database, it generates code which then is being inserted
