@@ -356,9 +356,15 @@ static void send_clear()
 {
 	send_attr(TB_WHITE, TB_BLACK);
 	fputs(funcs[T_CLEAR_SCREEN], out);
+	if (!IS_CURSOR_HIDDEN(cursor_x, cursor_y))
+		fprintf(out, funcs[T_MOVE_CURSOR], cursor_y+1, cursor_x+1);
 	fflush(out);
 
-	/* we need to invalidate cursor position too */
+	/* we need to invalidate cursor position too and these two vars are
+	 * used only for simple cursor positioning optimization, cursor
+	 * actually may be in the correct place, but we simply discard
+	 * optimization once and it gives us simple solution for the case when
+	 * cursor moved */
 	lastx = LAST_COORD_INIT;
 	lasty = LAST_COORD_INIT;
 }
