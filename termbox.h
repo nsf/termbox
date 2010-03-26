@@ -152,7 +152,13 @@ SO_IMPORT void tb_blit(unsigned int x, unsigned int y, unsigned int w, unsigned 
 /* with 0 returns current input mode */
 SO_IMPORT int tb_select_input_mode(int mode);
 
-/* returns:
+#define TB_EVENT_KEY 1
+#define TB_EVENT_RESIZE 2
+
+SO_IMPORT int tb_peek_event(struct tb_event *event, unsigned int timeout);
+SO_IMPORT int tb_poll_event(struct tb_event *event);
+
+/* these return:
 	0 - no events, no errors,
 	1 - key event
 	2 - resize event
@@ -161,11 +167,6 @@ SO_IMPORT int tb_select_input_mode(int mode);
    timeout in milliseconds
 */
 
-#define TB_EVENT_KEY 1
-#define TB_EVENT_RESIZE 2
-
-SO_IMPORT int tb_peek_event(struct tb_event *event, unsigned int timeout);
-SO_IMPORT int tb_poll_event(struct tb_event *event);
 
 /* glib based interface */
 /* TODO */
