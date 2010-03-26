@@ -174,10 +174,10 @@ cdef class Termbox:
 		tb_present()
 		pass
 
-	def change_cell(self, unsigned int x, unsigned int y, char *ch, uint16_t fg, uint16_t bg):
+	def change_cell(self, unsigned int x, unsigned int y, unsigned int ch, uint16_t fg, uint16_t bg):
 		"""Change cell in position (x;y).
 		"""
-		tb_change_cell(x, y, ch[0], fg, bg)
+		tb_change_cell(x, y, ch, fg, bg)
 
 	def width(self):
 		"""Returns height of the terminal screen.
@@ -223,7 +223,11 @@ cdef class Termbox:
 		assert(result >= 0)
 		if result == 0:
 			return None
-		return (e.type, unichr(e.ch), e.key, e.mod, e.w, e.h)
+		if e.ch:
+			uch = unichr(e.ch)
+		else:
+			uch = None
+		return (e.type, uch, e.key, e.mod, e.w, e.h)
 
 	def poll_event(self):
 		"""Wait for an event and return it.
@@ -234,6 +238,10 @@ cdef class Termbox:
 		cdef int result
 		result = tb_poll_event(&e)
 		assert(result >= 0)
-		return (e.type, unichr(e.ch), e.key, e.mod, e.w, e.h)
+		if e.ch:
+			uch = unichr(e.ch)
+		else:
+			uch = None
+		return (e.type, uch, e.key, e.mod, e.w, e.h)
 
 
