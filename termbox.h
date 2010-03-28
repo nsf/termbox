@@ -42,7 +42,7 @@ extern "C" {
 #define TB_KEY_ARROW_LEFT	(0xFFFF-20)
 #define TB_KEY_ARROW_RIGHT	(0xFFFF-21)
 
-/* These are all keys below SPACE character and BACKSPACE */
+/* These are all keys below SPACE character and BACKSPACE key */
 #define TB_KEY_CTRL_TILDE	0x00
 #define TB_KEY_CTRL_2		0x00 /* clash with 'CTRL_TILDE' */
 #define TB_KEY_CTRL_A		0x01
@@ -89,12 +89,11 @@ extern "C" {
 #define TB_KEY_BACKSPACE2	0x7F
 #define TB_KEY_CTRL_8		0x7F /* clash with 'DELETE' */
 
-/* These are fail ones */
+/* These are fail ones (do not exist) */
 /* #define TB_KEY_CTRL_1 clash with '1' */
 /* #define TB_KEY_CTRL_9 clash with '9' */
 /* #define TB_KEY_CTRL_0 clash with '0' */
 
-/* ----------------- mods ------------- */
 /* Currently there is only one modificator */
 #define TB_MOD_ALT		0x01
 
@@ -140,7 +139,7 @@ SO_IMPORT unsigned int tb_height();
 SO_IMPORT void tb_clear();
 SO_IMPORT void tb_present();
 
-#define TB_HIDE_CURSOR			-1
+#define TB_HIDE_CURSOR -1
 SO_IMPORT void tb_set_cursor(int cx, int cy);
 
 SO_IMPORT void tb_put_cell(unsigned int x, unsigned int y, const struct tb_cell *cell);
@@ -157,7 +156,6 @@ SO_IMPORT int tb_select_input_mode(int mode);
 
 SO_IMPORT int tb_peek_event(struct tb_event *event, unsigned int timeout);
 SO_IMPORT int tb_poll_event(struct tb_event *event);
-
 /* these return:
 	0 - no events, no errors,
 	1 - key event

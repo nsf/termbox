@@ -89,6 +89,7 @@ int tb_init()
 	sigaction(SIGWINCH, &sa, 0);
 
 	tcgetattr(out_fileno, &orig_tios);
+
 	struct termios tios;
 	memset(&tios, 0, sizeof(tios));
 
