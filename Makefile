@@ -33,7 +33,7 @@ $(SHARED):
 	$(CC) $(SRC) -shared -o $(SHARED)
 
 clean:
-	$(RM) $(LIB) $(TEST_BIN) $(wildcard *.o)
+	$(RM) $(LIB) $(TEST_BIN) $(SHARED) $(wildcard *.o)
 
 install: $(LIB)
 	install -m 644 $(INC) $(includedir)
