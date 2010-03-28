@@ -119,10 +119,10 @@ struct tb_cell {
 };
 
 struct tb_event {
-	uint16_t type;
-	uint32_t ch;
+	uint8_t type;
+	uint8_t mod;
 	uint16_t key;
-	uint16_t mod;
+	uint32_t ch;
 	int32_t w;
 	int32_t h;
 };
