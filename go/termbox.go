@@ -78,23 +78,23 @@ const (
 
 	MOD_ALT			= 0x01
 
-	BLACK		= 0x00
-	RED		= 0x01
-	GREEN		= 0x02
-	YELLOW		= 0x03
-	BLUE		= 0x04
-	MAGENTA		= 0x05
-	CYAN		= 0x06
-	WHITE		= 0x07
+	BLACK			= 0x00
+	RED			= 0x01
+	GREEN			= 0x02
+	YELLOW			= 0x03
+	BLUE			= 0x04
+	MAGENTA			= 0x05
+	CYAN			= 0x06
+	WHITE			= 0x07
 
-	BOLD		= 0x10
-	UNDERLINE	= 0x20
+	BOLD			= 0x10
+	UNDERLINE		= 0x20
 
-	HIDE_CURSOR	= -1
-	INPUT_ESC	= 1
-	INPUT_ALT	= 2
-	EVENT_KEY	= 1
-	EVENT_RESIZE	= 2
+	HIDE_CURSOR		= -1
+	INPUT_ESC		= 1
+	INPUT_ALT		= 2
+	EVENT_KEY		= 1
+	EVENT_RESIZE		= 2
 )
 
 func Init() int {
@@ -118,15 +118,11 @@ func Clear() {
 }
 
 func PollEvent(e *Event) int {
-	var result C.int
-	result = C.tb_poll_event(struct_tb_event_ptr(unsafe.Pointer(e)))
-	return int(result)
+	return int(C.tb_poll_event(struct_tb_event_ptr(unsafe.Pointer(e))))
 }
 
 func PeekEvent(e *Event, timeout uint) int {
-	var result C.int
-	result = C.tb_peek_event(struct_tb_event_ptr(unsafe.Pointer(e)), C.uint(timeout))
-	return int(result)
+	return int(C.tb_peek_event(struct_tb_event_ptr(unsafe.Pointer(e)), C.uint(timeout)))
 }
 
 func Width() uint {
