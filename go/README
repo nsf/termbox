@@ -1,0 +1,19 @@
+Just run:
+
+make && make install
+
+It will build a module and install it to the appropriate directory.
+Keep in mind that it will run 'make_libtermbox.bash' script which
+uses CMake to build the termbox library itself.
+
+To build and run an example just do this (for example using 8g/8l tools):
+
+8g example.go
+8l -o example example.8
+./example
+
+
+--------------------------
+Any questions?
+
+mailto:no.smile.face@gmail.com
