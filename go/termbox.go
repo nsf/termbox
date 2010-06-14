@@ -144,3 +144,11 @@ func HideCursor() {
 func SelectInputMode(mode int) {
 	C.tb_select_input_mode(C.int(mode))
 }
+
+func (e *Event) Poll() int {
+	return PollEvent(e)
+}
+
+func (e *Event) Peek(timeout uint) int {
+	return PeekEvent(e, timeout)
+}
