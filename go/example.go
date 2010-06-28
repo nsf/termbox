@@ -19,7 +19,7 @@ func drawString(x uint, y uint, s string, fg uint16, bg uint16) {
 func goServeInput(sink chan *termbox.Event) {
 	for {
 		event := new(termbox.Event)
-		result := termbox.PollEvent(event)
+		result := event.Poll()
 		if result > 0 {
 			sink <- event
 		}
