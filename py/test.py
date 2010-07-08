@@ -5,16 +5,21 @@ import termbox
 import time
 import sys
 import random
+import psyco
+
+psyco.full()
+
+spaceord = ord(u" ")
 
 def print_line(t, msg, y, fg, bg):
 	w = t.width()
+	l = len(msg)
 	x = 0
 	for i in xrange(w):
-		try:
-			c = msg[i]
-			t.change_cell(x+i, y, c, fg, bg)
-		except:
-			t.change_cell(x+i, y, u" ", fg, bg)
+		c = spaceord
+		if i < l:
+			c = ord(msg[i])
+		t.change_cell(x+i, y, c, fg, bg)
 
 class SelectBox(object):
 	def __init__(self, tb, choices, active=-1):
@@ -84,8 +89,8 @@ def draw_bottom_line(t, i):
 	h = t.height()
 	c = i
 	for x in xrange(w):
-		t.change_cell(x, h-1, u' ', termbox.BLACK, c)
-		t.change_cell(x, h-2, u' ', termbox.BLACK, c)
+		t.change_cell(x, h-1, ord(u' '), termbox.BLACK, c)
+		t.change_cell(x, h-2, ord(u' '), termbox.BLACK, c)
 		c += 1
 		if c > 7:
 			c = 0

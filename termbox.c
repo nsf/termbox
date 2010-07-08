@@ -195,7 +195,7 @@ void tb_change_cell(unsigned int x, unsigned int y, uint32_t ch, uint16_t fg, ui
 
 void tb_blit(unsigned int x, unsigned int y, unsigned int w, unsigned int h, const struct tb_cell *cells)
 {
-	if (x+w >= back_buffer.width || y+h >= back_buffer.height)
+	if (x+w > back_buffer.width || y+h > back_buffer.height)
 		return;
 
 	unsigned int sy;

@@ -6,7 +6,7 @@ import "time"
 //---------------------------------------------------------------------------
 // utility function for drawing strings
 //---------------------------------------------------------------------------
-func drawString(x uint, y uint, s string, fg uint16, bg uint16) {
+func drawString(x int, y int, s string, fg uint16, bg uint16) {
 	for _, r := range s {
 		termbox.ChangeCell(x, y, r, fg, bg)
 		x++
@@ -16,19 +16,17 @@ func drawString(x uint, y uint, s string, fg uint16, bg uint16) {
 //---------------------------------------------------------------------------
 // chan based input
 //---------------------------------------------------------------------------
-func goServeInput(sink chan *termbox.Event) {
-	for {
-		event := new(termbox.Event)
-		result := event.Poll()
-		if result > 0 {
-			sink <- event
-		}
-	}
-}
-
 func serveInput() chan *termbox.Event {
 	event_sink := make(chan *termbox.Event)
-	go goServeInput(event_sink)
+	go func() {
+		for {
+			event := new(termbox.Event)
+			result := event.Poll()
+			if result > 0 {
+				event_sink <- event
+			}
+		}
+	}()
 	return event_sink
 }
 
@@ -40,7 +38,7 @@ func drawBox(seed uint16) {
 	h := termbox.Height()
 
 	color := uint16(seed)
-	var x, x2, y, y2 uint
+	var x, x2, y, y2 int
 	x2 = w - 1
 	y2 = h - 1
 
@@ -70,7 +68,10 @@ func drawBox(seed uint16) {
 }
 
 func main() {
-	termbox.Init()
+	err := termbox.Init()
+	if err != nil {
+		panic(err.String())
+	}
 	defer termbox.Shutdown()
 
 	termbox.Clear()

@@ -2,7 +2,10 @@ package termbox
 
 // #include "../termbox.h"
 import "C"
-import "unsafe"
+import (
+	"unsafe"
+	"os"
+)
 
 type struct_tb_event_ptr *_Cstruct_tb_event
 
@@ -97,15 +100,23 @@ const (
 	EVENT_RESIZE		= 2
 )
 
-func Init() int {
-	return int(C.tb_init());
+func Init() os.Error {
+	switch int(C.tb_init()) {
+	case -3:
+		return os.NewError("Pipe trap error")
+	case -2:
+		return os.NewError("Failed to open /dev/tty")
+	case -1:
+		return os.NewError("Unsupported terminal")
+	}
+	return nil
 }
 
 func Shutdown() {
 	C.tb_shutdown();
 }
 
-func ChangeCell(x uint, y uint, ch int, fg uint16, bg uint16) {
+func ChangeCell(x int, y int, ch int, fg uint16, bg uint16) {
 	C.tb_change_cell(C.uint(x), C.uint(y), C.uint32_t(ch), C.uint16_t(fg), C.uint16_t(bg));
 }
 
@@ -121,16 +132,16 @@ func PollEvent(e *Event) int {
 	return int(C.tb_poll_event(struct_tb_event_ptr(unsafe.Pointer(e))))
 }
 
-func PeekEvent(e *Event, timeout uint) int {
+func PeekEvent(e *Event, timeout int) int {
 	return int(C.tb_peek_event(struct_tb_event_ptr(unsafe.Pointer(e)), C.uint(timeout)))
 }
 
-func Width() uint {
-	return uint(C.tb_width())
+func Width() int {
+	return int(C.tb_width())
 }
 
-func Height() uint {
-	return uint(C.tb_height())
+func Height() int {
+	return int(C.tb_height())
 }
 
 func SetCursor(x int, y int) {
@@ -149,6 +160,6 @@ func (e *Event) Poll() int {
 	return PollEvent(e)
 }
 
-func (e *Event) Peek(timeout uint) int {
+func (e *Event) Peek(timeout int) int {
 	return PeekEvent(e, timeout)
 }
