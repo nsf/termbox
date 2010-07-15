@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-type struct_tb_event_ptr *_Cstruct_tb_event
+type struct_tb_event_ptr *C.struct_tb_event
 
 const (
 	KEY_F1			= (0xFFFF-0)
