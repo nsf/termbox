@@ -1,4 +1,4 @@
-include $(GOROOT)/src/Make.$(GOARCH)
+include $(GOROOT)/src/Make.inc
 
 TERMBOX_LIB=_cmake_build/libtermbox.a
 CGO_LDFLAGS=$(TERMBOX_LIB)
