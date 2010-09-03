@@ -143,6 +143,10 @@ void tb_present()
 	unsigned int x,y;
 	struct tb_cell *back, *front;
 
+	/* invalidate cursor position */
+	lastx = LAST_COORD_INIT;
+	lasty = LAST_COORD_INIT;
+
 	if (buffer_size_change_request) {
 		update_size();
 		buffer_size_change_request = 0;
