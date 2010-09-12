@@ -8,6 +8,7 @@ import (
 )
 
 type struct_tb_event_ptr *C.struct_tb_event
+type struct_tb_cell_ptr *C.struct_tb_cell
 
 const (
 	KEY_F1			= (0xFFFF-0)
@@ -118,6 +119,17 @@ func Shutdown() {
 
 func ChangeCell(x int, y int, ch int, fg uint16, bg uint16) {
 	C.tb_change_cell(C.uint(x), C.uint(y), C.uint32_t(ch), C.uint16_t(fg), C.uint16_t(bg));
+}
+
+func PutCell(x, y int, cell *Cell) {
+	C.tb_put_cell(C.uint(x), C.uint(y), struct_tb_cell_ptr(unsafe.Pointer(cell)))
+}
+
+func Blit(x, y, w, h int, cells []Cell) {
+	if w * h < len(cells) {
+		panic("'cells' buffer is not big enough to do blit successfully")
+	}
+	C.tb_blit(C.uint(x), C.uint(y), C.uint(w), C.uint(h), struct_tb_cell_ptr(unsafe.Pointer(&cells[0])))
 }
 
 func Present() {
