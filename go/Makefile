@@ -2,13 +2,11 @@ include $(GOROOT)/src/Make.inc
 
 TERMBOX_LIB=_cmake_build/libtermbox.a
 CGO_LDFLAGS=$(TERMBOX_LIB)
-
-GOFILES:=\
-	structures.$(O).go
+CGO_DEPS=$(TERMBOX_LIB)
 
 TARG=termbox
-CGOFILES=\
-	 termbox.go
+CGOFILES=termbox.go
+GOFILES=structures.$(O).go
 
 CLEANFILES+=_cmake_build structures.$(O).go
 
@@ -17,8 +15,5 @@ include $(GOROOT)/src/Make.pkg
 $(TERMBOX_LIB):
 	bash make_libtermbox.bash
 
-cgo_termbox.so: $(TERMBOX_LIB)
-
 structures.$(O).go: structures.c
-	godefs -g termbox structures.c > structures.$(O).go
-	gofmt -w structures.$(O).go
+	godefs -g termbox structures.c | gofmt > structures.$(O).go
