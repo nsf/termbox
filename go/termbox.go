@@ -125,10 +125,14 @@ func PutCell(x, y int, cell *Cell) {
 	C.tb_put_cell(C.uint(x), C.uint(y), struct_tb_cell_ptr(unsafe.Pointer(cell)))
 }
 
-func Blit(x, y, w, h int, cells []Cell) {
-	if w * h < len(cells) {
-		panic("'cells' buffer is not big enough to do blit successfully")
-	}
+// 'Blit' function copies the 'cells' buffer (width: 'w', height:
+// len('cells')/'w') to the internal back buffer at the position specified by
+// ('x' ; 'y'). Blit doesn't perform any kind of cuts and if contents of the
+// cells buffer cannot be placed without crossing back buffer's boundaries, the
+// operation is discarded. Parameter 'w' must be > 0, otherwise it will cause
+// "division by zero" panic.
+func Blit(x, y, w int, cells []Cell) {
+	h := len(cells) / w
 	C.tb_blit(C.uint(x), C.uint(y), C.uint(w), C.uint(h), struct_tb_cell_ptr(unsafe.Pointer(&cells[0])))
 }
 
