@@ -1,0 +1,12 @@
+cmake_minimum_required(VERSION 2.8)
+
+FIND_PACKAGE(PythonLibs)
+INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
+
+ADD_CUSTOM_COMMAND(SOURCE termbox.pyx
+    OUTPUT termbox.c
+    COMMAND pyrexc
+    ARGS termbox.pyx)
+
+ADD_LIBRARY(pytermbox SHARED termbox.c ${TERMBOX_LIB_SRC})
+SET_TARGET_PROPERTIES(pytermbox PROPERTIES OUTPUT_NAME "termbox" PREFIX "")
