@@ -12,8 +12,8 @@ To build and run an example just do this (for example using 8g/8l tools):
 8l -o example example.8
 ./example
 
+--------------------------
+API Reference: http://nsf.github.com/termbox/termbox.html
 
 --------------------------
-Any questions?
-
-mailto:no.smile.face@gmail.com
+Any questions?: mailto:no.smile.face@gmail.com
