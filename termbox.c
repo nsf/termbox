@@ -391,8 +391,10 @@ static void update_size()
 
 static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
 {
+	/* ;-) */
+#define ENOUGH_DATA_FOR_INPUT_PARSING 128
 	int result;
-	char buf[32];
+	char buf[ENOUGH_DATA_FOR_INPUT_PARSING];
 	fd_set events;
 	memset(event, 0, sizeof(struct tb_event));
 
@@ -401,7 +403,17 @@ static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
 	if (extract_event(event, &inbuf, inputmode) == 0)
 		return TB_EVENT_KEY;
 
-	/* it looks like input buffer is empty, wait for input and fill it */
+	/* it looks like input buffer is incomplete, let's try the short path */
+	size_t r = fread(buf, 1, ENOUGH_DATA_FOR_INPUT_PARSING, in);
+	if (r > 0) {
+		if (ringbuffer_free_space(&inbuf) < r)
+			return -1;
+		ringbuffer_push(&inbuf, buf, r);
+		if (extract_event(event, &inbuf, inputmode) == 0)
+			return TB_EVENT_KEY;
+	}
+
+	/* no stuff in FILE's internal buffer, block in select */
 	while (1) {
 		FD_ZERO(&events);
 		FD_SET(in_fileno, &events);
@@ -413,7 +425,7 @@ static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
 
 		if (FD_ISSET(in_fileno, &events)) {
 			event->type = TB_EVENT_KEY;
-			size_t r = fread(buf, 1, 32, in);
+			size_t r = fread(buf, 1, ENOUGH_DATA_FOR_INPUT_PARSING, in);
 			if (r == 0)
 				continue;
 			/* if there is no free space in input buffer, return error */
