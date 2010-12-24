@@ -6,13 +6,15 @@ def puttc(str):
 	if str == None:
 		return
 	for c in str:
-		if ord(c) == 0x1B:
+		if c == 0x1B:
 			sys.stdout.write("\\033")
 		else:
-			sys.stdout.write(c)
+			sys.stdout.write(chr(c))
 
 terminals = {
 	'xterm' : 'xterm',
+	'xterm-color' : 'xterm_color',
+	'rxvt-256color' : 'rxvt_256color',
 	'rxvt-unicode' : 'rxvt_unicode',
 	'linux' : 'linux',
 	'Eterm' : 'Eterm',
@@ -63,7 +65,7 @@ funcs = [
 def iter_pairs(iterable):
 	iterable = iter(iterable)
 	while True:
-		yield (iterable.next(), iterable.next())
+		yield (next(iterable), next(iterable))
 
 def do_term(term, nick):
 	curses.setupterm(term)
@@ -98,11 +100,11 @@ def do_terms(d):
 	sys.stdout.write("\tconst char **funcs;\n")
 	sys.stdout.write("} terms[] = {\n")
 
-	for k,v in d.iteritems():
+	for k,v in d.items():
 		sys.stdout.write("\t{\"%s\", %s_keys, %s_funcs},\n" % (k, v, v))
 	sys.stdout.write("\t{0,0,0}\n};\n")
 
-for k,v in terminals.iteritems():
+for k,v in terminals.items():
 	do_term(k, v)
 
 do_terms(terminals)
