@@ -13,6 +13,7 @@ def puttc(str):
 
 terminals = {
 	'xterm' : 'xterm',
+	'xterm-color' : 'xterm_color',
 	'xterm-256color' : 'xterm_256color',
 	'rxvt-256color' : 'rxvt_256color',
 	'rxvt-unicode-256color' : 'rxvt_unicode_256color',
@@ -23,18 +24,18 @@ terminals = {
 }
 
 keys = [
-	"F1", 		"kf1",
-	"F2",		"kf2",	
-	"F3",		"kf3",	
-	"F4",		"kf4",	
-	"F5",		"kf5",	
-	"F6",		"kf6",	
-	"F7",		"kf7",	
-	"F8",		"kf8",	
-	"F9",		"kf9",	
-	"F10",		"kf10",	
-	"F11",		"kf11",	
-	"F12",		"kf12",	
+	"F1",		"kf1",
+	"F2",		"kf2",
+	"F3",		"kf3",
+	"F4",		"kf4",
+	"F5",		"kf5",
+	"F6",		"kf6",
+	"F7",		"kf7",
+	"F8",		"kf8",
+	"F9",		"kf9",
+	"F10",		"kf10",
+	"F11",		"kf11",
+	"F12",		"kf12",
 	"INSERT",	"kich1",
 	"DELETE",	"kdch1",
 	"HOME",		"khome",
