@@ -13,10 +13,6 @@ def puttc(str):
 
 terminals = {
 	'xterm' : 'xterm',
-	'xterm-color' : 'xterm_color',
-	'xterm-256color' : 'xterm_256color',
-	'rxvt-256color' : 'rxvt_256color',
-	'rxvt-unicode-256color' : 'rxvt_unicode_256color',
 	'rxvt-unicode' : 'rxvt_unicode',
 	'linux' : 'linux',
 	'Eterm' : 'Eterm',
@@ -72,13 +68,13 @@ def iter_pairs(iterable):
 def do_term(term, nick):
 	curses.setupterm(term)
 	sys.stdout.write("/* %s */\n" % term)
-	sys.stdout.write("const char *%s_keys[] = {\n\t" % nick)
+	sys.stdout.write("static const char *%s_keys[] = {\n\t" % nick)
 	for k,v in iter_pairs(keys):
 		sys.stdout.write("\"")
 		puttc(curses.tigetstr(v))
 		sys.stdout.write("\",")
 	sys.stdout.write(" 0\n};\n")
-	sys.stdout.write("const char *%s_funcs[] = {\n\t" % nick)
+	sys.stdout.write("static const char *%s_funcs[] = {\n\t" % nick)
 	for k,v in iter_pairs(funcs):
 		#sys.stdout.write("\t[%s] = \"" % k)
 		sys.stdout.write("\"")
@@ -96,7 +92,7 @@ def do_term(term, nick):
 	sys.stdout.write("};\n\n")
 
 def do_terms(d):
-	sys.stdout.write("struct term {\n")
+	sys.stdout.write("static struct term {\n")
 	sys.stdout.write("\tconst char *name;\n")
 	sys.stdout.write("\tconst char **keys;\n")
 	sys.stdout.write("\tconst char **funcs;\n")
