@@ -35,14 +35,6 @@ static const char *rxvt_unicode_funcs[] = {
 	"\033[?1049h","\033[r\033[?1049l","\033[?25h","\033[?25l","\033[H\033[2J","\033[3%u;4%um","\033[m\033(B","\033[4m","\033[1m","\033[5m","\033[%u;%uH","\033=","\033>"
 };
 
-/* xterm-color */
-static const char *xterm_color_keys[] = {
-	"\033[11~","\033[12~","\033[13~","\033[14~","\033[15~","\033[17~","\033[18~","\033[19~","\033[20~","\033[21~","\033[23~","\033[24~","\033[2~","\033[3~","","","\033[5~","\033[6~","\033OA","\033OB","\033OD","\033OC", 0
-};
-static const char *xterm_color_funcs[] = {
-	"\0337\033[?47h","\033[2J\033[?47l\0338","","","\033[H\033[2J","\033[3%u;4%um","\033[m","\033[4m","\033[1m","","\033[%u;%uH","\033[?1h\033=","\033[?1l\033>"
-};
-
 /* linux */
 static const char *linux_keys[] = {
 	"\033[[A","\033[[B","\033[[C","\033[[D","\033[[E","\033[17~","\033[18~","\033[19~","\033[20~","\033[21~","\033[23~","\033[24~","\033[2~","\033[3~","\033[1~","\033[4~","\033[5~","\033[6~","\033[A","\033[B","\033[D","\033[C", 0
@@ -68,7 +60,6 @@ static struct term {
 	{"screen", screen_keys, screen_funcs},
 	{"xterm", xterm_keys, xterm_funcs},
 	{"rxvt-unicode", rxvt_unicode_keys, rxvt_unicode_funcs},
-	{"xterm-color", xterm_color_keys, xterm_color_funcs},
 	{"linux", linux_keys, linux_funcs},
 	{"rxvt-256color", rxvt_256color_keys, rxvt_256color_funcs},
 	{0,0,0}
