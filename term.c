@@ -103,6 +103,9 @@ int init_term()
 		return 0;
 	if (try_compatible(term, "screen", screen_keys, screen_funcs) == 0)
 		return 0;
+	/* let's assume that 'cygwin' is xterm compatible */
+	if (try_compatible(term, "cygwin", xterm_keys, xterm_funcs) == 0)
+		return 0;
 
 	return EUNSUPPORTED_TERM;
 }
