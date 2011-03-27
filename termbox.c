@@ -425,6 +425,7 @@ static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
 
 		if (FD_ISSET(in_fileno, &events)) {
 			event->type = TB_EVENT_KEY;
+			clearerr(in);
 			size_t r = fread(buf, 1, ENOUGH_DATA_FOR_INPUT_PARSING, in);
 			if (r == 0)
 				continue;
