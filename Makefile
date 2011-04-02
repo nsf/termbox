@@ -30,7 +30,7 @@ $(LIB): $(OBJ)
 	ranlib $@
 
 $(SHARED):
-	$(CC) $(SRC) -shared -o $(SHARED)
+	$(CC) $(SRC) -shared -fPIC -o $(SHARED)
 
 clean:
 	$(RM) $(LIB) $(TEST_BIN) $(SHARED) $(wildcard *.o)
