@@ -91,7 +91,7 @@ int tb_init()
 	tcgetattr(out_fileno, &orig_tios);
 
 	struct termios tios;
-	memset(&tios, 0, sizeof(tios));
+	memcpy(&tios, &orig_tios, sizeof(tios));
 
 	tios.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP
                            | INLCR | IGNCR | ICRNL | IXON);
