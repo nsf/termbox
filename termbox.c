@@ -153,8 +153,6 @@ void tb_present()
 	}
 
 	for (y = 0; y < front_buffer.height; ++y) {
-		back = &CELL(&back_buffer, 0, y);
-		front = &CELL(&front_buffer, 0, y);
 		for (x = 0; x < front_buffer.width; ++x) {
 			back = &CELL(&back_buffer, x, y);
 			front = &CELL(&front_buffer, x, y);
