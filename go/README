@@ -1,6 +1,6 @@
 Just run:
 
-make && make install
+gomake && gomake install
 
 It will build a module and install it to the appropriate directory.
 Keep in mind that it will run 'make_libtermbox.bash' script which
