@@ -10,7 +10,7 @@ import (
 )
 
 // This type represents termbox event. 'Mod', 'Key' and 'Ch' fields are valid
-// if 'Type' is EVENT_KEY. 'W' and 'H' are valid if 'Type' is EVENT_RESIZE.
+// if 'Type' is EventKey. 'W' and 'H' are valid if 'Type' is EventResize.
 type Event struct {
 	Type uint8  // one of EVENT_ constants
 	Mod  uint8  // one of MOD_ constants or 0
@@ -110,7 +110,7 @@ const (
 )
 
 // Alt modifier constant, see Event.Mod field and SetInputMode function.
-const MOD_ALT = 0x01
+const ModAlt = 0x01
 
 // Cell attributes, it is possible to use multiple attributes by combining them
 // using bitwise OR ('|'). Although, colors cannot be combined. But you can
@@ -132,9 +132,11 @@ const (
 )
 
 // Special coordinate for SetCursor. If you call:
-//	SetCursor(CHideCursor, CHideCursor)
+//
+//     SetCursor(Hide_Cursor, Hide_Cursor)
+//
 // This function call hides the cursor.
-const CHideCursor = -1
+const Hide_Cursor = -1
 
 // Input mode. See SelectInputMode function.
 const (
@@ -150,8 +152,9 @@ const (
 	EventResize
 )
 
-// Initializes termbox library. This function should be called before any other functions.
-// After successful initialization, the library must be finalized using 'Shutdown' function.
+// Init initializes the termbox library. This function should be called before
+// any other functions. After successful initialization, the library must be
+// finalized using 'Shutdown' function.
 //
 // Example usage:
 //	err := termbox.Init()
@@ -159,96 +162,101 @@ const (
 //		panic(err.String())
 //	}
 //	defer termbox.Shutdown()
-func Init() os.Error {
+func Init() (err os.Error) {
 	switch int(C.tb_init()) {
 	case -3:
-		return os.NewError("Pipe trap error")
+		err = os.NewError("Pipe trap error")
 	case -2:
-		return os.NewError("Failed to open /dev/tty")
+		err = os.NewError("Failed to open /dev/tty")
 	case -1:
-		return os.NewError("Unsupported terminal")
+		err = os.NewError("Unsupported terminal")
 	}
-	return nil
+	return
 }
 
-// Finalizes termbox library, should be called after successful initialization
-// when termbox's functionality isn't required anymore.
+// Shutdown finalizes the termbox library, should be called after successful
+// initialization when termbox's functionality isn't required anymore.
 func Shutdown() { C.tb_shutdown() }
 
-// Changes cell's parameters in the internal back buffer at the specified
-// position.
+// ChangeCell alters the back buffer cell parameters at the specified position.
 func ChangeCell(x int, y int, ch int, fg uint16, bg uint16) {
 	C.tb_change_cell(C.uint(x), C.uint(y), C.uint32_t(ch), C.uint16_t(fg), C.uint16_t(bg))
 }
 
-// Puts the 'cell' into the internal back buffer at the specified position.
+// PutCell puts the cell at the specified position into the back buffer.
 func PutCell(x, y int, cell *Cell) {
 	C.tb_put_cell(C.uint(x), C.uint(y), struct_tb_cell_ptr(unsafe.Pointer(cell)))
 }
 
-// 'Blit' function copies the 'cells' buffer to the internal back buffer at the
-// position specified by 'x' and 'y'. Blit doesn't perform any kind of cuts and
-// if contents of the cells buffer cannot be placed without crossing back
-// buffer's boundaries, the operation is discarded. Parameter 'w' must be > 0,
-// otherwise it will cause "division by zero" panic.
+// Blit copies the cells buffer to the internal back buffer at the position
+// specified by 'x' and 'y'. Blit doesn't perform any kind of cuts and if
+// contents of the cells buffer cannot be placed without crossing back
+// buffer's boundaries, the operation is discarded.
 //
-// The width and the height of the 'cells' buffer are calculated that way:
-//	w := w
-//	h := len(cells) / w
+// The height of the 'cells' buffer is calculated as follows:
+//
+//     h := len(cells) / w
 func Blit(x, y, w int, cells []Cell) {
+	if w <= 0 {
+		return
+	}
+
 	h := len(cells) / w
-	C.tb_blit(C.uint(x), C.uint(y), C.uint(w), C.uint(h), struct_tb_cell_ptr(unsafe.Pointer(&cells[0])))
+	C.tb_blit(C.uint(x), C.uint(y), C.uint(w), C.uint(h),
+		struct_tb_cell_ptr(unsafe.Pointer(&cells[0])))
 }
 
-// Synchronizes the internal back buffer with the terminal.
+// Present synchronizes the internal back buffer with the terminal.
 func Present() { C.tb_present() }
 
-// Clears the internal back buffer.
+// Clear clears the internal back buffer.
 func Clear() { C.tb_clear() }
 
-// Wait for an event. This is a blocking function call. If an error occurs,
-// returns -1. Otherwise the return value is one of EVENT_ consts.
+// PollEvent waits for an event. This is a blocking function call. If an error
+// occurs, it returns -1. Otherwise the return value is one of EventXXX
+// constants.
 func PollEvent(e *Event) int {
 	return int(C.tb_poll_event(struct_tb_event_ptr(unsafe.Pointer(e))))
 }
 
-// Wait for an event 'timeout' milliseconds. If no event occurs, returns 0. If
-// an error occurs, returns -1. Otherwise the return value is one of EVENT_
-// consts.
+// PeekEvent waits for an event for 'timeout' milliseconds. If no event occurs,
+// it returns 0. If an error occurs, it returns -1. Otherwise the return value
+// is one of EventXXX constants.
 func PeekEvent(e *Event, timeout int) int {
 	return int(C.tb_peek_event(struct_tb_event_ptr(unsafe.Pointer(e)), C.uint(timeout)))
 }
 
-// Returns the width of the internal back buffer (which is the same as
+// Width returns the width of the internal back buffer (which is the same as
 // terminal's window width in characters).
 func Width() int { return int(C.tb_width()) }
 
-// Returns the height of the internal back buffer (which is the same as
+// Height returns the height of the internal back buffer (which is the same as
 // terminal's window height in characters).
 func Height() int { return int(C.tb_height()) }
 
-// Sets the position of the cursor. See also HIDE_CURSOR and HideCursor().
+// SetCursor sets the position of the cursor. See also Hide_Cursor and HideCursor().
 func SetCursor(x int, y int) { C.tb_set_cursor(C.int(x), C.int(y)) }
 
-// The shortcut for SetCursor(HIDE_CURSOR, HIDE_CURSOR).
-func HideCursor() { C.tb_set_cursor(CHideCursor, CHideCursor) }
+// HideCursor is a shortcut for SetCursor(Hide_Cursor, Hide_Cursor).
+func HideCursor() { C.tb_set_cursor(Hide_Cursor, Hide_Cursor) }
 
-// Selects termbox input mode. Termbox has two input modes:
+// SelectInputMode selects the termbox input mode. Termbox has two input modes:
 //
-// 1. ESC input mode. When ESC sequence is in the buffer and it doesn't
-// match any known sequence. ESC means KeyESC.
+// 1. ESC input mode. When an ESC sequence is in the buffer and it doesn't
+// match any known sequence. ESC means KeyEsc.
 //
-// 2. ALT input mode. When ESC sequence is in the buffer and it doesn't match
-// any known sequence. ESC enables MOD_ALT modifier for the next keyboard
+// 2. ALT input mode. When an ESC sequence is in the buffer and it doesn't match
+// any known sequence. ESC enables the ModAlt modifier for the next keyboard
 // event.
 //
-// If 'mode' is 0, returns the current input mode. See also INPUT_ constants.
+// If 'mode' is 0, returns the current input mode. Refer to the InputXXX
+// constants for details.
 //
-// Note: INPUT_ALT mode may not work with PeekEvent.
+// Note: InputAlt mode may not work with PeekEvent.
 func SelectInputMode(mode int) { C.tb_select_input_mode(C.int(mode)) }
 
-// Shortcut for termbox.PollEvent(e).
+// Poll is a shortcut for PollEvent(e).
 func (e *Event) Poll() int { return PollEvent(e) }
 
-// Shortcut for termbox.PeekEvent(e, timeout).
+// Peek is a shortcut for PeekEvent(e, timeout).
 func (e *Event) Peek(timeout int) int { return PeekEvent(e, timeout) }
