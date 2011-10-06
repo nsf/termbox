@@ -73,8 +73,8 @@ func main() {
 	ticker := time.NewTicker(5e8)
 	event_sink := serveInput()
 
-	color := uint16(0)
-	last_letter := " "
+	var color uint16
+	var last_letter string
 
 mainloop:
 	for {
