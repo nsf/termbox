@@ -5,8 +5,10 @@ package termbox
 // #include "../termbox.h"
 import "C"
 import (
-	"unsafe"
 	"os"
+	"fmt"
+	"utf8"
+	"unsafe"
 )
 
 // This type represents termbox event. 'Mod', 'Key' and 'Ch' fields are valid
@@ -179,13 +181,37 @@ func Init() (err os.Error) {
 func Shutdown() { C.tb_shutdown() }
 
 // ChangeCell alters the back buffer cell parameters at the specified position.
-func ChangeCell(x int, y int, ch int, fg uint16, bg uint16) {
+func ChangeCell(x, y, ch int, fg, bg uint16) {
 	C.tb_change_cell(C.uint(x), C.uint(y), C.uint32_t(ch), C.uint16_t(fg), C.uint16_t(bg))
 }
 
 // PutCell puts the cell at the specified position into the back buffer.
 func PutCell(x, y int, cell *Cell) {
 	C.tb_put_cell(C.uint(x), C.uint(y), struct_tb_cell_ptr(unsafe.Pointer(cell)))
+}
+
+// A convenience function for printing the given string starting at the
+// given cell.
+func Printf(x, y int, fg, bg uint16, format string, argv ...interface{}) {
+	if format = fmt.Sprintf(format, argv...); len(format) == 0 {
+		return
+	}
+
+	cfg := C.uint16_t(fg)
+	cbg := C.uint16_t(bg)
+	cx := C.uint(x)
+	cy := C.uint(y)
+
+	var rune, size int
+	for len(format) > 0 {
+		if rune, size = utf8.DecodeRuneInString(format); size == 0 {
+			break
+		}
+
+		format = format[size:]
+		C.tb_change_cell(cx, cy, C.uint32_t(rune), cfg, cbg)
+		cx++
+	}
 }
 
 // Blit copies the cells buffer to the internal back buffer at the position
