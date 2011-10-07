@@ -44,26 +44,18 @@ func drawBox(seed uint16) {
 
 	// horizontal
 	for x = 0; x < w; x++ {
-		termbox.ChangeCell(x, y, ' ', termbox.BLACK, color)
-		termbox.ChangeCell(x, y2, ' ', termbox.BLACK, color)
-
-		color++
-		if color > 7 {
-			color = 0
-		}
+		termbox.ChangeCell(x, y, ' ', termbox.Black, color)
+		termbox.ChangeCell(x, y2, ' ', termbox.Black, color)
+		color = (color + 1) % 7
 	}
 	x = 0
 
 	// overdrawing corners here, but it's ok
 	// vertical
 	for y = 0; y < h; y++ {
-		termbox.ChangeCell(x, y, ' ', termbox.BLACK, color)
-		termbox.ChangeCell(x2, y, ' ', termbox.BLACK, color)
-
-		color++
-		if color > 7 {
-			color = 0
-		}
+		termbox.ChangeCell(x, y, ' ', termbox.Black, color)
+		termbox.ChangeCell(x2, y, ' ', termbox.Black, color)
+		color = (color + 1) % 7
 	}
 }
 
@@ -78,24 +70,23 @@ func main() {
 	drawBox(0)
 	termbox.Present()
 
-	ticker := time.NewTicker(500000000)
+	ticker := time.NewTicker(5e8)
 	event_sink := serveInput()
 
-	color := 0
-	last_letter := " "
+	var color uint16
+	var last_letter string
 
-	mainloop: for {
+mainloop:
+	for {
 		select {
 		case <-ticker.C:
-			color++;
-			if color > 7 {
-				color = 0
-			}
+			color = (color + 1) % 7
 		case event := <-event_sink:
-			if event.Type == termbox.EVENT_KEY {
-				if event.Key == termbox.KEY_ESC {
+			if event.Type == termbox.EventKey {
+				if event.Key == termbox.KeyEsc {
 					break mainloop
 				}
+
 				if event.Ch != 0 {
 					last_letter = string(event.Ch)
 				} else {
@@ -105,8 +96,8 @@ func main() {
 		}
 
 		termbox.Clear()
-		drawString(1,  1, last_letter, termbox.WHITE, termbox.BLACK)
-		drawBox(uint16(color))
+		drawString(1, 1, last_letter, termbox.White, termbox.Black)
+		drawBox(color)
 		termbox.Present()
 	}
 }
