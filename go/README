@@ -1,3 +1,14 @@
+!!! IMPORTANT !!!:
+
+I've created goinstallable version of this bindings + library,
+you can install it that way:
+
+goinstall github.com/nsf/termbox-go
+
+(only the latest Go weekly is supported at the moment)
+
+
+
 Just run:
 
 gomake && gomake install
