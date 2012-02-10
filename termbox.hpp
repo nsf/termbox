@@ -131,6 +131,7 @@ inline void change_cell(unsigned int x, unsigned int y, uint32_t ch, uint16_t fg
 inline void blit(unsigned int x, unsigned int y, unsigned int w, unsigned int h, const cell *cells) { tb_blit(x,y,w,h,cells); }
 
 inline int select_input_mode(int mode) { return tb_select_input_mode(mode); }
+inline void set_clear_attributes(uint16_t fg, uint16_t bg) { tb_set_clear_attributes(fg, bg); }
 
 inline int peek_event(event &e, unsigned int timeout = 0) { return tb_peek_event(&e, timeout); }
 inline int poll_event(event &e) { return tb_poll_event(&e); }
