@@ -3,7 +3,7 @@ prefix=/usr/local
 libdir=$(prefix)/lib
 includedir=$(prefix)/include
 
-CFLAGS=-std=c99 -D_POSIX_SOURCE -Wall -Wextra -Wno-unused -O2
+CFLAGS=-std=c99 -D_BSD_SOURCE -Wall -Wextra -Wno-unused -O2
 
 SRC=termbox.c term.c input.c ringbuffer.c utf8.c
 OBJ=$(subst .c,.o,$(SRC))
