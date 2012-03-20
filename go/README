@@ -1,30 +1,6 @@
-!!! IMPORTANT !!!:
+Termbox Go bindings are gone, there is a pure Go version of the termbox library
+now, which is also more portable (compiled on Mac and has Windows
+implementation):
 
-I've created goinstallable version of this bindings + library,
-you can install it that way:
+	go get -u github.com/nsf/termbox-go
 
-goinstall github.com/nsf/termbox-go
-
-(only the latest Go weekly is supported at the moment)
-
-
-
-Just run:
-
-gomake && gomake install
-
-It will build a module and install it to the appropriate directory.
-Keep in mind that it will run 'make_libtermbox.bash' script which
-uses CMake to build the termbox library itself.
-
-To build and run an example just do this (for example using 8g/8l tools):
-
-8g example.go
-8l -o example example.8
-./example
-
---------------------------
-API Reference: http://nsf.github.com/termbox/termbox.html
-
---------------------------
-Any questions?: mailto:no.smile.face@gmail.com
