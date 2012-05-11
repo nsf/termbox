@@ -5,9 +5,9 @@ import termbox
 import time
 import sys
 import random
-import psyco
+#import psyco
 
-psyco.full()
+#psyco.full()
 
 spaceord = ord(u" ")
 

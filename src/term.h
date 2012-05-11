@@ -22,7 +22,7 @@ enum {
 
 #define EUNSUPPORTED_TERM -1
 
-int init_term();
+int init_term(void);
 
 /* 0 on success, -1 on failure */
 int extract_event(struct tb_event *event, struct ringbuffer *inbuf, int inputmode);

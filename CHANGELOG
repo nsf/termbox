@@ -1,0 +1,12 @@
+# Project: termbox - a ncurses alternative
+
+May 5th 2012, youngkevinjonas@gmail.com:
+    I have completely reorganized the project
+    while leaving most of the code intact (fixed
+    a couple of warnings). Now you can either use
+    it as a dependency for a C/C++ project by employing
+    CMake, or you can install it as a Python package
+    by using Python distutils and Cython.
+
+    Fixed misuse of C prototypes (ie. foo() -> foo(void))
+    Changed a couple of include paths

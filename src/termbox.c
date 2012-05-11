@@ -56,11 +56,11 @@ static void cellbuf_resize(struct cellbuf *buf, unsigned int width, unsigned int
 static void cellbuf_clear(struct cellbuf *buf);
 static void cellbuf_free(struct cellbuf *buf);
 
-static void update_size();
-static void update_term_size();
+static void update_size(void);
+static void update_term_size(void);
 static void send_attr(uint16_t fg, uint16_t bg);
 static void send_char(unsigned int x, unsigned int y, uint32_t c);
-static void send_clear();
+static void send_clear(void);
 static void sigwinch_handler(int xxx);
 static int wait_fill_event(struct tb_event *event, struct timeval *timeout);
 
@@ -69,7 +69,7 @@ static volatile int buffer_size_change_request;
 
 /* -------------------------------------------------------- */
 
-int tb_init()
+int tb_init(void)
 {
 	out = fopen("/dev/tty", "w");
 	in = fopen("/dev/tty", "r");
@@ -121,7 +121,7 @@ int tb_init()
 	return 0;
 }
 
-void tb_shutdown()
+void tb_shutdown(void)
 {
 	fputs(funcs[T_SHOW_CURSOR], out);
 	fputs(funcs[T_SGR0], out);
@@ -141,7 +141,7 @@ void tb_shutdown()
 	free_ringbuffer(&inbuf);
 }
 
-void tb_present()
+void tb_present(void)
 {
 	unsigned int x,y;
 	struct tb_cell *back, *front;
@@ -227,17 +227,17 @@ int tb_peek_event(struct tb_event *event, unsigned int timeout)
 	return wait_fill_event(event, &tv);
 }
 
-unsigned int tb_width()
+unsigned int tb_width(void)
 {
 	return termw;
 }
 
-unsigned int tb_height()
+unsigned int tb_height(void)
 {
 	return termh;
 }
 
-void tb_clear()
+void tb_clear(void)
 {
 	if (buffer_size_change_request) {
 		update_size();
@@ -322,7 +322,7 @@ static void get_term_size(int *w, int *h)
 	if (h) *h = sz.ws_row;
 }
 
-static void update_term_size()
+static void update_term_size(void)
 {
 	struct winsize sz;
 	memset(&sz, 0, sizeof(sz));
@@ -364,7 +364,7 @@ static void send_char(unsigned int x, unsigned int y, uint32_t c)
 	fputs(buf, out);
 }
 
-static void send_clear()
+static void send_clear(void)
 {
 	send_attr(foreground, background);
 	fputs(funcs[T_CLEAR_SCREEN], out);
@@ -387,7 +387,7 @@ static void sigwinch_handler(int xxx)
 	write(winch_fds[1], &zzz, sizeof(int));
 }
 
-static void update_size()
+static void update_size(void)
 {
 	update_term_size();
 	cellbuf_resize(&back_buffer, termw, termh);

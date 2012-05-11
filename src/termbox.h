@@ -130,14 +130,14 @@ struct tb_event {
 #define TB_EFAILED_TO_OPEN_TTY		-2
 #define TB_EPIPE_TRAP_ERROR		-3
 
-SO_IMPORT int tb_init();
-SO_IMPORT void tb_shutdown();
+SO_IMPORT int tb_init(void);
+SO_IMPORT void tb_shutdown(void);
 
-SO_IMPORT unsigned int tb_width();
-SO_IMPORT unsigned int tb_height();
+SO_IMPORT unsigned int tb_width(void);
+SO_IMPORT unsigned int tb_height(void);
 
-SO_IMPORT void tb_clear();
-SO_IMPORT void tb_present();
+SO_IMPORT void tb_clear(void);
+SO_IMPORT void tb_present(void);
 
 #define TB_HIDE_CURSOR -1
 SO_IMPORT void tb_set_cursor(int cx, int cy);

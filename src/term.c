@@ -80,7 +80,7 @@ static int try_compatible(const char *term, const char *name,
 	return EUNSUPPORTED_TERM;
 }
 
-int init_term()
+int init_term(void)
 {
 	int i;
 	const char *term = getenv("TERM");

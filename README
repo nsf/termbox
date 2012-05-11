@@ -3,3 +3,4 @@ It's general purpose to serve as the simplest ncurses alternative.
 
 See NOTES for few important notes.
 See WHEREWHAT to know where things are located.
+See INSTALL for directions on building and installing termbox.

@@ -1,34 +1,29 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+#################################################################
+#   Termbox - A ncurses alternative
+#
+#   Author: nsf - no.smile.face@gmail.com
+#   Website: http://code.google.com/p/termbox/
+#   
+#   Termbox library is a simple and clean ncurses alternative.
+#   Of course everything has it's own price.
+#   In this case it's portability and stability.
+#
+#   Modified by: ykj - youngkevinjonas@gmail.com
+#   On: May 5th 2012
+#   I have completely reorganized the project
+#   while leaving most of the code intact (fixed
+#   a couple of warnings). Now you can either use
+#   it as a dependency for a C/C++ project by employing
+#   CMake, or you can install it as a Python package
+#   by using Python distutils and Cython.
+#
+#   This file constitutes the CMake build.
+#################################################################
+
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
 PROJECT(TERMBOX C)
 
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -std=gnu99")
 
-SET(TERMBOX_LIB_SRC
-	${CMAKE_CURRENT_SOURCE_DIR}/input.c
-	${CMAKE_CURRENT_SOURCE_DIR}/ringbuffer.c
-	${CMAKE_CURRENT_SOURCE_DIR}/term.c
-	${CMAKE_CURRENT_SOURCE_DIR}/termbox.c
-	${CMAKE_CURRENT_SOURCE_DIR}/utf8.c
-)
-
-SET(KEYBOARD_SRC
-	${CMAKE_CURRENT_SOURCE_DIR}/keyboard.c
-)
-
-
-ADD_LIBRARY(termbox STATIC ${TERMBOX_LIB_SRC})
-ADD_EXECUTABLE(keyboard ${KEYBOARD_SRC})
-TARGET_LINK_LIBRARIES(keyboard termbox)
-
-OPTION(TERMBOX_SHARED "Build static library for use in shared libraries (uses fPIC)" OFF)
-
-
-IF(TERMBOX_SHARED)
-	SET_TARGET_PROPERTIES(termbox PROPERTIES COMPILE_FLAGS -fPIC)
-ENDIF(TERMBOX_SHARED)
-
-FIND_PROGRAM(PYREX pyrexc)
-IF(PYREX)
-	SUBDIRS(py)
-ENDIF()
+ADD_SUBDIRECTORY(src)
