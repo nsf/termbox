@@ -3,8 +3,14 @@ from distutils.extension import Extension
 from Cython.Distutils import build_ext
 
 import glob
+import platform
 
-sourcefiles = ['src/termboxmodule.pyx'] + glob.glob('src/*.c')
+sourcefiles = ['src/termboxmodule.pyx'] + \
+	list(filter(lambda n: n != "src/termboxmodule.c", glob.glob('src/*.c')))
+
+f = open('src/termboxconfig.pyx', 'w')
+f.write("DEF PY_MAJOR_VERSION = %s\n" % platform.python_version()[0])
+f.close()
 
 setup(
     name = 'termbox',

@@ -3,6 +3,8 @@
 This is a binding module for termbox library.
 """
 
+include "termboxconfig.pyx"
+
 cdef extern from "stdint.h":
 	ctypedef unsigned int uint32_t
 	ctypedef unsigned short uint16_t
@@ -148,7 +150,7 @@ cdef class Termbox:
 			raise TermboxException("Failed to init Termbox")
 		__instance = self
 		self.created = 1
-	
+
 	def __dealloc__(self):
 		self.close()
 
@@ -157,7 +159,7 @@ cdef class Termbox:
 
 	def __exit__(self, *args):#t, value, traceback):
 		self.close()
-	
+
 	def __enter__(self):
 		return self
 
@@ -193,10 +195,10 @@ cdef class Termbox:
 		"""Clear the internal cell buffer.
 		"""
 		tb_clear()
-	
+
 	def set_cursor(self, int x, int y):
-		"""Set cursor position to (x;y). 
-		
+		"""Set cursor position to (x;y).
+
 		   Set both arguments to HIDE_CURSOR or use 'hide_cursor' function to hide it.
 		"""
 		tb_set_cursor(x, y)
@@ -213,7 +215,7 @@ cdef class Termbox:
 
 	def peek_event(self, unsigned int timeout=0):
 		"""Wait for an event up to 'timeout' milliseconds and return it.
-		
+
 		   Returns None if there was no event and timeout is expired.
 		   Returns a tuple otherwise: (type, unicode character, key, mod, width, height).
 		"""
@@ -224,7 +226,10 @@ cdef class Termbox:
 		if result == 0:
 			return None
 		if e.ch:
-			uch = unichr(e.ch)
+			IF PY_MAJOR_VERSION == 3:
+				uch = chr(e.ch)
+			ELIF PY_MAJOR_VERSION == 2:
+				uch = unichr(e.ch)
 		else:
 			uch = None
 		return (e.type, uch, e.key, e.mod, e.w, e.h)
@@ -239,7 +244,10 @@ cdef class Termbox:
 		result = tb_poll_event(&e)
 		assert(result >= 0)
 		if e.ch:
-			uch = unichr(e.ch)
+			IF PY_MAJOR_VERSION == 3:
+				uch = chr(e.ch)
+			ELIF PY_MAJOR_VERSION == 2:
+				uch = unichr(e.ch)
 		else:
 			uch = None
 		return (e.type, uch, e.key, e.mod, e.w, e.h)
