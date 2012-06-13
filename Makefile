@@ -15,7 +15,7 @@ DEMOOBJS = $(DEMOSRC:.c=.o)
 HEADERS = src/termbox.h
 ALL_INCLUDES = $(HEADERS)
 
-ALL_LIBS=termbox.a
+ALL_LIBS=libtermbox.a
 ALL_DEMOS=keyboard_demo
 
 CFLAGS=-fPIC -O0 -g -std=gnu99 -D_GNU_SOURCE
@@ -40,7 +40,7 @@ clean:
 %.o: %.c
 	$(CC) $(BUILDCFLAGS) -c -o $@ $<
 
-termbox.a: $(LIBOBJS)
+libtermbox.a: $(LIBOBJS)
 	rm -f $@
 	$(AR) rc $@ $(LIBOBJS)
 	$(RANLIB) $@
