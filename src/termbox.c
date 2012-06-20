@@ -401,6 +401,7 @@ static void send_char(unsigned int x, unsigned int y, uint32_t c)
 	if (x-1 != lastx || y != lasty)
 		print_move_cursor(y+1, x+1);
 	lastx = x; lasty = y;
+	if(!c) buf[0] = ' '; // replace 0 with whitespace
 	memstream_puts(&write_buffer, buf);
 }
 
