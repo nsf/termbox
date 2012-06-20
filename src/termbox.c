@@ -55,6 +55,9 @@ static int cursor_y = -1;
 static uint16_t background = TB_BLACK;
 static uint16_t foreground = TB_WHITE;
 
+static void write_cursor(unsigned x, unsigned y);
+static void write_sgr(uint32_t fg, uint32_t bg);
+
 static void cellbuf_init(struct cellbuf *buf, unsigned int width, unsigned int height);
 static void cellbuf_resize(struct cellbuf *buf, unsigned int width, unsigned int height);
 static void cellbuf_clear(struct cellbuf *buf);
@@ -72,35 +75,6 @@ static int wait_fill_event(struct tb_event *event, struct timeval *timeout);
 static volatile int buffer_size_change_request;
 
 /* -------------------------------------------------------- */
-
-static unsigned convertnum(uint32_t num, char* buf) {
-	unsigned i, l = 0;
-	int ch;
-	do { 
-		buf[l++] = '0' + (num % 10);
-		num /= 10;
-	} while (num);
-	for(i = 0; i < l / 2; i++) {
-		ch = buf[i];
-		buf[i] = buf[l - 1 - i];
-		buf[l - 1 - i] = ch;
-	}
-	return l;
-}
-
-static unsigned print2u(const char* seq, uint32_t u1, uint32_t u2, char* bufptr) {
-	uint32_t numbers[2] = {u1, u2};
-	char *buf = bufptr;
-	unsigned idx = 0;
-	while(*seq) {
-		if(*seq != '%')
-			*buf++ = *seq;
-		else
-			buf += convertnum(numbers[idx++], buf);
-		seq++;
-	}
-	return buf - bufptr;
-}
 
 int tb_init(void)
 {
@@ -176,11 +150,6 @@ void tb_shutdown(void)
 	free_ringbuffer(&inbuf);
 }
 
-static void print_move_cursor(unsigned y, unsigned x) {
-	char buf[32];
-	memstream_write(&write_buffer, buf, print2u(funcs[T_MOVE_CURSOR], y, x, buf));
-}
-
 void tb_present(void)
 {
 	unsigned int x,y;
@@ -207,7 +176,7 @@ void tb_present(void)
 		}
 	}
 	if (!IS_CURSOR_HIDDEN(cursor_x, cursor_y))
-		print_move_cursor(cursor_y+1, cursor_x+1);
+		write_cursor(cursor_x, cursor_y);
 	memstream_flush(&write_buffer);
 }
 
@@ -222,7 +191,7 @@ void tb_set_cursor(int cx, int cy)
 	cursor_x = cx;
 	cursor_y = cy;
 	if (!IS_CURSOR_HIDDEN(cursor_x, cursor_y))
-		print_move_cursor(cursor_y+1, cursor_x+1);
+		write_cursor(cursor_x, cursor_y);
 }
 
 void tb_put_cell(unsigned int x, unsigned int y, const struct tb_cell *cell)
@@ -301,6 +270,42 @@ void tb_set_clear_attributes(uint16_t fg, uint16_t bg)
 
 /* -------------------------------------------------------- */
 
+static unsigned convertnum(uint32_t num, char* buf) {
+	unsigned i, l = 0;
+	int ch;
+	do { 
+		buf[l++] = '0' + (num % 10);
+		num /= 10;
+	} while (num);
+	for(i = 0; i < l / 2; i++) {
+		ch = buf[i];
+		buf[i] = buf[l - 1 - i];
+		buf[l - 1 - i] = ch;
+	}
+	return l;
+}
+
+#define WRITE_LITERAL(X) memstream_write(&write_buffer, (X), sizeof(X) -1)
+#define WRITE_INT(X) memstream_write(&write_buffer, buf, convertnum((X), buf))
+
+static void write_cursor(unsigned x, unsigned y) {
+	char buf[32];
+	WRITE_LITERAL("\033[");
+	WRITE_INT(y+1);
+	WRITE_LITERAL(";");
+	WRITE_INT(x+1);
+	WRITE_LITERAL("H");
+}
+
+static void write_sgr(uint32_t fg, uint32_t bg) {
+	char buf[32];
+	WRITE_LITERAL("\033[3");
+	WRITE_INT(fg);
+	WRITE_LITERAL(";4");
+	WRITE_INT(bg);
+	WRITE_LITERAL("m");
+}
+
 static void cellbuf_init(struct cellbuf *buf, unsigned int width, unsigned int height)
 {
 	buf->cells = (struct tb_cell*)malloc(sizeof(struct tb_cell) * width * height);
@@ -377,10 +382,9 @@ static void send_attr(uint16_t fg, uint16_t bg)
 {
 #define LAST_ATTR_INIT 0xFFFF
 	static uint16_t lastfg = LAST_ATTR_INIT, lastbg = LAST_ATTR_INIT;
-	char buf[32];
 	if (fg != lastfg || bg != lastbg) {
 		memstream_puts(&write_buffer, funcs[T_SGR0]);
-		memstream_write(&write_buffer, buf, print2u(funcs[T_SGR], fg & 0x0F, bg & 0x0F, buf));
+		write_sgr(fg & 0x0F, bg & 0x0F);
 		if (fg & TB_BOLD)
 			memstream_puts(&write_buffer, funcs[T_BOLD]);
 		if (bg & TB_BOLD)
@@ -399,7 +403,7 @@ static void send_char(unsigned int x, unsigned int y, uint32_t c)
 	int bw = utf8_unicode_to_char(buf, c);
 	buf[bw] = '\0';
 	if (x-1 != lastx || y != lasty)
-		print_move_cursor(y+1, x+1);
+		write_cursor(x, y);
 	lastx = x; lasty = y;
 	if(!c) buf[0] = ' '; // replace 0 with whitespace
 	memstream_puts(&write_buffer, buf);
@@ -410,7 +414,7 @@ static void send_clear(void)
 	send_attr(foreground, background);
 	memstream_puts(&write_buffer, funcs[T_CLEAR_SCREEN]);
 	if (!IS_CURSOR_HIDDEN(cursor_x, cursor_y))
-		print_move_cursor(cursor_y+1, cursor_x+1);
+		write_cursor(cursor_x, cursor_y);
 	memstream_flush(&write_buffer);
 
 	/* we need to invalidate cursor position too and these two vars are
