@@ -1,8 +1,9 @@
 #include <string.h>
 #include <stdio.h>
+#include <unistd.h>
 #include "memstream.h"
 
-void memstream_init(struct memstream *s, FILE* fd, void* buffer, size_t len) {
+void memstream_init(struct memstream *s, int fd, void* buffer, size_t len) {
 	s->file = fd,
 	s->data = buffer;
 	s->pos = 0;
@@ -10,8 +11,7 @@ void memstream_init(struct memstream *s, FILE* fd, void* buffer, size_t len) {
 }
 
 void memstream_flush(struct memstream *s) {
-	fwrite(s->data, s->pos, 1, s->file);
-	fflush(s->file);
+	write(s->file, s->data, s->pos);
 	s->pos = 0;
 }
 

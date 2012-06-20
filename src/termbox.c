@@ -139,7 +139,7 @@ int tb_init(void)
 	tios.c_cc[VTIME] = 0;
 	tcsetattr(out_fileno, TCSAFLUSH, &tios);
 	
-	memstream_init(&write_buffer, out, write_buffer_data, sizeof(write_buffer_data));
+	memstream_init(&write_buffer, out_fileno, write_buffer_data, sizeof(write_buffer_data));
 
 	memstream_puts(&write_buffer, funcs[T_ENTER_CA]);
 	memstream_puts(&write_buffer, funcs[T_ENTER_KEYPAD]);
