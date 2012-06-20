@@ -647,6 +647,7 @@ void dispatch_press(struct tb_event *ev)
 
 int main(int argc, char **argv)
 {
+	(void) argc; (void) argv;
 	int ret;
 
 	ret = tb_init();

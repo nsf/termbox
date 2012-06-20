@@ -424,6 +424,7 @@ static void send_clear(void)
 
 static void sigwinch_handler(int xxx)
 {
+	(void) xxx;
 	const int zzz = 1;
 	write(winch_fds[1], &zzz, sizeof(int));
 }
