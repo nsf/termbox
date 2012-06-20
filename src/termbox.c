@@ -12,6 +12,7 @@
 
 #include "term.h"
 #include "termbox.h"
+#include "memstream.h"
 
 struct cellbuf {
 	unsigned int width;
@@ -28,6 +29,9 @@ static struct termios orig_tios;
 
 static struct cellbuf back_buffer;
 static struct cellbuf front_buffer;
+static unsigned char write_buffer_data[32 * 1024];
+static struct memstream write_buffer;
+
 static unsigned int termw;
 static unsigned int termh;
 
@@ -35,7 +39,7 @@ static int inputmode = TB_INPUT_ESC;
 
 static struct ringbuffer inbuf;
 
-static FILE *out;
+static int out;
 static FILE *in;
 
 static int out_fileno;
@@ -50,6 +54,9 @@ static int cursor_y = -1;
 
 static uint16_t background = TB_BLACK;
 static uint16_t foreground = TB_WHITE;
+
+static void write_cursor(unsigned x, unsigned y);
+static void write_sgr(uint32_t fg, uint32_t bg);
 
 static void cellbuf_init(struct cellbuf *buf, unsigned int width, unsigned int height);
 static void cellbuf_resize(struct cellbuf *buf, unsigned int width, unsigned int height);
@@ -71,13 +78,13 @@ static volatile int buffer_size_change_request;
 
 int tb_init(void)
 {
-	out = fopen("/dev/tty", "w");
+	out = open("/dev/tty", O_WRONLY);
 	in = fopen("/dev/tty", "r");
 
-	if (!out || !in)
+	if (out == -1 || !in)
 		return TB_EFAILED_TO_OPEN_TTY;
 
-	out_fileno = fileno(out);
+	out_fileno = out;
 	in_fileno = fileno(in);
 
 	if (init_term() < 0)
@@ -105,10 +112,12 @@ int tb_init(void)
 	tios.c_cc[VMIN] = 0;
 	tios.c_cc[VTIME] = 0;
 	tcsetattr(out_fileno, TCSAFLUSH, &tios);
+	
+	memstream_init(&write_buffer, out_fileno, write_buffer_data, sizeof(write_buffer_data));
 
-	fputs(funcs[T_ENTER_CA], out);
-	fputs(funcs[T_ENTER_KEYPAD], out);
-	fputs(funcs[T_HIDE_CURSOR], out);
+	memstream_puts(&write_buffer, funcs[T_ENTER_CA]);
+	memstream_puts(&write_buffer, funcs[T_ENTER_KEYPAD]);
+	memstream_puts(&write_buffer, funcs[T_HIDE_CURSOR]);
 	send_clear();
 
 	update_term_size();
@@ -123,15 +132,15 @@ int tb_init(void)
 
 void tb_shutdown(void)
 {
-	fputs(funcs[T_SHOW_CURSOR], out);
-	fputs(funcs[T_SGR0], out);
-	fputs(funcs[T_CLEAR_SCREEN], out);
-	fputs(funcs[T_EXIT_CA], out);
-	fputs(funcs[T_EXIT_KEYPAD], out);
-	fflush(out);
+	memstream_puts(&write_buffer, funcs[T_SHOW_CURSOR]);
+	memstream_puts(&write_buffer, funcs[T_SGR0]);
+	memstream_puts(&write_buffer, funcs[T_CLEAR_SCREEN]);
+	memstream_puts(&write_buffer, funcs[T_EXIT_CA]);
+	memstream_puts(&write_buffer, funcs[T_EXIT_KEYPAD]);
+	memstream_flush(&write_buffer);
 	tcsetattr(out_fileno, TCSAFLUSH, &orig_tios);
 
-	fclose(out);
+	close(out);
 	fclose(in);
 	close(winch_fds[0]);
 	close(winch_fds[1]);
@@ -167,22 +176,22 @@ void tb_present(void)
 		}
 	}
 	if (!IS_CURSOR_HIDDEN(cursor_x, cursor_y))
-		fprintf(out, funcs[T_MOVE_CURSOR], cursor_y+1, cursor_x+1);
-	fflush(out);
+		write_cursor(cursor_x, cursor_y);
+	memstream_flush(&write_buffer);
 }
 
 void tb_set_cursor(int cx, int cy)
 {
 	if (IS_CURSOR_HIDDEN(cursor_x, cursor_y) && !IS_CURSOR_HIDDEN(cx, cy))
-		fputs(funcs[T_SHOW_CURSOR], out);
+		memstream_puts(&write_buffer, funcs[T_SHOW_CURSOR]);
 
 	if (!IS_CURSOR_HIDDEN(cursor_x, cursor_y) && IS_CURSOR_HIDDEN(cx, cy))
-		fputs(funcs[T_HIDE_CURSOR], out);
+		memstream_puts(&write_buffer, funcs[T_HIDE_CURSOR]);
 
 	cursor_x = cx;
 	cursor_y = cy;
 	if (!IS_CURSOR_HIDDEN(cursor_x, cursor_y))
-		fprintf(out, funcs[T_MOVE_CURSOR], cursor_y+1, cursor_x+1);
+		write_cursor(cursor_x, cursor_y);
 }
 
 void tb_put_cell(unsigned int x, unsigned int y, const struct tb_cell *cell)
@@ -261,6 +270,42 @@ void tb_set_clear_attributes(uint16_t fg, uint16_t bg)
 
 /* -------------------------------------------------------- */
 
+static unsigned convertnum(uint32_t num, char* buf) {
+	unsigned i, l = 0;
+	int ch;
+	do { 
+		buf[l++] = '0' + (num % 10);
+		num /= 10;
+	} while (num);
+	for(i = 0; i < l / 2; i++) {
+		ch = buf[i];
+		buf[i] = buf[l - 1 - i];
+		buf[l - 1 - i] = ch;
+	}
+	return l;
+}
+
+#define WRITE_LITERAL(X) memstream_write(&write_buffer, (X), sizeof(X) -1)
+#define WRITE_INT(X) memstream_write(&write_buffer, buf, convertnum((X), buf))
+
+static void write_cursor(unsigned x, unsigned y) {
+	char buf[32];
+	WRITE_LITERAL("\033[");
+	WRITE_INT(y+1);
+	WRITE_LITERAL(";");
+	WRITE_INT(x+1);
+	WRITE_LITERAL("H");
+}
+
+static void write_sgr(uint32_t fg, uint32_t bg) {
+	char buf[32];
+	WRITE_LITERAL("\033[3");
+	WRITE_INT(fg);
+	WRITE_LITERAL(";4");
+	WRITE_INT(bg);
+	WRITE_LITERAL("m");
+}
+
 static void cellbuf_init(struct cellbuf *buf, unsigned int width, unsigned int height)
 {
 	buf->cells = (struct tb_cell*)malloc(sizeof(struct tb_cell) * width * height);
@@ -338,15 +383,14 @@ static void send_attr(uint16_t fg, uint16_t bg)
 #define LAST_ATTR_INIT 0xFFFF
 	static uint16_t lastfg = LAST_ATTR_INIT, lastbg = LAST_ATTR_INIT;
 	if (fg != lastfg || bg != lastbg) {
-		fputs(funcs[T_SGR0], out);
-		/* TODO: get rid of fprintf */
-		fprintf(out, funcs[T_SGR], fg & 0x0F, bg & 0x0F);
+		memstream_puts(&write_buffer, funcs[T_SGR0]);
+		write_sgr(fg & 0x0F, bg & 0x0F);
 		if (fg & TB_BOLD)
-			fputs(funcs[T_BOLD], out);
+			memstream_puts(&write_buffer, funcs[T_BOLD]);
 		if (bg & TB_BOLD)
-			fputs(funcs[T_BLINK], out);
+			memstream_puts(&write_buffer, funcs[T_BLINK]);
 		if (fg & TB_UNDERLINE)
-			fputs(funcs[T_UNDERLINE], out);
+			memstream_puts(&write_buffer, funcs[T_UNDERLINE]);
 
 		lastfg = fg;
 		lastbg = bg;
@@ -359,18 +403,19 @@ static void send_char(unsigned int x, unsigned int y, uint32_t c)
 	int bw = utf8_unicode_to_char(buf, c);
 	buf[bw] = '\0';
 	if (x-1 != lastx || y != lasty)
-		fprintf(out, funcs[T_MOVE_CURSOR], y+1, x+1); /* TODO: get rid of fprintf */
+		write_cursor(x, y);
 	lastx = x; lasty = y;
-	fputs(buf, out);
+	if(!c) buf[0] = ' '; // replace 0 with whitespace
+	memstream_puts(&write_buffer, buf);
 }
 
 static void send_clear(void)
 {
 	send_attr(foreground, background);
-	fputs(funcs[T_CLEAR_SCREEN], out);
+	memstream_puts(&write_buffer, funcs[T_CLEAR_SCREEN]);
 	if (!IS_CURSOR_HIDDEN(cursor_x, cursor_y))
-		fprintf(out, funcs[T_MOVE_CURSOR], cursor_y+1, cursor_x+1);
-	fflush(out);
+		write_cursor(cursor_x, cursor_y);
+	memstream_flush(&write_buffer);
 
 	/* we need to invalidate cursor position too and these two vars are
 	 * used only for simple cursor positioning optimization, cursor
@@ -383,6 +428,7 @@ static void send_clear(void)
 
 static void sigwinch_handler(int xxx)
 {
+	(void) xxx;
 	const int zzz = 1;
 	write(winch_fds[1], &zzz, sizeof(int));
 }
