@@ -39,7 +39,7 @@ static int inputmode = TB_INPUT_ESC;
 
 static struct ringbuffer inbuf;
 
-static FILE *out;
+static int out;
 static FILE *in;
 
 static int out_fileno;
@@ -78,13 +78,13 @@ static volatile int buffer_size_change_request;
 
 int tb_init(void)
 {
-	out = fopen("/dev/tty", "w");
+	out = open("/dev/tty", O_WRONLY);
 	in = fopen("/dev/tty", "r");
 
-	if (!out || !in)
+	if (out == -1 || !in)
 		return TB_EFAILED_TO_OPEN_TTY;
 
-	out_fileno = fileno(out);
+	out_fileno = out;
 	in_fileno = fileno(in);
 
 	if (init_term() < 0)
@@ -140,7 +140,7 @@ void tb_shutdown(void)
 	memstream_flush(&write_buffer);
 	tcsetattr(out_fileno, TCSAFLUSH, &orig_tios);
 
-	fclose(out);
+	close(out);
 	fclose(in);
 	close(winch_fds[0]);
 	close(winch_fds[1]);
