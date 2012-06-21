@@ -3,10 +3,19 @@
 This file describes how to build and install termbox,
 depending on your usecase.
 
-If you're a C/C++ dude, use:
+If you're a C/C++ dude, use make:
     $ make
 
     Dependencies: gnu make
+
+Or using CMake:
+    $ mkdir build_termbox
+    $ cd build_termbox
+    $ cmake /path/to/src
+    $ make
+    $ (...)
+
+    Dependencies: cmake > 2.8
 
 If you're a Python, run:
     $ python setup.py install
@@ -22,4 +31,3 @@ If you're a Python, run:
     $ python test_termboxmodule.py
 
     (Press ESC to exit the program)
-
