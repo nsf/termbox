@@ -5,8 +5,6 @@
 #include "term.h"
 
 #define BUFFER_SIZE_MAX 16
-#define SUCCESS 0
-#define FAILURE -1
 
 /* if s1 starts with s2 returns 1, else 0 */
 static int starts_with(const char *s1, const char *s2)
