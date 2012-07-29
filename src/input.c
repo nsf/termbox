@@ -30,7 +30,7 @@ static int parse_escape_seq(struct tb_event *event, const char *buf)
 	return 0;
 }
 
-int extract_event(struct tb_event *event, struct ringbuffer *inbuf, int inputmode)
+bool extract_event(struct tb_event *event, struct ringbuffer *inbuf, int inputmode)
 {
 	char buf[BUFFER_SIZE_MAX+1];
 	int nbytes = ringbuffer_data_size(inbuf);
@@ -39,7 +39,7 @@ int extract_event(struct tb_event *event, struct ringbuffer *inbuf, int inputmod
 		nbytes = BUFFER_SIZE_MAX;
 
 	if (nbytes == 0)
-		return FAILURE;
+		return false;
 
 	ringbuffer_read(inbuf, buf, nbytes);
 	buf[nbytes] = '\0';
@@ -48,7 +48,7 @@ int extract_event(struct tb_event *event, struct ringbuffer *inbuf, int inputmod
 		int n = parse_escape_seq(event, buf);
 		if (n) {
 			ringbuffer_pop(inbuf, 0, n);
-			return SUCCESS;
+			return true;
 		} else {
 			/* it's not escape sequence, then it's ALT or ESC, check inputmode */
 			switch (inputmode) {
@@ -58,14 +58,12 @@ int extract_event(struct tb_event *event, struct ringbuffer *inbuf, int inputmod
 				event->key = TB_KEY_ESC;
 				event->mod = 0;
 				ringbuffer_pop(inbuf, 0, 1);
-				return SUCCESS;
-				break;
+				return true;
 			case TB_INPUT_ALT:
 				/* if we're in alt mode, set ALT modifier to event and redo parsing */
 				event->mod = TB_MOD_ALT;
 				ringbuffer_pop(inbuf, 0, 1);
 				return extract_event(event, inbuf, inputmode);
-				break;
 			default:
 				assert(!"never got here");
 				break;
@@ -85,7 +83,7 @@ int extract_event(struct tb_event *event, struct ringbuffer *inbuf, int inputmod
 		event->ch = 0;
 		event->key = (uint16_t)buf[0];
 		ringbuffer_pop(inbuf, 0, 1);
-		return SUCCESS;
+		return true;
 	}
 
 	/* feh... we got utf8 here */
@@ -96,9 +94,9 @@ int extract_event(struct tb_event *event, struct ringbuffer *inbuf, int inputmod
 		utf8_char_to_unicode(&event->ch, buf);
 		event->key = 0;
 		ringbuffer_pop(inbuf, 0, utf8_char_length(buf[0]));
-		return SUCCESS;
+		return true;
 	}
 
 	/* fuck!!!!1111odin1odinodin */
-	return FAILURE;
+	return false;
 }

@@ -1,6 +1,7 @@
 #ifndef TERMBOX_H
 #define TERMBOX_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 /* for shared objects */

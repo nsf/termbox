@@ -453,7 +453,7 @@ static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
 
 	/* try to extract event from input buffer, return on success */
 	event->type = TB_EVENT_KEY;
-	if (extract_event(event, &inbuf, inputmode) == 0)
+	if (extract_event(event, &inbuf, inputmode))
 		return TB_EVENT_KEY;
 
 	/* it looks like input buffer is incomplete, let's try the short path */
@@ -464,7 +464,7 @@ static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
 		if (ringbuffer_free_space(&inbuf) < r)
 			return -1;
 		ringbuffer_push(&inbuf, buf, r);
-		if (extract_event(event, &inbuf, inputmode) == 0)
+		if (extract_event(event, &inbuf, inputmode))
 			return TB_EVENT_KEY;
 	}
 
@@ -490,7 +490,7 @@ static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
 				return -1;
 			/* fill buffer */
 			ringbuffer_push(&inbuf, buf, r);
-			if (extract_event(event, &inbuf, inputmode) == 0)
+			if (extract_event(event, &inbuf, inputmode))
 				return TB_EVENT_KEY;
 		}
 		if (FD_ISSET(winch_fds[0], &events)) {
