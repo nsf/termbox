@@ -8,9 +8,8 @@ import platform
 sourcefiles = ['src/termboxmodule.pyx'] + \
 	list(filter(lambda n: n != "src/termboxmodule.c", glob.glob('src/*.c')))
 
-f = open('src/termboxconfig.pyx', 'w')
-f.write("DEF PY_MAJOR_VERSION = %s\n" % platform.python_version()[0])
-f.close()
+with open('src/termboxconfig.pyx', 'w') as f:
+    f.write("DEF PY_MAJOR_VERSION = %s\n" % platform.python_version()[0])
 
 setup(
     name = 'termbox',
