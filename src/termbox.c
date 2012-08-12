@@ -81,17 +81,32 @@ int tb_init(void)
 	out = open("/dev/tty", O_WRONLY);
 	in = fopen("/dev/tty", "r");
 
-	if (out == -1 || !in)
+	if (out == -1 || !in) {
+		if(out != -1)
+			close(out);
+
+		if(in)
+			fclose(in);
+
 		return TB_EFAILED_TO_OPEN_TTY;
+	}
 
 	out_fileno = out;
 	in_fileno = fileno(in);
 
-	if (init_term() < 0)
-		return TB_EUNSUPPORTED_TERMINAL;
+	if (init_term() < 0) {
+		close(out);
+		fclose(in);
 
-	if (pipe(winch_fds) < 0)
+		return TB_EUNSUPPORTED_TERMINAL;
+	}
+
+	if (pipe(winch_fds) < 0) {
+		close(out);
+		fclose(in);
+
 		return TB_EPIPE_TRAP_ERROR;
+	}
 
 	struct sigaction sa;
 	sa.sa_handler = sigwinch_handler;

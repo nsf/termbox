@@ -144,28 +144,31 @@ int init_term(void)
 {
 	int i;
 	const char *term = getenv("TERM");
-	for (i = 0; terms[i].name; i++) {
-		if (!strcmp(terms[i].name, term)) {
-			keys = terms[i].keys;
-			funcs = terms[i].funcs;
-			return 0;
-		}
-	}
 
-	/* let's do some heuristic, maybe it's a compatible terminal */
-	if (try_compatible(term, "xterm", xterm_keys, xterm_funcs) == 0)
-		return 0;
-	if (try_compatible(term, "rxvt", rxvt_unicode_keys, rxvt_unicode_funcs) == 0)
-		return 0;
-	if (try_compatible(term, "linux", linux_keys, linux_funcs) == 0)
-		return 0;
-	if (try_compatible(term, "Eterm", Eterm_keys, Eterm_funcs) == 0)
-		return 0;
-	if (try_compatible(term, "screen", screen_keys, screen_funcs) == 0)
-		return 0;
-	/* let's assume that 'cygwin' is xterm compatible */
-	if (try_compatible(term, "cygwin", xterm_keys, xterm_funcs) == 0)
-		return 0;
+	if (term) {
+		for (i = 0; terms[i].name; i++) {
+			if (!strcmp(terms[i].name, term)) {
+				keys = terms[i].keys;
+				funcs = terms[i].funcs;
+				return 0;
+			}
+		}
+
+		/* let's do some heuristic, maybe it's a compatible terminal */
+		if (try_compatible(term, "xterm", xterm_keys, xterm_funcs) == 0)
+			return 0;
+		if (try_compatible(term, "rxvt", rxvt_unicode_keys, rxvt_unicode_funcs) == 0)
+			return 0;
+		if (try_compatible(term, "linux", linux_keys, linux_funcs) == 0)
+			return 0;
+		if (try_compatible(term, "Eterm", Eterm_keys, Eterm_funcs) == 0)
+			return 0;
+		if (try_compatible(term, "screen", screen_keys, screen_funcs) == 0)
+			return 0;
+		/* let's assume that 'cygwin' is xterm compatible */
+		if (try_compatible(term, "cygwin", xterm_keys, xterm_funcs) == 0)
+			return 0;
+	}
 
 	return EUNSUPPORTED_TERM;
 }
