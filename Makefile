@@ -15,6 +15,7 @@ DEMOOBJS = $(DEMOSRC:.c=.o)
 HEADERS = src/termbox.h
 ALL_INCLUDES = $(HEADERS)
 
+SHARED_LIBS=libtermbox.so
 ALL_LIBS=libtermbox.a
 ALL_DEMOS=keyboard_demo
 
@@ -28,7 +29,7 @@ RANLIB  = $(CROSS_COMPILE)ranlib
 
 BUILDCFLAGS=$(CFLAGS)
 
-all: $(ALL_LIBS) $(ALL_DEMOS)
+all: $(ALL_LIBS) $(ALL_DEMOS) $(SHARED_LIBS)
 
 install: $(ALL_LIBS:lib/%=$(DESTDIR)$(libdir)/%) $(ALL_INCLUDES:include/%=$(DESTDIR)$(includedir)/%)
 
@@ -44,6 +45,9 @@ libtermbox.a: $(LIBOBJS)
 	rm -f $@
 	$(AR) rc $@ $(LIBOBJS)
 	$(RANLIB) $@
+
+libtermbox.so: $(LIBOBJS)
+	gcc -shared -o $(SHARED_LIBS) $(LIBOBJS)
 
 keyboard_demo: $(OBJS)
 	$(CC) $(LDFLAGS) -o $@ $(OBJS)
