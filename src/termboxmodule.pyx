@@ -27,14 +27,16 @@ cdef extern from "termbox.h":
 	unsigned int tb_height()
 	void tb_set_cursor(int x, int y)
 	void tb_select_input_mode(int mode)
-	int tb_peek_event(tb_event *event, unsigned int timeout)
-	int tb_poll_event(tb_event *event)
+	int tb_peek_event(tb_event *event, unsigned int timeout) nogil
+	int tb_poll_event(tb_event *event) nogil
 
 class TermboxException(Exception):
 	def __init__(self, msg):
 		self.msg = msg
 	def __str__(self):
 		return self.msg
+
+import threading
 
 __instance = None
 
@@ -140,6 +142,7 @@ cdef class Termbox:
 		global __instance
 
 		self.created = 0
+		self._poll_lock = threading.Lock()
 
 		if __instance:
 			raise TermboxException("It is possible to create only one instance of Termbox")
@@ -221,7 +224,9 @@ cdef class Termbox:
 		"""
 		cdef tb_event e
 		cdef int result
-		result = tb_peek_event(&e, timeout)
+		with self._poll_lock:
+			with nogil:
+				result = tb_peek_event(&e, timeout)
 		assert(result >= 0)
 		if result == 0:
 			return None
@@ -241,7 +246,9 @@ cdef class Termbox:
 		"""
 		cdef tb_event e
 		cdef int result
-		result = tb_poll_event(&e)
+		with self._poll_lock:
+			with nogil:
+				result = tb_poll_event(&e)
 		assert(result >= 0)
 		if e.ch:
 			IF PY_MAJOR_VERSION == 3:
