@@ -396,10 +396,10 @@ void draw_keyboard()
 		tb_change_cell(78, i, 0x2588, TB_YELLOW, TB_YELLOW);
 	}
 
-	draw_key(K_ESC, TB_WHITE, TB_DEFAULT);
+	draw_key(K_ESC, TB_WHITE, TB_BLUE);
 	draw_key(K_F1, TB_WHITE, TB_BLUE);
-	draw_key(K_F2, TB_DEFAULT, TB_DEFAULT);
-	draw_key(K_F3, TB_DEFAULT, TB_BLUE);
+	draw_key(K_F2, TB_WHITE, TB_BLUE);
+	draw_key(K_F3, TB_WHITE, TB_BLUE);
 	draw_key(K_F4, TB_WHITE, TB_BLUE);
 	draw_key(K_F5, TB_WHITE, TB_BLUE);
 	draw_key(K_F6, TB_WHITE, TB_BLUE);
