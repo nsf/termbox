@@ -53,7 +53,7 @@ static int cursor_x = -1;
 static int cursor_y = -1;
 
 static uint16_t background = TB_DEFAULT;
-static uint16_t foreground = TB_WHITE;
+static uint16_t foreground = TB_DEFAULT;
 
 static void write_cursor(unsigned x, unsigned y);
 static void write_sgr(uint32_t fg, uint32_t bg);
