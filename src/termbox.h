@@ -107,6 +107,7 @@ extern "C" {
 #define TB_MAGENTA	0x05
 #define TB_CYAN		0x06
 #define TB_WHITE	0x07
+#define TB_DEFAULT 0x0F
 
 /* attributes */
 #define TB_BOLD		0x10
