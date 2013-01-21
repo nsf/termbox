@@ -372,34 +372,34 @@ void draw_key(struct key *k, uint16_t fg, uint16_t bg)
 void draw_keyboard()
 {
 	int i;
-	tb_change_cell(0, 0, 0x250C, TB_WHITE, TB_BLACK);
-	tb_change_cell(79, 0, 0x2510, TB_WHITE, TB_BLACK);
-	tb_change_cell(0, 23, 0x2514, TB_WHITE, TB_BLACK);
-	tb_change_cell(79, 23, 0x2518, TB_WHITE, TB_BLACK);
+	tb_change_cell(0, 0, 0x250C, TB_WHITE, TB_DEFAULT);
+	tb_change_cell(79, 0, 0x2510, TB_WHITE, TB_DEFAULT);
+	tb_change_cell(0, 23, 0x2514, TB_WHITE, TB_DEFAULT);
+	tb_change_cell(79, 23, 0x2518, TB_WHITE, TB_DEFAULT);
 
 	for (i = 1; i < 79; ++i) {
-		tb_change_cell(i, 0, 0x2500, TB_WHITE, TB_BLACK);
-		tb_change_cell(i, 23, 0x2500, TB_WHITE, TB_BLACK);
-		tb_change_cell(i, 17, 0x2500, TB_WHITE, TB_BLACK);
-		tb_change_cell(i, 4, 0x2500, TB_WHITE, TB_BLACK);
+		tb_change_cell(i, 0, 0x2500, TB_WHITE, TB_DEFAULT);
+		tb_change_cell(i, 23, 0x2500, TB_WHITE, TB_DEFAULT);
+		tb_change_cell(i, 17, 0x2500, TB_WHITE, TB_DEFAULT);
+		tb_change_cell(i, 4, 0x2500, TB_WHITE, TB_DEFAULT);
 	}
 	for (i = 1; i < 23; ++i) {
-		tb_change_cell(0, i, 0x2502, TB_WHITE, TB_BLACK);
-		tb_change_cell(79, i, 0x2502, TB_WHITE, TB_BLACK);
+		tb_change_cell(0, i, 0x2502, TB_WHITE, TB_DEFAULT);
+		tb_change_cell(79, i, 0x2502, TB_WHITE, TB_DEFAULT);
 	}
-	tb_change_cell(0, 17, 0x251C, TB_WHITE, TB_BLACK);
-	tb_change_cell(79, 17, 0x2524, TB_WHITE, TB_BLACK);
-	tb_change_cell(0, 4, 0x251C, TB_WHITE, TB_BLACK);
-	tb_change_cell(79, 4, 0x2524, TB_WHITE, TB_BLACK);
+	tb_change_cell(0, 17, 0x251C, TB_WHITE, TB_DEFAULT);
+	tb_change_cell(79, 17, 0x2524, TB_WHITE, TB_DEFAULT);
+	tb_change_cell(0, 4, 0x251C, TB_WHITE, TB_DEFAULT);
+	tb_change_cell(79, 4, 0x2524, TB_WHITE, TB_DEFAULT);
 	for (i = 5; i < 17; ++i) {
 		tb_change_cell(1, i, 0x2588, TB_YELLOW, TB_YELLOW);
 		tb_change_cell(78, i, 0x2588, TB_YELLOW, TB_YELLOW);
 	}
 
-	draw_key(K_ESC, TB_WHITE, TB_BLUE);
+	draw_key(K_ESC, TB_WHITE, TB_DEFAULT);
 	draw_key(K_F1, TB_WHITE, TB_BLUE);
-	draw_key(K_F2, TB_WHITE, TB_BLUE);
-	draw_key(K_F3, TB_WHITE, TB_BLUE);
+	draw_key(K_F2, TB_DEFAULT, TB_DEFAULT);
+	draw_key(K_F3, TB_DEFAULT, TB_BLUE);
 	draw_key(K_F4, TB_WHITE, TB_BLUE);
 	draw_key(K_F5, TB_WHITE, TB_BLUE);
 	draw_key(K_F6, TB_WHITE, TB_BLUE);
@@ -509,16 +509,16 @@ void draw_keyboard()
 	draw_key(K_K_0, TB_WHITE, TB_BLUE);
 	draw_key(K_K_PERIOD, TB_WHITE, TB_BLUE);
 
-	printf_tb(33, 1, TB_MAGENTA | TB_BOLD, TB_BLACK, "Keyboard demo!");
-	printf_tb(21, 2, TB_MAGENTA, TB_BLACK, "(press CTRL+X and then CTRL+Q to exit)");
-	printf_tb(15, 3, TB_MAGENTA, TB_BLACK, "(press CTRL+X and then CTRL+C to change input mode)");
+	printf_tb(33, 1, TB_MAGENTA | TB_BOLD, TB_DEFAULT, "Keyboard demo!");
+	printf_tb(21, 2, TB_MAGENTA, TB_DEFAULT, "(press CTRL+X and then CTRL+Q to exit)");
+	printf_tb(15, 3, TB_MAGENTA, TB_DEFAULT, "(press CTRL+X and then CTRL+C to change input mode)");
 
 	static const char *inputmodemap[] = {
 		0,
 		"TB_INPUT_ESC",
 		"TB_INPUT_ALT"
 	};
-	printf_tb(3, 18, TB_WHITE, TB_BLACK, "Input mode: %s",
+	printf_tb(3, 18, TB_WHITE, TB_DEFAULT, "Input mode: %s",
 			inputmodemap[tb_select_input_mode(0)]);
 }
 
@@ -597,26 +597,26 @@ void pretty_print_press(struct tb_event *ev)
 {
 	char buf[7];
 	buf[utf8_unicode_to_char(buf, ev->ch)] = '\0';
-	printf_tb(3, 19, TB_WHITE , TB_BLACK, "Key: ");
-	printf_tb(8, 19, TB_YELLOW, TB_BLACK, "decimal: %d", ev->key);
-	printf_tb(8, 20, TB_GREEN , TB_BLACK, "hex:     0x%X", ev->key);
-	printf_tb(8, 21, TB_CYAN  , TB_BLACK, "octal:   0%o", ev->key);
-	printf_tb(8, 22, TB_RED   , TB_BLACK, "string:  %s", funckeymap(ev->key));
+	printf_tb(3, 19, TB_WHITE , TB_DEFAULT, "Key: ");
+	printf_tb(8, 19, TB_YELLOW, TB_DEFAULT, "decimal: %d", ev->key);
+	printf_tb(8, 20, TB_GREEN , TB_DEFAULT, "hex:     0x%X", ev->key);
+	printf_tb(8, 21, TB_CYAN  , TB_DEFAULT, "octal:   0%o", ev->key);
+	printf_tb(8, 22, TB_RED   , TB_DEFAULT, "string:  %s", funckeymap(ev->key));
 
-	printf_tb(43, 19, TB_WHITE , TB_BLACK, "Char: ");
-	printf_tb(49, 19, TB_YELLOW, TB_BLACK, "decimal: %d", ev->ch);
-	printf_tb(49, 20, TB_GREEN , TB_BLACK, "hex:     0x%X", ev->ch);
-	printf_tb(49, 21, TB_CYAN  , TB_BLACK, "octal:   0%o", ev->ch);
-	printf_tb(49, 22, TB_RED   , TB_BLACK, "string:  %s", buf);
+	printf_tb(43, 19, TB_WHITE , TB_DEFAULT, "Char: ");
+	printf_tb(49, 19, TB_YELLOW, TB_DEFAULT, "decimal: %d", ev->ch);
+	printf_tb(49, 20, TB_GREEN , TB_DEFAULT, "hex:     0x%X", ev->ch);
+	printf_tb(49, 21, TB_CYAN  , TB_DEFAULT, "octal:   0%o", ev->ch);
+	printf_tb(49, 22, TB_RED   , TB_DEFAULT, "string:  %s", buf);
 
-	printf_tb(43, 18, TB_WHITE, TB_BLACK, "Modifier: %s",
+	printf_tb(43, 18, TB_WHITE, TB_DEFAULT, "Modifier: %s",
 			(ev->mod) ? "TB_MOD_ALT" : "none");
 
 }
 
 void pretty_print_resize(struct tb_event *ev)
 {
-	printf_tb(3, 19, TB_WHITE, TB_BLACK, "Resize event: %d x %d", ev->w, ev->h);
+	printf_tb(3, 19, TB_WHITE, TB_DEFAULT, "Resize event: %d x %d", ev->w, ev->h);
 }
 
 void dispatch_press(struct tb_event *ev)

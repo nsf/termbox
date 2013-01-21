@@ -52,7 +52,7 @@ static unsigned int lasty = LAST_COORD_INIT;
 static int cursor_x = -1;
 static int cursor_y = -1;
 
-static uint16_t background = TB_BLACK;
+static uint16_t background = TB_DEFAULT;
 static uint16_t foreground = TB_WHITE;
 
 static void write_cursor(unsigned x, unsigned y);
@@ -314,11 +314,26 @@ static void write_cursor(unsigned x, unsigned y) {
 
 static void write_sgr(uint32_t fg, uint32_t bg) {
 	char buf[32];
-	WRITE_LITERAL("\033[3");
-	WRITE_INT(fg);
-	WRITE_LITERAL(";4");
-	WRITE_INT(bg);
-	WRITE_LITERAL("m");
+	if (fg != TB_DEFAULT) {
+		WRITE_LITERAL("\033[3");
+		WRITE_INT(fg);
+		if (bg != TB_DEFAULT) {
+			WRITE_LITERAL(";4");
+			WRITE_INT(bg);
+		} else {
+			WRITE_LITERAL(";49");
+		}
+		WRITE_LITERAL("m");
+	} else {
+		WRITE_LITERAL("\033[39");
+		if (bg != TB_DEFAULT) {
+			WRITE_LITERAL(";4");
+			WRITE_INT(bg);
+		} else {
+			WRITE_LITERAL(";49");
+		}
+		WRITE_LITERAL("m");
+	}
 }
 
 static void cellbuf_init(struct cellbuf *buf, unsigned int width, unsigned int height)
