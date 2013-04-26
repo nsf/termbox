@@ -136,6 +136,7 @@ EVENT_RESIZE	= 2
 
 cdef class Termbox:
 	cdef int created
+	cdef object _poll_lock
 
 	def __cinit__(self):
 		cdef int ret
@@ -258,5 +259,3 @@ cdef class Termbox:
 		else:
 			uch = None
 		return (e.type, uch, e.key, e.mod, e.w, e.h)
-
-
