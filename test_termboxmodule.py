@@ -15,7 +15,7 @@ def print_line(t, msg, y, fg, bg):
 	w = t.width()
 	l = len(msg)
 	x = 0
-	for i in xrange(w):
+	for i in range(w):
 		c = spaceord
 		if i < l:
 			c = ord(msg[i])
@@ -88,7 +88,7 @@ def draw_bottom_line(t, i):
 	w = t.width()
 	h = t.height()
 	c = i
-	for x in xrange(w):
+	for x in range(w):
 		t.change_cell(x, h-1, ord(u' '), termbox.BLACK, c)
 		t.change_cell(x, h-2, ord(u' '), termbox.BLACK, c)
 		c += 1
