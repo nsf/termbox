@@ -1,6 +1,3 @@
-keyboard_demo
-*.a
-*.o
-*.lo
-*.so
-*~
+build
+.waf*
+.lock*

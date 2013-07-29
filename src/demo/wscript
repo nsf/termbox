@@ -1,0 +1,6 @@
+def build(bld):
+	bld.program(
+		source = 'keyboard.c',
+		target = 'keyboard',
+		use = 'termbox',
+	)

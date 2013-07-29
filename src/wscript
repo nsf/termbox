@@ -1,0 +1,11 @@
+def build(bld):
+	sources = bld.path.ant_glob("*.c")
+	bld.shlib(
+		source = bld.path.ant_glob("*.c"),
+		target = 'termbox',
+	)
+	bld.stlib(
+		source = bld.path.ant_glob("*.c"),
+		target = 'termbox',
+	)
+	bld.recurse("demo")
