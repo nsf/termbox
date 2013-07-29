@@ -1,6 +1,4 @@
-This is a termbox library package. It is created by nsf.
-It's general purpose to serve as the simplest ncurses alternative.
+Termbox is a library that provides minimalistic API which allows the
+programmer to write text-based user interfaces.
 
-See NOTES for few important notes.
-See WHEREWHAT to know where things are located.
-See INSTALL for directions on building and installing termbox.
+TODO: more stuff here.

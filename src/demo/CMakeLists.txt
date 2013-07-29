@@ -1,6 +1,0 @@
-SET(KEYBOARD_SRC
-    ${CMAKE_CURRENT_SOURCE_DIR}/keyboard.c
-)
-
-ADD_EXECUTABLE(keyboard ${KEYBOARD_SRC})
-TARGET_LINK_LIBRARIES(keyboard termbox)
