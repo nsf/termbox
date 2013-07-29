@@ -1,6 +1,0 @@
-Termbox Go bindings are gone, there is a pure Go version of the termbox library
-now, which is also more portable (compiles on Mac and has Windows
-implementation):
-
-	go get -u github.com/nsf/termbox-go
-
