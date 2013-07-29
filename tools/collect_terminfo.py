@@ -3,7 +3,7 @@
 import sys, os, subprocess
 
 def escaped(s):
-	return repr(s)[1:-1]
+	return s.replace("\033", "\\033")
 
 def tput(term, name):
 	try:
