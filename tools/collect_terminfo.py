@@ -78,7 +78,7 @@ def do_term(term, nick):
 		w('"')
 		w(escaped(tput(term, v)))
 		w('",')
-	w("\n};\n")
+	w("0\n};\n")
 	w("static const char *%s_funcs[] = {\n\t" % nick)
 	for k,v in iter_pairs(funcs):
 		w('"')
@@ -89,7 +89,7 @@ def do_term(term, nick):
 		else:
 			w(escaped(tput(term, v)))
 		w('", ')
-	w("\n};\n\n")
+	w("0\n};\n\n")
 
 def do_terms(d):
 	w("static struct term {\n")
