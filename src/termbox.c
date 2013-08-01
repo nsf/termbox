@@ -127,7 +127,7 @@ int tb_init(void)
 	tios.c_cc[VMIN] = 0;
 	tios.c_cc[VTIME] = 0;
 	tcsetattr(out_fileno, TCSAFLUSH, &tios);
-	
+
 	memstream_init(&write_buffer, out_fileno, write_buffer_data, sizeof(write_buffer_data));
 
 	memstream_puts(&write_buffer, funcs[T_ENTER_CA]);
@@ -155,6 +155,7 @@ void tb_shutdown(void)
 	memstream_flush(&write_buffer);
 	tcsetattr(out_fileno, TCSAFLUSH, &orig_tios);
 
+	shutdown_term();
 	close(out);
 	fclose(in);
 	close(winch_fds[0]);
@@ -288,7 +289,7 @@ void tb_set_clear_attributes(uint16_t fg, uint16_t bg)
 static unsigned convertnum(uint32_t num, char* buf) {
 	unsigned i, l = 0;
 	int ch;
-	do { 
+	do {
 		buf[l++] = '0' + (num % 10);
 		num /= 10;
 	} while (num);
@@ -533,4 +534,3 @@ static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
 		}
 	}
 }
-

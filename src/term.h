@@ -14,13 +14,16 @@ enum {
 	T_UNDERLINE,
 	T_BOLD,
 	T_BLINK,
+	T_REVERSE,
 	T_ENTER_KEYPAD,
-	T_EXIT_KEYPAD
+	T_EXIT_KEYPAD,
+	T_FUNCS_NUM,
 };
 
 #define EUNSUPPORTED_TERM -1
 
 int init_term(void);
+void shutdown_term(void);
 
 /* true on success, false on failure */
 bool extract_event(struct tb_event *event, struct ringbuffer *inbuf, int inputmode);
