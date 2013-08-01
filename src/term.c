@@ -196,7 +196,7 @@ static char *load_terminfo(void) {
 			if (strcmp(cdir, "") == 0) {
 				cdir = "/usr/share/terminfo";
 			}
-			char *data = terminfo_try_path(dir, term);
+			char *data = terminfo_try_path(cdir, term);
 			if (data)
 				return data;
 			dir = strtok(0, ":");
