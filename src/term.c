@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 #include "term.h"
 
@@ -212,7 +213,7 @@ static char *load_terminfo(void) {
 #define TB_KEYS_NUM 22
 
 static const char *terminfo_copy_string(char *data, int str, int table) {
-	const short off = *(short*)(data + str);
+	const int16_t off = *(int16_t*)(data + str);
 	const char *src = data + table + off;
 	int len = strlen(src);
 	char *dst = malloc(len+1);
@@ -220,11 +221,11 @@ static const char *terminfo_copy_string(char *data, int str, int table) {
 	return dst;
 }
 
-const short ti_funcs[] = {
+const int16_t ti_funcs[] = {
 	28, 40, 16, 13, 5, 39, 36, 27, 26, 34, 89, 88,
 };
 
-const short ti_keys[] = {
+const int16_t ti_keys[] = {
 	66, 68 /* apparently not a typo; 67 is F10 for whatever reason */, 69,
 	70, 71, 72, 73, 74, 75, 67, 216, 217, 77, 59, 76, 164, 82, 81, 87, 61,
 	79, 83,
@@ -238,7 +239,7 @@ int init_term(void) {
 		return init_term_builtin();
 	}
 
-	short *header = (short*)data;
+	int16_t *header = (int16_t*)data;
 	if ((header[1] + header[2]) % 2) {
 		// old quirk to align everything on word boundaries
 		header[2] += 1;
