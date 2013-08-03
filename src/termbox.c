@@ -1,8 +1,7 @@
 #include <assert.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
 #include <sys/ioctl.h>
@@ -37,12 +36,7 @@ static unsigned int termh;
 
 static int inputmode = TB_INPUT_ESC;
 
-static int out;
-static FILE *in;
-
-static int out_fileno;
-static int in_fileno;
-
+static int inout;
 static int winch_fds[2];
 
 static unsigned int lastx = LAST_COORD_INIT;
@@ -76,33 +70,18 @@ static volatile int buffer_size_change_request;
 
 int tb_init(void)
 {
-	out = open("/dev/tty", O_WRONLY);
-	in = fopen("/dev/tty", "r");
-
-	if (out == -1 || !in) {
-		if(out != -1)
-			close(out);
-
-		if(in)
-			fclose(in);
-
+	inout = open("/dev/tty", O_RDWR);
+	if (inout == -1) {
 		return TB_EFAILED_TO_OPEN_TTY;
 	}
 
-	out_fileno = out;
-	in_fileno = fileno(in);
-
 	if (init_term() < 0) {
-		close(out);
-		fclose(in);
-
+		close(inout);
 		return TB_EUNSUPPORTED_TERMINAL;
 	}
 
 	if (pipe(winch_fds) < 0) {
-		close(out);
-		fclose(in);
-
+		close(inout);
 		return TB_EPIPE_TRAP_ERROR;
 	}
 
@@ -111,7 +90,7 @@ int tb_init(void)
 	sa.sa_flags = 0;
 	sigaction(SIGWINCH, &sa, 0);
 
-	tcgetattr(out_fileno, &orig_tios);
+	tcgetattr(inout, &orig_tios);
 
 	struct termios tios;
 	memcpy(&tios, &orig_tios, sizeof(tios));
@@ -124,8 +103,9 @@ int tb_init(void)
 	tios.c_cflag |= CS8;
 	tios.c_cc[VMIN] = 0;
 	tios.c_cc[VTIME] = 0;
-	tcsetattr(out_fileno, TCSAFLUSH, &tios);
+	tcsetattr(inout, TCSAFLUSH, &tios);
 
+	bytebuffer_init(&input_buffer, 128);
 	bytebuffer_init(&output_buffer, 32 * 1024);
 
 	bytebuffer_puts(&output_buffer, funcs[T_ENTER_CA]);
@@ -138,7 +118,6 @@ int tb_init(void)
 	cellbuf_init(&front_buffer, termw, termh);
 	cellbuf_clear(&back_buffer);
 	cellbuf_clear(&front_buffer);
-	bytebuffer_init(&input_buffer, 128);
 
 	return 0;
 }
@@ -150,12 +129,11 @@ void tb_shutdown(void)
 	bytebuffer_puts(&output_buffer, funcs[T_CLEAR_SCREEN]);
 	bytebuffer_puts(&output_buffer, funcs[T_EXIT_CA]);
 	bytebuffer_puts(&output_buffer, funcs[T_EXIT_KEYPAD]);
-	bytebuffer_flush(&output_buffer, out_fileno);
-	tcsetattr(out_fileno, TCSAFLUSH, &orig_tios);
+	bytebuffer_flush(&output_buffer, inout);
+	tcsetattr(inout, TCSAFLUSH, &orig_tios);
 
 	shutdown_term();
-	close(out);
-	fclose(in);
+	close(inout);
 	close(winch_fds[0]);
 	close(winch_fds[1]);
 
@@ -192,7 +170,7 @@ void tb_present(void)
 	}
 	if (!IS_CURSOR_HIDDEN(cursor_x, cursor_y))
 		write_cursor(cursor_x, cursor_y);
-	bytebuffer_flush(&output_buffer, out_fileno);
+	bytebuffer_flush(&output_buffer, inout);
 }
 
 void tb_set_cursor(int cx, int cy)
@@ -391,7 +369,7 @@ static void get_term_size(int *w, int *h)
 	struct winsize sz;
 	memset(&sz, 0, sizeof(sz));
 
-	ioctl(out_fileno, TIOCGWINSZ, &sz);
+	ioctl(inout, TIOCGWINSZ, &sz);
 
 	if (w) *w = sz.ws_col;
 	if (h) *h = sz.ws_row;
@@ -402,7 +380,7 @@ static void update_term_size(void)
 	struct winsize sz;
 	memset(&sz, 0, sizeof(sz));
 
-	ioctl(out_fileno, TIOCGWINSZ, &sz);
+	ioctl(inout, TIOCGWINSZ, &sz);
 
 	termw = sz.ws_col;
 	termh = sz.ws_row;
@@ -445,7 +423,7 @@ static void send_clear(void)
 	bytebuffer_puts(&output_buffer, funcs[T_CLEAR_SCREEN]);
 	if (!IS_CURSOR_HIDDEN(cursor_x, cursor_y))
 		write_cursor(cursor_x, cursor_y);
-	bytebuffer_flush(&output_buffer, out_fileno);
+	bytebuffer_flush(&output_buffer, inout);
 
 	/* we need to invalidate cursor position too and these two vars are
 	 * used only for simple cursor positioning optimization, cursor
@@ -474,46 +452,51 @@ static void update_size(void)
 
 static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
 {
-	/* ;-) */
+	// ;-)
 #define ENOUGH_DATA_FOR_INPUT_PARSING 128
 	int result;
 	char buf[ENOUGH_DATA_FOR_INPUT_PARSING];
 	fd_set events;
 	memset(event, 0, sizeof(struct tb_event));
 
-	/* try to extract event from input buffer, return on success */
+	// try to extract event from input buffer, return on success
 	event->type = TB_EVENT_KEY;
 	if (extract_event(event, &input_buffer, inputmode))
 		return TB_EVENT_KEY;
 
-	/* it looks like input buffer is incomplete, let's try the short path */
-	size_t r = fread(buf, 1, ENOUGH_DATA_FOR_INPUT_PARSING, in);
-	if (r < ENOUGH_DATA_FOR_INPUT_PARSING && feof(in))
-		clearerr(in);
-	if (r > 0) {
+	// it looks like input buffer is incomplete, let's try the short path
+	ssize_t r = read(inout, buf, ENOUGH_DATA_FOR_INPUT_PARSING);
+	if (r < 0) {
+		if (errno == EAGAIN || errno == EWOULDBLOCK) {
+			return 0;
+		}
+		return -1;
+	} else if (r > 0) {
 		bytebuffer_append(&input_buffer, buf, r);
 		if (extract_event(event, &input_buffer, inputmode))
 			return TB_EVENT_KEY;
 	}
 
-	/* no stuff in FILE's internal buffer, block in select */
+	// r == 0, or not enough data, let's go to select
 	while (1) {
 		FD_ZERO(&events);
-		FD_SET(in_fileno, &events);
+		FD_SET(inout, &events);
 		FD_SET(winch_fds[0], &events);
-		int maxfd = (winch_fds[0] > in_fileno) ? winch_fds[0] : in_fileno;
+		int maxfd = (winch_fds[0] > inout) ? winch_fds[0] : inout;
 		result = select(maxfd+1, &events, 0, 0, timeout);
 		if (!result)
 			return 0;
 
-		if (FD_ISSET(in_fileno, &events)) {
+		if (FD_ISSET(inout, &events)) {
 			event->type = TB_EVENT_KEY;
-			size_t r = fread(buf, 1, ENOUGH_DATA_FOR_INPUT_PARSING, in);
-			if (r < ENOUGH_DATA_FOR_INPUT_PARSING && feof(in))
-				clearerr(in);
-			if (r == 0)
-				continue;
-			/* fill buffer */
+			r = read(inout, buf, ENOUGH_DATA_FOR_INPUT_PARSING);
+			if (r < 0) {
+				// EAGAIN / EWOULDBLOCK shouldn't occur here
+				return -1;
+			}
+			assert(r != 0);
+
+			// fill buffer
 			bytebuffer_append(&input_buffer, buf, r);
 			if (extract_event(event, &input_buffer, inputmode))
 				return TB_EVENT_KEY;
