@@ -4,14 +4,18 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <stdio.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
+#include <sys/stat.h>
 #include <termios.h>
 #include <unistd.h>
 
-#include "term.h"
 #include "termbox.h"
-#include "bytebuffer.h"
+
+#include "bytebuffer.inl"
+#include "term.inl"
+#include "input.inl"
 
 struct cellbuf {
 	int width;
@@ -21,7 +25,6 @@ struct cellbuf {
 
 #define CELL(buf, x, y) (buf)->cells[(y) * (buf)->width + (x)]
 #define IS_CURSOR_HIDDEN(cx, cy) (cx == -1 || cy == -1)
-
 #define LAST_COORD_INIT -1
 
 static struct termios orig_tios;
@@ -408,7 +411,7 @@ static void send_attr(uint16_t fg, uint16_t bg)
 static void send_char(int x, int y, uint32_t c)
 {
 	char buf[7];
-	int bw = utf8_unicode_to_char(buf, c);
+	int bw = tb_utf8_unicode_to_char(buf, c);
 	buf[bw] = '\0';
 	if (x-1 != lastx || y != lasty)
 		write_cursor(x, y);

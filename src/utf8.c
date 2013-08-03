@@ -20,18 +20,18 @@ static const unsigned char utf8_mask[6] = {
 	0x01
 };
 
-int utf8_char_length(char c)
+int tb_utf8_char_length(char c)
 {
 	return utf8_length[(unsigned char)c];
 }
 
-int utf8_char_to_unicode(uint32_t *out, const char *c)
+int tb_utf8_char_to_unicode(uint32_t *out, const char *c)
 {
 	if (*c == 0)
 		return TB_EOF;
 
 	int i;
-	unsigned char len = utf8_char_length(*c);
+	unsigned char len = tb_utf8_char_length(*c);
 	unsigned char mask = utf8_mask[len-1];
 	uint32_t result = c[0] & mask;
 	for (i = 1; i < len; ++i) {
@@ -43,7 +43,7 @@ int utf8_char_to_unicode(uint32_t *out, const char *c)
 	return (int)len;
 }
 
-int utf8_unicode_to_char(char *out, uint32_t c)
+int tb_utf8_unicode_to_char(char *out, uint32_t c)
 {
 	int len = 0;
 	int first;

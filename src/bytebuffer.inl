@@ -1,7 +1,8 @@
-#include "bytebuffer.h"
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
+struct bytebuffer {
+	char *buf;
+	int len;
+	int cap;
+};
 
 static void bytebuffer_reserve(struct bytebuffer *b, int cap) {
 	if (b->cap >= cap) {
@@ -26,7 +27,7 @@ static void bytebuffer_reserve(struct bytebuffer *b, int cap) {
 	b->cap = cap;
 }
 
-void bytebuffer_init(struct bytebuffer *b, int cap) {
+static void bytebuffer_init(struct bytebuffer *b, int cap) {
 	b->cap = 0;
 	b->len = 0;
 	b->buf = 0;
@@ -37,36 +38,36 @@ void bytebuffer_init(struct bytebuffer *b, int cap) {
 	}
 }
 
-void bytebuffer_free(struct bytebuffer *b) {
+static void bytebuffer_free(struct bytebuffer *b) {
 	if (b->buf)
 		free(b->buf);
 }
 
-void bytebuffer_clear(struct bytebuffer *b) {
+static void bytebuffer_clear(struct bytebuffer *b) {
 	b->len = 0;
 }
 
-void bytebuffer_puts(struct bytebuffer *b, const char *str) {
-	bytebuffer_append(b, str, strlen(str));
-}
-
-void bytebuffer_append(struct bytebuffer *b, const char *data, int len) {
+static void bytebuffer_append(struct bytebuffer *b, const char *data, int len) {
 	bytebuffer_reserve(b, b->len + len);
 	memcpy(b->buf + b->len, data, len);
 	b->len += len;
 }
 
-void bytebuffer_resize(struct bytebuffer *b, int len) {
+static void bytebuffer_puts(struct bytebuffer *b, const char *str) {
+	bytebuffer_append(b, str, strlen(str));
+}
+
+static void bytebuffer_resize(struct bytebuffer *b, int len) {
 	bytebuffer_reserve(b, len);
 	b->len = len;
 }
 
-void bytebuffer_flush(struct bytebuffer *b, int fd) {
+static void bytebuffer_flush(struct bytebuffer *b, int fd) {
 	write(fd, b->buf, b->len);
 	bytebuffer_clear(b);
 }
 
-void bytebuffer_truncate(struct bytebuffer *b, int n) {
+static void bytebuffer_truncate(struct bytebuffer *b, int n) {
 	if (n <= 0)
 		return;
 	if (n > b->len)

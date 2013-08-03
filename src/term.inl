@@ -1,10 +1,20 @@
-#include <sys/stat.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
+enum {
+	T_ENTER_CA,
+	T_EXIT_CA,
+	T_SHOW_CURSOR,
+	T_HIDE_CURSOR,
+	T_CLEAR_SCREEN,
+	T_SGR0,
+	T_UNDERLINE,
+	T_BOLD,
+	T_BLINK,
+	T_REVERSE,
+	T_ENTER_KEYPAD,
+	T_EXIT_KEYPAD,
+	T_FUNCS_NUM,
+};
 
-#include "term.h"
+#define EUNSUPPORTED_TERM -1
 
 // rxvt-256color
 static const char *rxvt_256color_keys[] = {
@@ -68,9 +78,9 @@ static struct term {
 	{0, 0, 0},
 };
 
-static int init_from_terminfo = 0;
-const char **keys;
-const char **funcs;
+static bool init_from_terminfo = false;
+static const char **keys;
+static const char **funcs;
 
 static int try_compatible(const char *term, const char *name,
 			  const char **tkeys, const char **tfuncs)
@@ -221,21 +231,21 @@ static const char *terminfo_copy_string(char *data, int str, int table) {
 	return dst;
 }
 
-const int16_t ti_funcs[] = {
+static const int16_t ti_funcs[] = {
 	28, 40, 16, 13, 5, 39, 36, 27, 26, 34, 89, 88,
 };
 
-const int16_t ti_keys[] = {
+static const int16_t ti_keys[] = {
 	66, 68 /* apparently not a typo; 67 is F10 for whatever reason */, 69,
 	70, 71, 72, 73, 74, 75, 67, 216, 217, 77, 59, 76, 164, 82, 81, 87, 61,
 	79, 83,
 };
 
-int init_term(void) {
+static int init_term(void) {
 	int i;
 	char *data = load_terminfo();
 	if (!data) {
-		init_from_terminfo = 0;
+		init_from_terminfo = false;
 		return init_term_builtin();
 	}
 
@@ -262,11 +272,11 @@ int init_term(void) {
 			str_offset + 2 * ti_funcs[i], table_offset);
 	}
 
-	init_from_terminfo = 1;
+	init_from_terminfo = true;
 	return 0;
 }
 
-void shutdown_term(void) {
+static void shutdown_term(void) {
 	if (init_from_terminfo) {
 		int i;
 		for (i = 0; i < TB_KEYS_NUM; i++) {

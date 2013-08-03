@@ -345,7 +345,7 @@ void print_tb(const char *str, int x, int y, uint16_t fg, uint16_t bg)
 {
 	while (*str) {
 		uint32_t uni;
-		str += utf8_char_to_unicode(&uni, str);
+		str += tb_utf8_char_to_unicode(&uni, str);
 		tb_change_cell(x, y, uni, fg, bg);
 		x++;
 	}
@@ -596,7 +596,7 @@ const char *funckeymap(int k)
 void pretty_print_press(struct tb_event *ev)
 {
 	char buf[7];
-	buf[utf8_unicode_to_char(buf, ev->ch)] = '\0';
+	buf[tb_utf8_unicode_to_char(buf, ev->ch)] = '\0';
 	printf_tb(3, 19, TB_WHITE , TB_DEFAULT, "Key: ");
 	printf_tb(8, 19, TB_YELLOW, TB_DEFAULT, "decimal: %d", ev->key);
 	printf_tb(8, 20, TB_GREEN , TB_DEFAULT, "hex:     0x%X", ev->key);

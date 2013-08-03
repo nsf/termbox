@@ -1,10 +1,3 @@
-#include <assert.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdbool.h>
-
-#include "term.h"
-
 // if s1 starts with s2 returns true, else false
 // len is the length of s1
 // s2 should be null-terminated
@@ -35,7 +28,7 @@ static int parse_escape_seq(struct tb_event *event, const char *buf, int len)
 	return 0;
 }
 
-bool extract_event(struct tb_event *event, struct bytebuffer *inbuf, int inputmode)
+static bool extract_event(struct tb_event *event, struct bytebuffer *inbuf, int inputmode)
 {
 	const char *buf = inbuf->buf;
 	const int len = inbuf->len;
@@ -89,11 +82,11 @@ bool extract_event(struct tb_event *event, struct bytebuffer *inbuf, int inputmo
 	// feh... we got utf8 here
 
 	// check if there is all bytes
-	if (len >= utf8_char_length(buf[0])) {
+	if (len >= tb_utf8_char_length(buf[0])) {
 		/* everything ok, fill event, pop buffer, return success */
-		utf8_char_to_unicode(&event->ch, buf);
+		tb_utf8_char_to_unicode(&event->ch, buf);
 		event->key = 0;
-		bytebuffer_truncate(inbuf, utf8_char_length(buf[0]));
+		bytebuffer_truncate(inbuf, tb_utf8_char_length(buf[0]));
 		return true;
 	}
 
