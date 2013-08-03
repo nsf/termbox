@@ -341,7 +341,7 @@ struct combo func_combos[] = {
 	{{K_ARROW_RIGHT,0}}
 };
 
-void print_tb(const char *str, unsigned int x, unsigned int y, uint16_t fg, uint16_t bg)
+void print_tb(const char *str, int x, int y, uint16_t fg, uint16_t bg)
 {
 	while (*str) {
 		uint32_t uni;
@@ -351,7 +351,7 @@ void print_tb(const char *str, unsigned int x, unsigned int y, uint16_t fg, uint
 	}
 }
 
-void printf_tb(unsigned int x, unsigned int y, uint16_t fg, uint16_t bg, const char *fmt, ...)
+void printf_tb(int x, int y, uint16_t fg, uint16_t bg, const char *fmt, ...)
 {
 	char buf[4096];
 	va_list vl;
@@ -522,7 +522,7 @@ void draw_keyboard()
 			inputmodemap[tb_select_input_mode(0)]);
 }
 
-const char *funckeymap(unsigned int k)
+const char *funckeymap(int k)
 {
 	static const char *fcmap[] = {
 		"CTRL+2, CTRL+~",

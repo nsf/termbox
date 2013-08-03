@@ -22,12 +22,12 @@ cdef extern from "termbox.h":
 	void tb_shutdown()
 	void tb_present()
 	void tb_clear()
-	void tb_change_cell(unsigned int x, unsigned int y, uint32_t ch, uint16_t fg, uint16_t bg)
-	unsigned int tb_width()
-	unsigned int tb_height()
+	void tb_change_cell(int x, int y, uint32_t ch, uint16_t fg, uint16_t bg)
+	int tb_width()
+	int tb_height()
 	void tb_set_cursor(int x, int y)
 	void tb_select_input_mode(int mode)
-	int tb_peek_event(tb_event *event, unsigned int timeout) nogil
+	int tb_peek_event(tb_event *event, int timeout) nogil
 	int tb_poll_event(tb_event *event) nogil
 
 class TermboxException(Exception):
@@ -180,7 +180,7 @@ cdef class Termbox:
 		tb_present()
 		pass
 
-	def change_cell(self, unsigned int x, unsigned int y, unsigned int ch, uint16_t fg, uint16_t bg):
+	def change_cell(self, int x, int y, int ch, uint16_t fg, uint16_t bg):
 		"""Change cell in position (x;y).
 		"""
 		tb_change_cell(x, y, ch, fg, bg)
@@ -217,7 +217,7 @@ cdef class Termbox:
 		"""
 		tb_select_input_mode(mode)
 
-	def peek_event(self, unsigned int timeout=0):
+	def peek_event(self, int timeout=0):
 		"""Wait for an event up to 'timeout' milliseconds and return it.
 
 		   Returns None if there was no event and timeout is expired.

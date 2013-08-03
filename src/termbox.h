@@ -135,8 +135,8 @@ struct tb_event {
 SO_IMPORT int tb_init(void);
 SO_IMPORT void tb_shutdown(void);
 
-SO_IMPORT unsigned int tb_width(void);
-SO_IMPORT unsigned int tb_height(void);
+SO_IMPORT int tb_width(void);
+SO_IMPORT int tb_height(void);
 
 SO_IMPORT void tb_clear(void);
 SO_IMPORT void tb_present(void);
@@ -144,9 +144,9 @@ SO_IMPORT void tb_present(void);
 #define TB_HIDE_CURSOR -1
 SO_IMPORT void tb_set_cursor(int cx, int cy);
 
-SO_IMPORT void tb_put_cell(unsigned int x, unsigned int y, const struct tb_cell *cell);
-SO_IMPORT void tb_change_cell(unsigned int x, unsigned int y, uint32_t ch, uint16_t fg, uint16_t bg);
-SO_IMPORT void tb_blit(unsigned int x, unsigned int y, unsigned int w, unsigned int h, const struct tb_cell *cells);
+SO_IMPORT void tb_put_cell(int x, int y, const struct tb_cell *cell);
+SO_IMPORT void tb_change_cell(int x, int y, uint32_t ch, uint16_t fg, uint16_t bg);
+SO_IMPORT void tb_blit(int x, int y, int w, int h, const struct tb_cell *cells);
 
 #define TB_INPUT_ESC 1
 #define TB_INPUT_ALT 2
@@ -157,7 +157,7 @@ SO_IMPORT void tb_set_clear_attributes(uint16_t fg, uint16_t bg);
 #define TB_EVENT_KEY 1
 #define TB_EVENT_RESIZE 2
 
-SO_IMPORT int tb_peek_event(struct tb_event *event, unsigned int timeout);
+SO_IMPORT int tb_peek_event(struct tb_event *event, int timeout);
 SO_IMPORT int tb_poll_event(struct tb_event *event);
 /* these return:
 	0 - no events, no errors,
