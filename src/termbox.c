@@ -12,7 +12,7 @@
 
 #include "term.h"
 #include "termbox.h"
-#include "memstream.h"
+#include "bytebuffer.h"
 
 struct cellbuf {
 	unsigned int width;
@@ -29,8 +29,7 @@ static struct termios orig_tios;
 
 static struct cellbuf back_buffer;
 static struct cellbuf front_buffer;
-static unsigned char write_buffer_data[32 * 1024];
-static struct memstream write_buffer;
+static struct bytebuffer output_buffer;
 
 static unsigned int termw;
 static unsigned int termh;
@@ -128,11 +127,11 @@ int tb_init(void)
 	tios.c_cc[VTIME] = 0;
 	tcsetattr(out_fileno, TCSAFLUSH, &tios);
 
-	memstream_init(&write_buffer, out_fileno, write_buffer_data, sizeof(write_buffer_data));
+	init_bytebuffer(&output_buffer, 32 * 1024);
 
-	memstream_puts(&write_buffer, funcs[T_ENTER_CA]);
-	memstream_puts(&write_buffer, funcs[T_ENTER_KEYPAD]);
-	memstream_puts(&write_buffer, funcs[T_HIDE_CURSOR]);
+	bytebuffer_puts(&output_buffer, funcs[T_ENTER_CA]);
+	bytebuffer_puts(&output_buffer, funcs[T_ENTER_KEYPAD]);
+	bytebuffer_puts(&output_buffer, funcs[T_HIDE_CURSOR]);
 	send_clear();
 
 	update_term_size();
@@ -147,12 +146,12 @@ int tb_init(void)
 
 void tb_shutdown(void)
 {
-	memstream_puts(&write_buffer, funcs[T_SHOW_CURSOR]);
-	memstream_puts(&write_buffer, funcs[T_SGR0]);
-	memstream_puts(&write_buffer, funcs[T_CLEAR_SCREEN]);
-	memstream_puts(&write_buffer, funcs[T_EXIT_CA]);
-	memstream_puts(&write_buffer, funcs[T_EXIT_KEYPAD]);
-	memstream_flush(&write_buffer);
+	bytebuffer_puts(&output_buffer, funcs[T_SHOW_CURSOR]);
+	bytebuffer_puts(&output_buffer, funcs[T_SGR0]);
+	bytebuffer_puts(&output_buffer, funcs[T_CLEAR_SCREEN]);
+	bytebuffer_puts(&output_buffer, funcs[T_EXIT_CA]);
+	bytebuffer_puts(&output_buffer, funcs[T_EXIT_KEYPAD]);
+	flush_bytebuffer(&output_buffer, out_fileno);
 	tcsetattr(out_fileno, TCSAFLUSH, &orig_tios);
 
 	shutdown_term();
@@ -193,16 +192,16 @@ void tb_present(void)
 	}
 	if (!IS_CURSOR_HIDDEN(cursor_x, cursor_y))
 		write_cursor(cursor_x, cursor_y);
-	memstream_flush(&write_buffer);
+	flush_bytebuffer(&output_buffer, out_fileno);
 }
 
 void tb_set_cursor(int cx, int cy)
 {
 	if (IS_CURSOR_HIDDEN(cursor_x, cursor_y) && !IS_CURSOR_HIDDEN(cx, cy))
-		memstream_puts(&write_buffer, funcs[T_SHOW_CURSOR]);
+		bytebuffer_puts(&output_buffer, funcs[T_SHOW_CURSOR]);
 
 	if (!IS_CURSOR_HIDDEN(cursor_x, cursor_y) && IS_CURSOR_HIDDEN(cx, cy))
-		memstream_puts(&write_buffer, funcs[T_HIDE_CURSOR]);
+		bytebuffer_puts(&output_buffer, funcs[T_HIDE_CURSOR]);
 
 	cursor_x = cx;
 	cursor_y = cy;
@@ -286,8 +285,8 @@ void tb_set_clear_attributes(uint16_t fg, uint16_t bg)
 
 /* -------------------------------------------------------- */
 
-static unsigned convertnum(uint32_t num, char* buf) {
-	unsigned i, l = 0;
+static int convertnum(uint32_t num, char* buf) {
+	int i, l = 0;
 	int ch;
 	do {
 		buf[l++] = '0' + (num % 10);
@@ -301,8 +300,8 @@ static unsigned convertnum(uint32_t num, char* buf) {
 	return l;
 }
 
-#define WRITE_LITERAL(X) memstream_write(&write_buffer, (X), sizeof(X) -1)
-#define WRITE_INT(X) memstream_write(&write_buffer, buf, convertnum((X), buf))
+#define WRITE_LITERAL(X) bytebuffer_append(&output_buffer, (X), sizeof(X)-1)
+#define WRITE_INT(X) bytebuffer_append(&output_buffer, buf, convertnum((X), buf))
 
 static void write_cursor(unsigned x, unsigned y) {
 	char buf[32];
@@ -414,14 +413,14 @@ static void send_attr(uint16_t fg, uint16_t bg)
 #define LAST_ATTR_INIT 0xFFFF
 	static uint16_t lastfg = LAST_ATTR_INIT, lastbg = LAST_ATTR_INIT;
 	if (fg != lastfg || bg != lastbg) {
-		memstream_puts(&write_buffer, funcs[T_SGR0]);
+		bytebuffer_puts(&output_buffer, funcs[T_SGR0]);
 		write_sgr(fg & 0x0F, bg & 0x0F);
 		if (fg & TB_BOLD)
-			memstream_puts(&write_buffer, funcs[T_BOLD]);
+			bytebuffer_puts(&output_buffer, funcs[T_BOLD]);
 		if (bg & TB_BOLD)
-			memstream_puts(&write_buffer, funcs[T_BLINK]);
+			bytebuffer_puts(&output_buffer, funcs[T_BLINK]);
 		if (fg & TB_UNDERLINE)
-			memstream_puts(&write_buffer, funcs[T_UNDERLINE]);
+			bytebuffer_puts(&output_buffer, funcs[T_UNDERLINE]);
 
 		lastfg = fg;
 		lastbg = bg;
@@ -437,16 +436,16 @@ static void send_char(unsigned int x, unsigned int y, uint32_t c)
 		write_cursor(x, y);
 	lastx = x; lasty = y;
 	if(!c) buf[0] = ' '; // replace 0 with whitespace
-	memstream_puts(&write_buffer, buf);
+	bytebuffer_puts(&output_buffer, buf);
 }
 
 static void send_clear(void)
 {
 	send_attr(foreground, background);
-	memstream_puts(&write_buffer, funcs[T_CLEAR_SCREEN]);
+	bytebuffer_puts(&output_buffer, funcs[T_CLEAR_SCREEN]);
 	if (!IS_CURSOR_HIDDEN(cursor_x, cursor_y))
 		write_cursor(cursor_x, cursor_y);
-	memstream_flush(&write_buffer);
+	flush_bytebuffer(&output_buffer, out_fileno);
 
 	/* we need to invalidate cursor position too and these two vars are
 	 * used only for simple cursor positioning optimization, cursor
