@@ -5,10 +5,9 @@ from Cython.Distutils import build_ext
 import glob
 import platform
 
-sourcefiles = ['src/termboxmodule.pyx'] + \
-	list(filter(lambda n: n != "src/termboxmodule.c", glob.glob('src/*.c')))
+sourcefiles = ['src/python/termboxmodule.pyx'] + glob.glob('src/*.c')
 
-with open('src/termboxconfig.pyx', 'w') as f:
+with open('src/python/termboxconfig.pyx', 'w') as f:
     f.write("DEF PY_MAJOR_VERSION = %s\n" % platform.python_version()[0])
 
 setup(

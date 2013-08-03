@@ -10,7 +10,7 @@ cdef extern from "stdint.h":
 	ctypedef unsigned short uint16_t
 	ctypedef signed int int32_t
 
-cdef extern from "termbox.h":
+cdef extern from "../termbox.h":
 	struct tb_event:
 		uint16_t type
 		uint32_t ch
