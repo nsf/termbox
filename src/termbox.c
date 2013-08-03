@@ -453,9 +453,7 @@ static void update_size(void)
 static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
 {
 	// ;-)
-#define ENOUGH_DATA_FOR_INPUT_PARSING 128
-	int result;
-	char buf[ENOUGH_DATA_FOR_INPUT_PARSING];
+#define ENOUGH_DATA_FOR_PARSING 64
 	fd_set events;
 	memset(event, 0, sizeof(struct tb_event));
 
@@ -464,40 +462,49 @@ static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
 	if (extract_event(event, &input_buffer, inputmode))
 		return TB_EVENT_KEY;
 
-	// it looks like input buffer is incomplete, let's try the short path
-	ssize_t r = read(inout, buf, ENOUGH_DATA_FOR_INPUT_PARSING);
+	// it looks like input buffer is incomplete, let's try the short path,
+	// but first make sure there is enough space
+	int prevlen = input_buffer.len;
+	bytebuffer_resize(&input_buffer, prevlen + ENOUGH_DATA_FOR_PARSING);
+	ssize_t r = read(inout,	input_buffer.buf + prevlen,
+		ENOUGH_DATA_FOR_PARSING);
 	if (r < 0) {
 		// EAGAIN / EWOULDBLOCK shouldn't occur here
 		assert(errno != EAGAIN && errno != EWOULDBLOCK);
 		return -1;
 	} else if (r > 0) {
-		bytebuffer_append(&input_buffer, buf, r);
+		bytebuffer_resize(&input_buffer, prevlen + r);
 		if (extract_event(event, &input_buffer, inputmode))
 			return TB_EVENT_KEY;
+	} else {
+		bytebuffer_resize(&input_buffer, prevlen);
 	}
 
 	// r == 0, or not enough data, let's go to select
+
 	while (1) {
 		FD_ZERO(&events);
 		FD_SET(inout, &events);
 		FD_SET(winch_fds[0], &events);
 		int maxfd = (winch_fds[0] > inout) ? winch_fds[0] : inout;
-		result = select(maxfd+1, &events, 0, 0, timeout);
+		int result = select(maxfd+1, &events, 0, 0, timeout);
 		if (!result)
 			return 0;
 
 		if (FD_ISSET(inout, &events)) {
 			event->type = TB_EVENT_KEY;
-			r = read(inout, buf, ENOUGH_DATA_FOR_INPUT_PARSING);
+			prevlen = input_buffer.len;
+			bytebuffer_resize(&input_buffer,
+				prevlen + ENOUGH_DATA_FOR_PARSING);
+			r = read(inout, input_buffer.buf + prevlen,
+				ENOUGH_DATA_FOR_PARSING);
 			if (r < 0) {
 				// EAGAIN / EWOULDBLOCK shouldn't occur here
 				assert(errno != EAGAIN && errno != EWOULDBLOCK);
 				return -1;
 			}
-			assert(r != 0);
-
-			// fill buffer
-			bytebuffer_append(&input_buffer, buf, r);
+			assert(r > 0);
+			bytebuffer_resize(&input_buffer, prevlen + r);
 			if (extract_event(event, &input_buffer, inputmode))
 				return TB_EVENT_KEY;
 		}
