@@ -16,7 +16,7 @@ static bool starts_with(const char *s1, int len, const char *s2)
 			return false;
 		n++;
 	}
-	return true;
+	return *s2 == 0;
 }
 
 // convert escape sequence to event, and return consumed bytes on success (failure == 0)

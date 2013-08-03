@@ -249,11 +249,13 @@ int init_term(void) {
 		header[1] + header[2] +	2 * header[3];
 	const int table_offset = str_offset + 2 * header[4];
 
-	keys = malloc(sizeof(const char*) * TB_KEYS_NUM);
+	keys = malloc(sizeof(const char*) * (TB_KEYS_NUM+1));
 	for (i = 0; i < TB_KEYS_NUM; i++) {
 		keys[i] = terminfo_copy_string(data,
 			str_offset + 2 * ti_keys[i], table_offset);
 	}
+	keys[TB_KEYS_NUM] = 0;
+
 	funcs = malloc(sizeof(const char*) * T_FUNCS_NUM);
 	for (i = 0; i < T_FUNCS_NUM; i++) {
 		funcs[i] = terminfo_copy_string(data,
