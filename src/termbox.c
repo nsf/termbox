@@ -138,7 +138,7 @@ int tb_init(void)
 	cellbuf_init(&front_buffer, termw, termh);
 	cellbuf_clear(&back_buffer);
 	cellbuf_clear(&front_buffer);
-	bytebuffer_init(&input_buffer, 4096);
+	bytebuffer_init(&input_buffer, 128);
 
 	return 0;
 }
