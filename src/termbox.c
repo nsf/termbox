@@ -126,7 +126,7 @@ int tb_init(void)
 	tios.c_cc[VTIME] = 0;
 	tcsetattr(out_fileno, TCSAFLUSH, &tios);
 
-	init_bytebuffer(&output_buffer, 32 * 1024);
+	bytebuffer_init(&output_buffer, 32 * 1024);
 
 	bytebuffer_puts(&output_buffer, funcs[T_ENTER_CA]);
 	bytebuffer_puts(&output_buffer, funcs[T_ENTER_KEYPAD]);
@@ -138,7 +138,7 @@ int tb_init(void)
 	cellbuf_init(&front_buffer, termw, termh);
 	cellbuf_clear(&back_buffer);
 	cellbuf_clear(&front_buffer);
-	init_bytebuffer(&input_buffer, 4096);
+	bytebuffer_init(&input_buffer, 4096);
 
 	return 0;
 }
@@ -150,7 +150,7 @@ void tb_shutdown(void)
 	bytebuffer_puts(&output_buffer, funcs[T_CLEAR_SCREEN]);
 	bytebuffer_puts(&output_buffer, funcs[T_EXIT_CA]);
 	bytebuffer_puts(&output_buffer, funcs[T_EXIT_KEYPAD]);
-	flush_bytebuffer(&output_buffer, out_fileno);
+	bytebuffer_flush(&output_buffer, out_fileno);
 	tcsetattr(out_fileno, TCSAFLUSH, &orig_tios);
 
 	shutdown_term();
@@ -161,8 +161,8 @@ void tb_shutdown(void)
 
 	cellbuf_free(&back_buffer);
 	cellbuf_free(&front_buffer);
-	free_bytebuffer(&output_buffer);
-	free_bytebuffer(&input_buffer);
+	bytebuffer_free(&output_buffer);
+	bytebuffer_free(&input_buffer);
 }
 
 void tb_present(void)
@@ -192,7 +192,7 @@ void tb_present(void)
 	}
 	if (!IS_CURSOR_HIDDEN(cursor_x, cursor_y))
 		write_cursor(cursor_x, cursor_y);
-	flush_bytebuffer(&output_buffer, out_fileno);
+	bytebuffer_flush(&output_buffer, out_fileno);
 }
 
 void tb_set_cursor(int cx, int cy)
@@ -445,7 +445,7 @@ static void send_clear(void)
 	bytebuffer_puts(&output_buffer, funcs[T_CLEAR_SCREEN]);
 	if (!IS_CURSOR_HIDDEN(cursor_x, cursor_y))
 		write_cursor(cursor_x, cursor_y);
-	flush_bytebuffer(&output_buffer, out_fileno);
+	bytebuffer_flush(&output_buffer, out_fileno);
 
 	/* we need to invalidate cursor position too and these two vars are
 	 * used only for simple cursor positioning optimization, cursor

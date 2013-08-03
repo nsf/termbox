@@ -26,7 +26,7 @@ static void bytebuffer_reserve(struct bytebuffer *b, int cap) {
 	b->cap = cap;
 }
 
-void init_bytebuffer(struct bytebuffer *b, int cap) {
+void bytebuffer_init(struct bytebuffer *b, int cap) {
 	b->cap = 0;
 	b->len = 0;
 	b->buf = 0;
@@ -37,12 +37,12 @@ void init_bytebuffer(struct bytebuffer *b, int cap) {
 	}
 }
 
-void free_bytebuffer(struct bytebuffer *b) {
+void bytebuffer_free(struct bytebuffer *b) {
 	if (b->buf)
 		free(b->buf);
 }
 
-void clear_bytebuffer(struct bytebuffer *b) {
+void bytebuffer_clear(struct bytebuffer *b) {
 	b->len = 0;
 }
 
@@ -56,14 +56,14 @@ void bytebuffer_append(struct bytebuffer *b, const char *data, int len) {
 	b->len += len;
 }
 
-void resize_bytebuffer(struct bytebuffer *b, int len) {
+void bytebuffer_resize(struct bytebuffer *b, int len) {
 	bytebuffer_reserve(b, len);
 	b->len = len;
 }
 
-void flush_bytebuffer(struct bytebuffer *b, int fd) {
+void bytebuffer_flush(struct bytebuffer *b, int fd) {
 	write(fd, b->buf, b->len);
-	clear_bytebuffer(b);
+	bytebuffer_clear(b);
 }
 
 void bytebuffer_truncate(struct bytebuffer *b, int n) {
