@@ -467,9 +467,8 @@ static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
 	// it looks like input buffer is incomplete, let's try the short path
 	ssize_t r = read(inout, buf, ENOUGH_DATA_FOR_INPUT_PARSING);
 	if (r < 0) {
-		if (errno == EAGAIN || errno == EWOULDBLOCK) {
-			return 0;
-		}
+		// EAGAIN / EWOULDBLOCK shouldn't occur here
+		assert(errno != EAGAIN && errno != EWOULDBLOCK);
 		return -1;
 	} else if (r > 0) {
 		bytebuffer_append(&input_buffer, buf, r);
@@ -492,6 +491,7 @@ static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
 			r = read(inout, buf, ENOUGH_DATA_FOR_INPUT_PARSING);
 			if (r < 0) {
 				// EAGAIN / EWOULDBLOCK shouldn't occur here
+				assert(errno != EAGAIN && errno != EWOULDBLOCK);
 				return -1;
 			}
 			assert(r != 0);
