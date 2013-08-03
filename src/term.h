@@ -2,7 +2,7 @@
 #define TERMBOX_TERM_H
 
 #include "termbox.h"
-#include "ringbuffer.h"
+#include "bytebuffer.h"
 
 enum {
 	T_ENTER_CA,
@@ -26,7 +26,7 @@ int init_term(void);
 void shutdown_term(void);
 
 /* true on success, false on failure */
-bool extract_event(struct tb_event *event, struct ringbuffer *inbuf, int inputmode);
+bool extract_event(struct tb_event *event, struct bytebuffer *inbuf, int inputmode);
 
 extern const char **keys;
 extern const char **funcs;

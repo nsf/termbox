@@ -65,3 +65,13 @@ void flush_bytebuffer(struct bytebuffer *b, int fd) {
 	write(fd, b->buf, b->len);
 	clear_bytebuffer(b);
 }
+
+void bytebuffer_truncate(struct bytebuffer *b, int n) {
+	if (n <= 0)
+		return;
+	if (n > b->len)
+		n = b->len;
+	const int nmove = b->len - n;
+	memmove(b->buf, b->buf+n, nmove);
+	b->len -= n;
+}

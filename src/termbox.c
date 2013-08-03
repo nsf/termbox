@@ -30,13 +30,12 @@ static struct termios orig_tios;
 static struct cellbuf back_buffer;
 static struct cellbuf front_buffer;
 static struct bytebuffer output_buffer;
+static struct bytebuffer input_buffer;
 
 static unsigned int termw;
 static unsigned int termh;
 
 static int inputmode = TB_INPUT_ESC;
-
-static struct ringbuffer inbuf;
 
 static int out;
 static FILE *in;
@@ -139,7 +138,7 @@ int tb_init(void)
 	cellbuf_init(&front_buffer, termw, termh);
 	cellbuf_clear(&back_buffer);
 	cellbuf_clear(&front_buffer);
-	init_ringbuffer(&inbuf, 4096);
+	init_bytebuffer(&input_buffer, 4096);
 
 	return 0;
 }
@@ -162,7 +161,8 @@ void tb_shutdown(void)
 
 	cellbuf_free(&back_buffer);
 	cellbuf_free(&front_buffer);
-	free_ringbuffer(&inbuf);
+	free_bytebuffer(&output_buffer);
+	free_bytebuffer(&input_buffer);
 }
 
 void tb_present(void)
@@ -483,7 +483,7 @@ static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
 
 	/* try to extract event from input buffer, return on success */
 	event->type = TB_EVENT_KEY;
-	if (extract_event(event, &inbuf, inputmode))
+	if (extract_event(event, &input_buffer, inputmode))
 		return TB_EVENT_KEY;
 
 	/* it looks like input buffer is incomplete, let's try the short path */
@@ -491,10 +491,8 @@ static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
 	if (r < ENOUGH_DATA_FOR_INPUT_PARSING && feof(in))
 		clearerr(in);
 	if (r > 0) {
-		if (ringbuffer_free_space(&inbuf) < r)
-			return -1;
-		ringbuffer_push(&inbuf, buf, r);
-		if (extract_event(event, &inbuf, inputmode))
+		bytebuffer_append(&input_buffer, buf, r);
+		if (extract_event(event, &input_buffer, inputmode))
 			return TB_EVENT_KEY;
 	}
 
@@ -515,12 +513,9 @@ static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
 				clearerr(in);
 			if (r == 0)
 				continue;
-			/* if there is no free space in input buffer, return error */
-			if (ringbuffer_free_space(&inbuf) < r)
-				return -1;
 			/* fill buffer */
-			ringbuffer_push(&inbuf, buf, r);
-			if (extract_event(event, &inbuf, inputmode))
+			bytebuffer_append(&input_buffer, buf, r);
+			if (extract_event(event, &input_buffer, inputmode))
 				return TB_EVENT_KEY;
 		}
 		if (FD_ISSET(winch_fds[0], &events)) {
