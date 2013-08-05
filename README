@@ -35,9 +35,9 @@ INSTALLATION
 Termbox comes with a waf-based build scripts. In order to configure, build and
 install it, do the following:
 
-  ./waf configure --prefix=/usr          (configure)
-  ./waf                                  (build)
-  ./waf install --destdir=DESTDIR        (install)
+  ./waf configure --prefix=/usr                                (configure)
+  ./waf                                                        (build)
+  ./waf install --destdir=DESTDIR                              (install)
 
 By default termbox will install the header file and both shared and static
 libraries. If you want to install a shared library or static library alone, use
