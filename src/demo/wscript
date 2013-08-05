@@ -4,5 +4,6 @@ def build(bld):
 		bld.program(
 			source = [d],
 			target = d.name[:-2],
-			use = 'termbox',
+			use = 'termbox_static',
+			install_path = None,
 		)

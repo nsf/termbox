@@ -1,11 +1,16 @@
 def build(bld):
 	sources = bld.path.ant_glob("*.c")
 	bld.shlib(
-		source = bld.path.ant_glob("*.c"),
+		source = sources,
 		target = 'termbox',
+		name = 'termbox_shared',
+		vnum = bld.env.VERSION,
 	)
 	bld.stlib(
-		source = bld.path.ant_glob("*.c"),
+		source = sources,
 		target = 'termbox',
+		name = 'termbox_static',
+		install_path = '${LIBDIR}',
 	)
+	bld.install_files('${PREFIX}/include', 'termbox.h')
 	bld.recurse("demo")
