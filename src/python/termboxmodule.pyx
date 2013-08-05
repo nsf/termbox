@@ -114,17 +114,19 @@ MOD_ALT			= 0x01
 
 # attributes ----------------------
 
-BLACK		= 0x00
-RED		= 0x01
-GREEN		= 0x02
-YELLOW		= 0x03
-BLUE		= 0x04
-MAGENTA		= 0x05
-CYAN		= 0x06
-WHITE		= 0x07
+DEFAULT		= 0x00
+BLACK		= 0x01
+RED		= 0x02
+GREEN		= 0x03
+YELLOW		= 0x04
+BLUE		= 0x05
+MAGENTA		= 0x06
+CYAN		= 0x07
+WHITE		= 0x08
 
 BOLD		= 0x10
 UNDERLINE	= 0x20
+REVERSE		= 0x40
 
 # misc ----------------------------
 
