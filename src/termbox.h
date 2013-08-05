@@ -99,19 +99,20 @@ extern "C" {
 #define TB_MOD_ALT		0x01
 
 /* colors */
-#define TB_BLACK	0x00
-#define TB_RED		0x01
-#define TB_GREEN	0x02
-#define TB_YELLOW	0x03
-#define TB_BLUE		0x04
-#define TB_MAGENTA	0x05
-#define TB_CYAN		0x06
-#define TB_WHITE	0x07
-#define TB_DEFAULT 0x0F
+#define TB_DEFAULT	0x00
+#define TB_BLACK	0x01
+#define TB_RED		0x02
+#define TB_GREEN	0x03
+#define TB_YELLOW	0x04
+#define TB_BLUE		0x05
+#define TB_MAGENTA	0x06
+#define TB_CYAN		0x07
+#define TB_WHITE	0x08
 
 /* attributes */
 #define TB_BOLD		0x10
 #define TB_UNDERLINE	0x20
+#define TB_REVERSE	0x40
 
 struct tb_cell {
 	uint32_t ch;

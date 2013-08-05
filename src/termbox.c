@@ -51,7 +51,9 @@ static uint16_t background = TB_DEFAULT;
 static uint16_t foreground = TB_DEFAULT;
 
 static void write_cursor(int x, int y);
-static void write_sgr(uint32_t fg, uint32_t bg);
+static void write_sgr_fg(uint16_t fg);
+static void write_sgr_bg(uint16_t bg);
+static void write_sgr(uint16_t fg, uint16_t bg);
 
 static void cellbuf_init(struct cellbuf *buf, int width, int height);
 static void cellbuf_resize(struct cellbuf *buf, int width, int height);
@@ -293,28 +295,27 @@ static void write_cursor(int x, int y) {
 	WRITE_LITERAL("H");
 }
 
-static void write_sgr(uint32_t fg, uint32_t bg) {
+static void write_sgr_fg(uint16_t fg) {
 	char buf[32];
-	if (fg != TB_DEFAULT) {
-		WRITE_LITERAL("\033[3");
-		WRITE_INT(fg);
-		if (bg != TB_DEFAULT) {
-			WRITE_LITERAL(";4");
-			WRITE_INT(bg);
-		} else {
-			WRITE_LITERAL(";49");
-		}
-		WRITE_LITERAL("m");
-	} else {
-		WRITE_LITERAL("\033[39");
-		if (bg != TB_DEFAULT) {
-			WRITE_LITERAL(";4");
-			WRITE_INT(bg);
-		} else {
-			WRITE_LITERAL(";49");
-		}
-		WRITE_LITERAL("m");
-	}
+	WRITE_LITERAL("\033[3");
+	WRITE_INT(fg-1);
+	WRITE_LITERAL("m");
+}
+
+static void write_sgr_bg(uint16_t bg) {
+	char buf[32];
+	WRITE_LITERAL("\033[4");
+	WRITE_INT(bg-1);
+	WRITE_LITERAL("m");
+}
+
+static void write_sgr(uint16_t fg, uint16_t bg) {
+	char buf[32];
+	WRITE_LITERAL("\033[3");
+	WRITE_INT(fg-1);
+	WRITE_LITERAL(";4");
+	WRITE_INT(bg-1);
+	WRITE_LITERAL("m");
 }
 
 static void cellbuf_init(struct cellbuf *buf, int width, int height)
@@ -395,13 +396,25 @@ static void send_attr(uint16_t fg, uint16_t bg)
 	static uint16_t lastfg = LAST_ATTR_INIT, lastbg = LAST_ATTR_INIT;
 	if (fg != lastfg || bg != lastbg) {
 		bytebuffer_puts(&output_buffer, funcs[T_SGR0]);
-		write_sgr(fg & 0x0F, bg & 0x0F);
+		uint16_t fgcol = fg & 0x0F;
+		uint16_t bgcol = bg & 0x0F;
+		if (fgcol != TB_DEFAULT) {
+			if (bgcol != TB_DEFAULT)
+				write_sgr(fgcol, bgcol);
+			else
+				write_sgr_fg(fgcol);
+		} else if (bgcol != TB_DEFAULT) {
+			write_sgr_bg(bgcol);
+		}
+
 		if (fg & TB_BOLD)
 			bytebuffer_puts(&output_buffer, funcs[T_BOLD]);
 		if (bg & TB_BOLD)
 			bytebuffer_puts(&output_buffer, funcs[T_BLINK]);
 		if (fg & TB_UNDERLINE)
 			bytebuffer_puts(&output_buffer, funcs[T_UNDERLINE]);
+		if ((fg & TB_REVERSE) || (bg & TB_REVERSE))
+			bytebuffer_puts(&output_buffer, funcs[T_REVERSE]);
 
 		lastfg = fg;
 		lastbg = bg;

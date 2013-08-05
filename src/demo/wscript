@@ -1,6 +1,8 @@
 def build(bld):
-	bld.program(
-		source = 'keyboard.c',
-		target = 'keyboard',
-		use = 'termbox',
-	)
+	demos = bld.path.ant_glob("*.c")
+	for d in demos:
+		bld.program(
+			source = [d],
+			target = d.name[:-2],
+			use = 'termbox',
+		)
