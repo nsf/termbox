@@ -6,8 +6,7 @@ TODO: better intro.
 CHANGES
 =======
 
-VERSION 1.0.0
--------------
+v1.0.0:
 - Remove the Go directory. People generally know about termbox-go and where
   to look for it.
 - Remove old terminfo-related python scripts and backport the new one from
@@ -24,8 +23,10 @@ VERSION 1.0.0
 - API: TB_DEFAULT equals 0 now, it means you can use attributes alones
   assuming the default color.
 - API: Add TB_REVERSE.
+- API: Add TB_INPUT_CURRENT.
 - Move python module to its own directory and update it due to changes in the
   termbox library.
+
 
 
 INSTALLATION
@@ -54,6 +55,15 @@ In order to install the python module, use the following command (as root or
 via sudo):
 
   python setup.py install
+
+
+
+API DOCUMENTATION
+=================
+
+See src/termbox.h header file.
+
+
 
 BUGS & QUESTIONS
 ================
