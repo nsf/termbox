@@ -1,4 +1,62 @@
 Termbox is a library that provides minimalistic API which allows the
 programmer to write text-based user interfaces.
 
-TODO: more stuff here.
+TODO: better intro.
+
+CHANGES
+=======
+
+VERSION 1.0.0
+-------------
+- Remove the Go directory. People generally know about termbox-go and where
+  to look for it.
+- Remove old terminfo-related python scripts and backport the new one from
+  termbox-go.
+- Remove cmake/make-based build scripts, use waf.
+- Add a simple terminfo database parser. Now termbox prefers using the
+  terminfo database if it can be found. Otherwise it still has a fallback
+  built-in database for most popular terminals.
+- Some internal code cleanups and refactorings. The most important change is
+  that termbox doesn't leak meaningless exported symbols like 'keys' and
+  'funcs' now. Only the ones that have 'tb_' as a prefix are being exported.
+- API: Remove unsigned ints, use plain ints instead.
+- API: Rename UTF-8 functions 'utf8_*' -> 'tb_utf8_*'.
+- API: TB_DEFAULT equals 0 now, it means you can use attributes alones
+  assuming the default color.
+- API: Add TB_REVERSE.
+- Move python module to its own directory and update it due to changes in the
+  termbox library.
+
+
+INSTALLATION
+============
+
+Termbox comes with a waf-based build scripts. In order to configure, build and
+install it, do the following:
+
+  ./waf configure --prefix=/usr          (configure)
+  ./waf                                  (build)
+  ./waf install --destdir=DESTDIR        (install)
+
+By default termbox will install the header file and both shared and static
+libraries. If you want to install a shared library or static library alone, use
+the following as an install command:
+
+  ./waf install --targets=termbox_shared --destdir=PREFIX      (shared library)
+or
+  ./waf install --targets=termbox_static --destdir=PREFIX      (static library)
+
+
+PYTHON
+------
+
+In order to install the python module, use the following command (as root or
+via sudo):
+
+  python setup.py install
+
+BUGS & QUESTIONS
+================
+
+Report bugs to the https://github.com/nsf/termbox issue tracker. Send rants
+and questions to me: no.smile.face@gmail.com.
