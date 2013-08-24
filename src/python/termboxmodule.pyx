@@ -188,12 +188,12 @@ cdef class Termbox:
 		tb_change_cell(x, y, ch, fg, bg)
 
 	def width(self):
-		"""Returns height of the terminal screen.
+		"""Returns width of the terminal screen.
 		"""
 		return int(tb_width())
 
 	def height(self):
-		"""Return width of the terminal screen.
+		"""Return height of the terminal screen.
 		"""
 		return int(tb_height())
 
