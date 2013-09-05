@@ -518,7 +518,8 @@ static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
 				assert(errno != EAGAIN && errno != EWOULDBLOCK);
 				return -1;
 			}
-			assert(r > 0);
+			if (r == 0)
+				continue;
 			bytebuffer_resize(&input_buffer, prevlen + r);
 			if (extract_event(event, &input_buffer, inputmode))
 				return TB_EVENT_KEY;
