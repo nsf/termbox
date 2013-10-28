@@ -56,6 +56,10 @@ via sudo):
 
   python setup.py install
 
+for Python 3:
+  
+  python3 setup.py install
+
 
 
 API DOCUMENTATION
