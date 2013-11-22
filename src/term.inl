@@ -142,7 +142,7 @@ static char *read_file(const char *file) {
 		return 0;
 	}
 
-	char *data = malloc(st.st_size);
+	char *data = (char *) malloc(st.st_size);
 	if (!data) {
 		fclose(f);
 		return 0;
@@ -226,7 +226,7 @@ static const char *terminfo_copy_string(char *data, int str, int table) {
 	const int16_t off = *(int16_t*)(data + str);
 	const char *src = data + table + off;
 	int len = strlen(src);
-	char *dst = malloc(len+1);
+	char *dst = (char *) malloc(len+1);
 	strcpy(dst, src);
 	return dst;
 }
@@ -259,14 +259,14 @@ static int init_term(void) {
 		header[1] + header[2] +	2 * header[3];
 	const int table_offset = str_offset + 2 * header[4];
 
-	keys = malloc(sizeof(const char*) * (TB_KEYS_NUM+1));
+	keys = (const char**) malloc(sizeof(const char*) * (TB_KEYS_NUM+1));
 	for (i = 0; i < TB_KEYS_NUM; i++) {
 		keys[i] = terminfo_copy_string(data,
 			str_offset + 2 * ti_keys[i], table_offset);
 	}
 	keys[TB_KEYS_NUM] = 0;
 
-	funcs = malloc(sizeof(const char*) * T_FUNCS_NUM);
+	funcs = (const char**) malloc(sizeof(const char*) * T_FUNCS_NUM);
 	for (i = 0; i < T_FUNCS_NUM; i++) {
 		funcs[i] = terminfo_copy_string(data,
 			str_offset + 2 * ti_funcs[i], table_offset);

@@ -14,7 +14,7 @@ static void bytebuffer_reserve(struct bytebuffer *b, int cap) {
 		cap = b->cap * 2;
 	}
 
-	char *newbuf = malloc(cap);
+	char *newbuf = (char *) malloc(cap);
 	if (b->len > 0) {
 		// copy what was there, b->len > 0 assumes b->buf != null
 		memcpy(newbuf, b->buf, b->len);
@@ -34,7 +34,7 @@ static void bytebuffer_init(struct bytebuffer *b, int cap) {
 
 	if (cap > 0) {
 		b->cap = cap;
-		b->buf = malloc(cap); // just assume malloc works always
+		b->buf = (char *) malloc(cap); // just assume malloc works always
 	}
 }
 
