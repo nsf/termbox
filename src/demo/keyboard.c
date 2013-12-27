@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include "../termbox.h"
+#include "termbox.h"
 
 struct key {
 	unsigned char x;
