@@ -32,27 +32,26 @@ v1.0.0:
 INSTALLATION
 ============
 
-Termbox comes with a waf-based build scripts. In order to configure, build and
-install it, do the following:
+Termbox comes with a CMake-based build scripts. In order to configure,
+build and install it, do the following:
 
-  ./waf configure --prefix=/usr                                (configure)
-  ./waf                                                        (build)
-  ./waf install --destdir=DESTDIR                              (install)
+	ccmake .
+	(configure, then generate)
+	make
 
-By default termbox will install the header file and both shared and static
-libraries. If you want to install a shared library or static library alone, use
-the following as an install command:
+Press 'c' to configure, use the arrow keys to select options and press
+ENTER to change those options.
 
-  ./waf install --targets=termbox_shared --destdir=PREFIX      (shared library)
-or
-  ./waf install --targets=termbox_static --destdir=PREFIX      (static library)
-
+By default termbox will install the header file and both shared and
+static libraries. If you want to install a shared library or static
+library alone, change WANT_SHARED and WANT_STATIC while configuring in
+CMake.
 
 PYTHON
 ------
 
-In order to install the python module, use the following command (as root or
-via sudo):
+In order to install the python module, use the following command (as
+root or via sudo):
 
   python setup.py install
 
@@ -72,5 +71,5 @@ See src/termbox.h header file.
 BUGS & QUESTIONS
 ================
 
-Report bugs to the https://github.com/nsf/termbox issue tracker. Send rants
-and questions to me: no.smile.face@gmail.com.
+Report bugs to the https://github.com/nsf/termbox issue tracker. Send
+rants and questions to me: no.smile.face@gmail.com.

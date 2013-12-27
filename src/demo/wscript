@@ -1,9 +1,0 @@
-def build(bld):
-	demos = bld.path.ant_glob("*.c")
-	for d in demos:
-		bld.program(
-			source = [d],
-			target = d.name[:-2],
-			use = 'termbox_static',
-			install_path = None,
-		)
