@@ -203,6 +203,20 @@ SO_IMPORT void tb_blit(int x, int y, int w, int h, const struct tb_cell *cells);
 // If 'mode' is TB_INPUT_CURRENT, it returns the current input mode.
 SO_IMPORT int tb_select_input_mode(int mode);
 
+#define TB_OUTPUT_CURRENT 0
+#define TB_OUTPUT_MODE_NORMAL 1
+#define TB_OUTPUT_MODE_216 2
+#define TB_OUTPUT_MODE_GRAYSCALE 3
+
+// Sets the termbox output mode. Termbox has three output options:
+// 1. TB_OUTPUT_MODE_NORMAL     => [0..6] (TB_BLACK, TB_RED, ...)
+// 2. TB_OUTPUT_MODE_216        => [0..216]
+// 3. TB_OUTPUT_MODE_GRAYSCALE  => [0..23]    
+//
+// Execute demo/output to see its impact on your terminal.
+//
+// If 'mode' is TB_OUTPUT_CURRENT, it returns the current output mode.
+SO_IMPORT int tb_select_output_mode(int mode);
 
 // Wait for an event up to 'timeout' milliseconds and fill the 'event'
 // structure with it, when the event is available. Returns the type of the
