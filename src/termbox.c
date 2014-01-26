@@ -38,6 +38,7 @@ static int termw;
 static int termh;
 
 static int inputmode = TB_INPUT_ESC;
+static int outputmode = TB_OUTPUT_COLOR_8;
 
 static int inout;
 static int winch_fds[2];
@@ -256,26 +257,21 @@ void tb_clear(void)
 int tb_select_input_mode(int mode)
 {
 	if (mode)
-		inputmode = mode;
-	return inputmode;
+		outputmode = mode;
+	return outputmode;
+}
+
+int tb_select_output_mode(int mode)
+{
+	if (mode)
+		outputmode = mode;
+	return outputmode;
 }
 
 void tb_set_clear_attributes(uint16_t fg, uint16_t bg)
 {
 	foreground = fg;
 	background = bg;
-}
-
-bool tb_color_mode_256(void) {
-  return color_mode_256;
-}
-
-void tb_color_mode_256_on(void) {
-  color_mode_256 = true;
-}
-
-void tb_color_mode_256_off(void) {
-  color_mode_256 = false;
 }
 
 /* -------------------------------------------------------- */
@@ -310,7 +306,7 @@ static void write_cursor(int x, int y) {
 static void write_sgr_fg(uint16_t fg) {
 	char buf[32];
 
-  if (color_mode_256) {
+  if (outputmode == TB_OUTPUT_COLOR_256) {
       WRITE_LITERAL("\033[38;5;");
       WRITE_INT(fg);
       WRITE_LITERAL("m");
@@ -324,7 +320,7 @@ static void write_sgr_fg(uint16_t fg) {
 static void write_sgr_bg(uint16_t bg) {
 	char buf[32];
 
-  if (color_mode_256) {
+  if (outputmode == TB_OUTPUT_COLOR_256) {
       WRITE_LITERAL("\033[48;5;");
       WRITE_INT(bg);
       WRITE_LITERAL("m");
@@ -338,7 +334,7 @@ static void write_sgr_bg(uint16_t bg) {
 static void write_sgr(uint16_t fg, uint16_t bg) {
 	char buf[32];
 
-  if (color_mode_256) {
+  if (outputmode == TB_OUTPUT_COLOR_256) {
       WRITE_LITERAL("\033[38;5;");
       WRITE_INT(fg);
       WRITE_LITERAL("m");
@@ -430,25 +426,44 @@ static void send_attr(uint16_t fg, uint16_t bg)
 {
 #define LAST_ATTR_INIT 0xFFFF
 	static uint16_t lastfg = LAST_ATTR_INIT, lastbg = LAST_ATTR_INIT;
-	if (fg != lastfg || bg != lastbg) {
-		bytebuffer_puts(&output_buffer, funcs[T_SGR0]);
-		if (fg != TB_DEFAULT) {
-			if (bg != TB_DEFAULT)
-				write_sgr(fg, bg);
-			else
-				write_sgr_fg(fg);
-		} else if (bg != TB_DEFAULT) {
-			write_sgr_bg(bg);
-		}
+  if (fg != lastfg || bg != lastbg) {
+    bytebuffer_puts(&output_buffer, funcs[T_SGR0]);
+    if (outputmode == TB_OUTPUT_COLOR_256) {
+      /* test valid range or set default white on black */
+      if (fg < 0xf || fg > 0xff)
+        fg = 0xff;
+      if (bg < 0xf || bg > 0xff)
+        bg = 0xf;
 
-		if (fg & TB_BOLD)
-			bytebuffer_puts(&output_buffer, funcs[T_BOLD]);
-		if (bg & TB_BOLD)
-			bytebuffer_puts(&output_buffer, funcs[T_BLINK]);
-		if (fg & TB_UNDERLINE)
-			bytebuffer_puts(&output_buffer, funcs[T_UNDERLINE]);
-		if ((fg & TB_REVERSE) || (bg & TB_REVERSE))
-			bytebuffer_puts(&output_buffer, funcs[T_REVERSE]);
+      if (fg != lastfg) {
+        if (bg != lastbg)
+          write_sgr(fg, bg);
+        else
+          write_sgr_fg(fg);
+      } else if (bg != lastbg) {
+        write_sgr_bg(bg);
+      }
+    } else {
+      uint16_t fgcol = fg & 0x0F;
+      uint16_t bgcol = bg & 0x0F;
+      if (fgcol != TB_DEFAULT) {
+        if (bgcol != TB_DEFAULT)
+          write_sgr(fgcol, bgcol);
+        else
+          write_sgr_fg(fgcol);
+      } else if (bgcol != TB_DEFAULT) {
+        write_sgr_bg(bg);
+      }
+
+      if (fg & TB_BOLD)
+        bytebuffer_puts(&output_buffer, funcs[T_BOLD]);
+      if (bg & TB_BOLD)
+        bytebuffer_puts(&output_buffer, funcs[T_BLINK]);
+      if (fg & TB_UNDERLINE)
+        bytebuffer_puts(&output_buffer, funcs[T_UNDERLINE]);
+      if ((fg & TB_REVERSE) || (bg & TB_REVERSE))
+        bytebuffer_puts(&output_buffer, funcs[T_REVERSE]);
+    }
 
 		lastfg = fg;
 		lastbg = bg;

@@ -78,7 +78,6 @@ static struct term {
 	{0, 0, 0},
 };
 
-static bool color_mode_256 = false;
 static bool init_from_terminfo = false;
 static const char **keys;
 static const char **funcs;
@@ -101,9 +100,6 @@ static int init_term_builtin(void)
 	const char *term = getenv("TERM");
 
 	if (term) {
-    if (strstr(term, "256"))
-        color_mode_256 = true;
-
 		for (i = 0; terms[i].name; i++) {
 			if (!strcmp(terms[i].name, term)) {
 				keys = terms[i].keys;
@@ -183,9 +179,6 @@ static char *load_terminfo(void) {
 	if (!term) {
 		return 0;
 	}
-
-  if (strstr(term, "256"))
-      color_mode_256 = true;
 
 	// if TERMINFO is set, no other directory should be searched
 	const char *terminfo = getenv("TERMINFO");

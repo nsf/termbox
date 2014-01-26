@@ -203,6 +203,16 @@ SO_IMPORT void tb_blit(int x, int y, int w, int h, const struct tb_cell *cells);
 // If 'mode' is TB_INPUT_CURRENT, it returns the current input mode.
 SO_IMPORT int tb_select_input_mode(int mode);
 
+#define TB_OUTPUT_CURRENT 0
+#define TB_OUTPUT_COLOR_8 1
+#define TB_OUTPUT_COLOR_256 2
+
+// Sets the termbox output mode. Termbox has two output options:
+// 1. TB_OUTPUT_COLOR_8   => 8 color mode
+// 2. TB_OUTPUT_COLOR_256 => 256 color mode
+//
+// If 'mode' is TB_OUTPUT_CURRENT, it returns the current output mode.
+SO_IMPORT int tb_select_output_mode(int mode);
 
 // Wait for an event up to 'timeout' milliseconds and fill the 'event'
 // structure with it, when the event is available. Returns the type of the
@@ -220,13 +230,6 @@ SO_IMPORT int tb_poll_event(struct tb_event *event);
 SO_IMPORT int tb_utf8_char_length(char c);
 SO_IMPORT int tb_utf8_char_to_unicode(uint32_t *out, const char *c);
 SO_IMPORT int tb_utf8_unicode_to_char(char *out, uint32_t c);
-
-// Controls how termbox interprets color code
-//  on:    \033[N8;5;Xm  N={3,4}  0<=X<256
-//  off:   \033[N0+Xm    N={3,4}  0<=X<7
-SO_IMPORT bool tb_color_mode_256(void);
-SO_IMPORT void tb_color_mode_256_on(void);
-SO_IMPORT void tb_color_mode_256_off(void);
 
 #ifdef __cplusplus
 }
