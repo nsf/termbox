@@ -45,20 +45,28 @@ static void print_combinations_table(int sx, int sy, const uint16_t *attrs, int 
 static void draw_all() {
   tb_clear();
 
-  tb_select_output_mode(TB_OUTPUT_COLOR_256);
-  int x,y;
-  for (x=16; x<256; ++x) {
-    for (y=16; y<256; ++y) {
-      tb_change_cell(x-16,y+5,'@',x,y);
-    }
-  }
-  tb_present();
-
-  tb_select_output_mode(TB_OUTPUT_COLOR_8);
+  tb_select_output_mode(TB_OUTPUT_MODE_NORMAL);
   static const uint16_t col1[] = {0, TB_BOLD};
   static const uint16_t col2[] = {TB_REVERSE};
   print_combinations_table(1, 1, col1, 2);
   print_combinations_table(2 + strlen(chars), 1, col2, 1);
+  tb_present();
+
+  tb_select_output_mode(TB_OUTPUT_MODE_GRAYSCALE);
+  int x,y;
+  for (x=0; x<24; ++x) {
+    for (y=0; y<24; ++y) {
+      tb_change_cell(x+80,y,'@',x,y);
+    }
+  }
+  tb_present();
+
+  tb_select_output_mode(TB_OUTPUT_MODE_216);
+  for (x=0; x<216; ++x) {
+    for (y=0; y<216; ++y) {
+      tb_change_cell(x,y+25,'@',x,y);
+    }
+  }
   tb_present();
 }
 
