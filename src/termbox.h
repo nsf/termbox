@@ -221,6 +221,13 @@ SO_IMPORT int tb_utf8_char_length(char c);
 SO_IMPORT int tb_utf8_char_to_unicode(uint32_t *out, const char *c);
 SO_IMPORT int tb_utf8_unicode_to_char(char *out, uint32_t c);
 
+// Controls how termbox interprets color code
+//  on:    \033[N8;5;Xm  N={3,4}  0<=X<256
+//  off:   \033[N0+Xm    N={3,4}  0<=X<7
+SO_IMPORT bool tb_color_mode_256(void);
+SO_IMPORT void tb_color_mode_256_on(void);
+SO_IMPORT void tb_color_mode_256_off(void);
+
 #ifdef __cplusplus
 }
 #endif
