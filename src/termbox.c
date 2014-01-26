@@ -257,8 +257,8 @@ void tb_clear(void)
 int tb_select_input_mode(int mode)
 {
 	if (mode)
-		outputmode = mode;
-	return outputmode;
+		inputmode = mode;
+	return inputmode;
 }
 
 int tb_select_output_mode(int mode)
