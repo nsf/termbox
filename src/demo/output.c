@@ -43,12 +43,21 @@ static void print_combinations_table(int sx, int sy, const uint16_t *attrs, int 
 }
 
 static void draw_all() {
-	tb_clear();
-	static const uint16_t col1[] = {0, TB_BOLD};
-	static const uint16_t col2[] = {TB_REVERSE};
-	print_combinations_table(1, 1, col1, 2);
-	print_combinations_table(2 + strlen(chars), 1, col2, 1);
-	tb_present();
+  tb_clear();
+  if (tb_color_mode_256()) {
+    int x,y;
+    for (x=0; x<256; ++x) {
+      for (y=0; y<256; ++y) {
+        tb_change_cell(x,y,'@',x,y);
+      }
+    }
+  } else {
+    static const uint16_t col1[] = {0, TB_BOLD};
+    static const uint16_t col2[] = {TB_REVERSE};
+    print_combinations_table(1, 1, col1, 2);
+    print_combinations_table(2 + strlen(chars), 1, col2, 1);
+  }
+  tb_present();
 }
 
 int main(int argc, char **argv) {
