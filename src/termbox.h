@@ -205,15 +205,40 @@ SO_IMPORT int tb_select_input_mode(int mode);
 
 #define TB_OUTPUT_CURRENT 0
 #define TB_OUTPUT_MODE_NORMAL 1
-#define TB_OUTPUT_MODE_216 2
-#define TB_OUTPUT_MODE_GRAYSCALE 3
+#define TB_OUTPUT_MODE_256 2
+#define TB_OUTPUT_MODE_216 3
+#define TB_OUTPUT_MODE_GRAYSCALE 4
 
 // Sets the termbox output mode. Termbox has three output options:
-// 1. TB_OUTPUT_MODE_NORMAL     => [0..6] (TB_BLACK, TB_RED, ...)
-// 2. TB_OUTPUT_MODE_216        => [0..216]
-// 3. TB_OUTPUT_MODE_GRAYSCALE  => [0..23]    
+// 1. TB_OUTPUT_MODE_NORMAL     => [1..8]
+//    This mode provides 8 different colors:
+//      black, red, green, yellow, blue, magenta, cyan, white
+//    Shortcut: TB_BLACK, TB_RED, ...
+//    Attributes: TB_BOLD, TB_UNDERLINE, TB_REVERSE
 //
-// Execute demo/output to see its impact on your terminal.
+//    Example usage:
+//        tb_change_cell(x, y, '@', TB_BLACK | TB_BOLD, TB_RED);
+//
+// 2. TB_OUTPUT_MODE_256        => [0..256]
+//    In this mode you can leverage the 256 terminal mode:
+//    0x00 - 0x07: the 8 colors as in TB_OUTPUT_MODE_NORMAL
+//    0x08 - 0x0f: TB_* | T_BOLD
+//    0x10 - 0xe7: 216 different colors
+//    0xe8 - 0xff: 24 different shades of grey
+//
+//    Example usage:
+//        tb_change_cell(x, y, '@', 184, 240); // or
+//        tb_change_cell(x, y, '@', 0xb8, 0xf0);
+//
+// 2. TB_OUTPUT_MODE_216        => [0..216]
+//    This mode supports the 3rd range of the 256 mode only.
+//    But you dont need to provide an offset.
+//
+// 3. TB_OUTPUT_MODE_GRAYSCALE  => [0..23]
+//    This mode supports the 4th range of the 256 mode only.
+//    But you dont need to provide an offset.
+//
+// Execute build/src/demo/output to see its impact on your terminal.
 //
 // If 'mode' is TB_OUTPUT_CURRENT, it returns the current output mode.
 SO_IMPORT int tb_select_output_mode(int mode);

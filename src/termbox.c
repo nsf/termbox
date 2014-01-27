@@ -306,15 +306,16 @@ static void write_cursor(int x, int y) {
 static void write_sgr_fg(uint16_t fg) {
 	char buf[32];
 
-  if (outputmode == TB_OUTPUT_MODE_216) {
+  switch (outputmode) {
+    case TB_OUTPUT_MODE_256:
+    case TB_OUTPUT_MODE_216:
+    case TB_OUTPUT_MODE_GRAYSCALE:
       WRITE_LITERAL("\033[38;5;");
-      WRITE_INT(0x10+fg);
+      WRITE_INT(fg);
       WRITE_LITERAL("m");
-  } else if (outputmode == TB_OUTPUT_MODE_GRAYSCALE){
-      WRITE_LITERAL("\033[38;5;");
-      WRITE_INT(0xe8+fg);
-      WRITE_LITERAL("m");
-  } else {
+      break;
+    case TB_OUTPUT_MODE_NORMAL:
+    default:
       WRITE_LITERAL("\033[3");
       WRITE_INT(fg-1);
       WRITE_LITERAL("m");
@@ -324,15 +325,16 @@ static void write_sgr_fg(uint16_t fg) {
 static void write_sgr_bg(uint16_t bg) {
 	char buf[32];
 
-  if (outputmode == TB_OUTPUT_MODE_216) {
+  switch (outputmode) {
+    case TB_OUTPUT_MODE_256:
+    case TB_OUTPUT_MODE_216:
+    case TB_OUTPUT_MODE_GRAYSCALE:
       WRITE_LITERAL("\033[48;5;");
-      WRITE_INT(0x10+bg);
+      WRITE_INT(bg);
       WRITE_LITERAL("m");
-  } else if (outputmode == TB_OUTPUT_MODE_GRAYSCALE){
-      WRITE_LITERAL("\033[48;5;");
-      WRITE_INT(0xe8+bg);
-      WRITE_LITERAL("m");
-  } else {
+      break;
+    case TB_OUTPUT_MODE_NORMAL:
+    default:
       WRITE_LITERAL("\033[4");
       WRITE_INT(bg-1);
       WRITE_LITERAL("m");
@@ -342,21 +344,19 @@ static void write_sgr_bg(uint16_t bg) {
 static void write_sgr(uint16_t fg, uint16_t bg) {
 	char buf[32];
 
-  if (outputmode == TB_OUTPUT_MODE_216) {
+  switch (outputmode) {
+    case TB_OUTPUT_MODE_256:
+    case TB_OUTPUT_MODE_216:
+    case TB_OUTPUT_MODE_GRAYSCALE:
       WRITE_LITERAL("\033[38;5;");
-      WRITE_INT(0x10+fg);
+      WRITE_INT(fg);
       WRITE_LITERAL("m");
       WRITE_LITERAL("\033[48;5;");
-      WRITE_INT(0x10+bg);
+      WRITE_INT(bg);
       WRITE_LITERAL("m");
-  } else if (outputmode == TB_OUTPUT_MODE_GRAYSCALE){
-      WRITE_LITERAL("\033[38;5;");
-      WRITE_INT(0xe8+fg);
-      WRITE_LITERAL("m");
-      WRITE_LITERAL("\033[48;5;");
-      WRITE_INT(0xe8+bg);
-      WRITE_LITERAL("m");
-  } else {
+      break;
+    case TB_OUTPUT_MODE_NORMAL:
+    default:
       WRITE_LITERAL("\033[3");
       WRITE_INT(fg-1);
       WRITE_LITERAL(";4");
@@ -447,24 +447,39 @@ static void send_attr(uint16_t fg, uint16_t bg)
     uint16_t fgcol;
     uint16_t bgcol;
 
-    if (outputmode == TB_OUTPUT_MODE_216) {
-      fgcol = (fg > 215) ? 7 : fg;
-      bgcol = (bg > 215) ? 0 : bg;
-    } else if (outputmode == TB_OUTPUT_MODE_GRAYSCALE) {
-      fgcol = (fg > 23) ? 23 : fg;
-      bgcol = (bg > 23) ? 0  : bg;
-    } else {
-      fgcol = fg & 0x0F;
-      bgcol = bg & 0x0F;
+    switch (outputmode) {
+      case TB_OUTPUT_MODE_256:
+        fgcol = (fg > 255) ? 7 : fg;
+        bgcol = (bg > 255) ? 0 : bg;
+        break;
 
-      if (fg & TB_BOLD)
-        bytebuffer_puts(&output_buffer, funcs[T_BOLD]);
-      if (bg & TB_BOLD)
-        bytebuffer_puts(&output_buffer, funcs[T_BLINK]);
-      if (fg & TB_UNDERLINE)
-        bytebuffer_puts(&output_buffer, funcs[T_UNDERLINE]);
-      if ((fg & TB_REVERSE) || (bg & TB_REVERSE))
-        bytebuffer_puts(&output_buffer, funcs[T_REVERSE]);
+      case TB_OUTPUT_MODE_216:
+        fgcol = (fg > 215) ? 7 : fg;
+        bgcol = (bg > 215) ? 0 : bg;
+        fgcol += 0x10;
+        bgcol += 0x10;
+        break;
+
+      case TB_OUTPUT_MODE_GRAYSCALE:
+        fgcol = (fg > 23) ? 23 : fg;
+        bgcol = (bg > 23) ? 0  : bg;
+        fgcol += 0xe8;
+        bgcol += 0xe8;
+        break;
+
+      case TB_OUTPUT_MODE_NORMAL:
+      default:
+        fgcol = fg & 0x0F;
+        bgcol = bg & 0x0F;
+
+        if (fg & TB_BOLD)
+          bytebuffer_puts(&output_buffer, funcs[T_BOLD]);
+        if (bg & TB_BOLD)
+          bytebuffer_puts(&output_buffer, funcs[T_BLINK]);
+        if (fg & TB_UNDERLINE)
+          bytebuffer_puts(&output_buffer, funcs[T_UNDERLINE]);
+        if ((fg & TB_REVERSE) || (bg & TB_REVERSE))
+          bytebuffer_puts(&output_buffer, funcs[T_REVERSE]);
     }
 
     if (fgcol != lastfg) {
