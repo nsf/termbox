@@ -222,7 +222,7 @@ SO_IMPORT int tb_select_input_mode(int mode);
 // 2. TB_OUTPUT_256        => [0..256]
 //    In this mode you can leverage the 256 terminal mode:
 //    0x00 - 0x07: the 8 colors as in TB_OUTPUT_NORMAL
-//    0x08 - 0x0f: TB_* | T_BOLD
+//    0x08 - 0x0f: TB_* | TB_BOLD
 //    0x10 - 0xe7: 216 different colors
 //    0xe8 - 0xff: 24 different shades of grey
 //
