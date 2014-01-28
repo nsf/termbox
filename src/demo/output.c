@@ -53,19 +53,34 @@ static void draw_all() {
   tb_present();
 
   tb_select_output_mode(TB_OUTPUT_MODE_GRAYSCALE);
-  int x,y;
-  for (x=0; x<24; ++x) {
-    for (y=0; y<24; ++y) {
-      tb_change_cell(x+80,y,'@',x,y);
-    }
+  int c,x,y;
+  for (x=0,y=23; x<24; ++x) {
+    tb_change_cell(x,y,'@',x,0);
+    tb_change_cell(x+25,y,' ',0,x);
   }
   tb_present();
 
   tb_select_output_mode(TB_OUTPUT_MODE_216);
-  for (x=0; x<216; ++x) {
-    for (y=0; y<216; ++y) {
-      tb_change_cell(x,y+25,'@',x,y);
+  y++;
+  for (c=0,x=0; c<216; ++c,++x) {
+    if (!(x%24)) {
+      x = 0;
+      ++y;
     }
+    tb_change_cell(x,y,'@',c,0);
+    tb_change_cell(x+25,y,' ',0,c);
+  }
+  tb_present();
+
+  tb_select_output_mode(TB_OUTPUT_MODE_256);
+  y++;
+  for (c=0,x=0; c<256; ++c,++x) {
+    if (!(x%24)) {
+      x = 0;
+      ++y;
+    }
+    tb_change_cell(x,y,'@',c,0);
+    tb_change_cell(x+25,y,' ',0,c);
   }
   tb_present();
 }
