@@ -79,7 +79,7 @@ static void draw_all() {
 			x = 0;
 			++y;
 		}
-		tb_change_cell(x, y, '@', c, 0);
+		tb_change_cell(x, y, '+', c | ((y & 1) ? TB_UNDERLINE : 0), 0);
 		tb_change_cell(x+25, y, ' ', 0, c);
 	}
 	tb_present();
