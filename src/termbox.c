@@ -429,20 +429,20 @@ static void send_attr(uint16_t fg, uint16_t bg)
 
 		switch (outputmode) {
 		case TB_OUTPUT_256:
-			fgcol = (fg > 255) ? 7 : fg;
-			bgcol = (bg > 255) ? 0 : bg;
+			fgcol = fg & 0xFF;
+			bgcol = bg & 0xFF;
 			break;
 
 		case TB_OUTPUT_216:
-			fgcol = (fg > 215) ? 7 : fg;
-			bgcol = (bg > 215) ? 0 : bg;
+			fgcol = fg & 0xFF; if(fgcol > 215) fgcol = 7;
+			bgcol = bg & 0xFF; if(bgcol > 215) bgcol = 0;
 			fgcol += 0x10;
 			bgcol += 0x10;
 			break;
 
 		case TB_OUTPUT_GRAYSCALE:
-			fgcol = (fg > 23) ? 23 : fg;
-			bgcol = (bg > 23) ? 0 : bg;
+			fgcol = fg & 0xFF; if(fgcol > 23) fg = 23;
+			bgcol = bg & 0xFF; if(bgcol > 23) bg = 0;
 			fgcol += 0xe8;
 			bgcol += 0xe8;
 			break;
@@ -451,16 +451,16 @@ static void send_attr(uint16_t fg, uint16_t bg)
 		default:
 			fgcol = fg & 0x0F;
 			bgcol = bg & 0x0F;
-
-			if (fg & TB_BOLD)
-				bytebuffer_puts(&output_buffer, funcs[T_BOLD]);
-			if (bg & TB_BOLD)
-				bytebuffer_puts(&output_buffer, funcs[T_BLINK]);
-			if (fg & TB_UNDERLINE)
-				bytebuffer_puts(&output_buffer, funcs[T_UNDERLINE]);
-			if ((fg & TB_REVERSE) || (bg & TB_REVERSE))
-				bytebuffer_puts(&output_buffer, funcs[T_REVERSE]);
 		}
+
+		if (fg & TB_BOLD)
+			bytebuffer_puts(&output_buffer, funcs[T_BOLD]);
+		if (bg & TB_BOLD)
+			bytebuffer_puts(&output_buffer, funcs[T_BLINK]);
+		if (fg & TB_UNDERLINE)
+			bytebuffer_puts(&output_buffer, funcs[T_UNDERLINE]);
+		if ((fg & TB_REVERSE) || (bg & TB_REVERSE))
+			bytebuffer_puts(&output_buffer, funcs[T_REVERSE]);
 
 		switch (outputmode) {
 		case TB_OUTPUT_256:
