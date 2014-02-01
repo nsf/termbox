@@ -113,9 +113,9 @@ extern "C" {
 // using bitwise OR ('|'). Although, colors cannot be combined. But you can
 // combine attributes and a single color. See also struct tb_cell's fg and bg
 // fields.
-#define TB_BOLD      0x10
-#define TB_UNDERLINE 0x20
-#define TB_REVERSE   0x40
+#define TB_BOLD      0x0100
+#define TB_UNDERLINE 0x0200
+#define TB_REVERSE   0x0400
 
 // A cell, single conceptual entity on the terminal screen. The terminal screen
 // is basically a 2d array of cells. It has the following fields:
