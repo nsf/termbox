@@ -195,9 +195,9 @@ void tb_set_cursor(int cx, int cy)
 
 void tb_put_cell(int x, int y, const struct tb_cell *cell)
 {
-	if ((unsigned)x >= back_buffer.width)
+	if ((unsigned)x >= (unsigned)back_buffer.width)
 		return;
-	if ((unsigned)y >= back_buffer.height)
+	if ((unsigned)y >= (unsigned)back_buffer.height)
 		return;
 	CELL(&back_buffer, x, y) = *cell;
 }
@@ -210,9 +210,9 @@ void tb_change_cell(int x, int y, uint32_t ch, uint16_t fg, uint16_t bg)
 
 void tb_blit(int x, int y, int w, int h, const struct tb_cell *cells)
 {
-	if ((unsigned)(x+w) > back_buffer.width)
-		return
-	if ((unsigned)(y+h) > back_buffer.height)
+	if ((unsigned)(x+w) > (unsigned)back_buffer.width)
+		return;
+	if ((unsigned)(y+h) > (unsigned)back_buffer.height)
 		return;
 
 	int sy;
