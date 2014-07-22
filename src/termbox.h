@@ -133,7 +133,7 @@ struct tb_cell {
 
 // This struct represents a termbox event. The 'mod', 'key' and 'ch' fields are
 // valid if 'type' is TB_EVENT_KEY. The 'w' and 'h' fields are valid if 'type'
-// is TB_EVENT_RESIZE. See also
+// is TB_EVENT_RESIZE.
 struct tb_event {
 	uint8_t type;
 	uint8_t mod;
