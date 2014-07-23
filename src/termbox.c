@@ -93,6 +93,7 @@ int tb_init(void)
 	}
 
 	struct sigaction sa;
+	memset(&sa, 0, sizeof(sa));
 	sa.sa_handler = sigwinch_handler;
 	sa.sa_flags = 0;
 	sigaction(SIGWINCH, &sa, 0);
