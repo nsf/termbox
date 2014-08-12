@@ -35,8 +35,8 @@ static struct cellbuf front_buffer;
 static struct bytebuffer output_buffer;
 static struct bytebuffer input_buffer;
 
-static int termw;
-static int termh;
+static int termw = -1;
+static int termh = -1;
 
 static int inputmode = TB_INPUT_ESC;
 static int outputmode = TB_OUTPUT_NORMAL;
@@ -149,6 +149,7 @@ void tb_shutdown(void)
 	cellbuf_free(&front_buffer);
 	bytebuffer_free(&output_buffer);
 	bytebuffer_free(&input_buffer);
+    termw = termh = -1;
 }
 
 void tb_present(void)

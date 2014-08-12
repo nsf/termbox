@@ -166,7 +166,9 @@ SO_IMPORT void tb_shutdown(void);
 
 /* Returns the size of the internal back buffer (which is the same as
  * terminal's window size in characters). The internal buffer can be resized
- * after tb_clear() or tb_present() function calls.
+ * after tb_clear() or tb_present() function calls. Both dimensions have an
+ * unspecified negative value when called before tb_init() or after
+ * tb_shutdown().
  */
 SO_IMPORT int tb_width(void);
 SO_IMPORT int tb_height(void);
