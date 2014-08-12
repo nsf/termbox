@@ -149,7 +149,7 @@ void tb_shutdown(void)
 	cellbuf_free(&front_buffer);
 	bytebuffer_free(&output_buffer);
 	bytebuffer_free(&input_buffer);
-    termw = termh = -1;
+	termw = termh = -1;
 }
 
 void tb_present(void)
