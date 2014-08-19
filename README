@@ -6,6 +6,14 @@ TODO: better intro.
 CHANGES
 =======
 
+v1.1.0 (not released yet):
+- API: tb_width() and tb_height() are guaranteed to be negative if the termbox
+  wasn't initialized.
+- API: Output mode switching is now possible, adds 256-color and grayscale color
+  modes.
+- API: Better tb_blit() function. Thanks, Gunnar Zötl <gz@tset.de>.
+- Bug fixes in code and documentation.
+
 v1.0.0:
 - Remove the Go directory. People generally know about termbox-go and where
   to look for it.
@@ -57,7 +65,7 @@ via sudo):
   python setup.py install
 
 for Python 3:
-  
+
   python3 setup.py install
 
 
