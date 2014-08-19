@@ -213,21 +213,38 @@ void tb_change_cell(int x, int y, uint32_t ch, uint16_t fg, uint16_t bg)
 
 void tb_blit(int x, int y, int w, int h, const struct tb_cell *cells)
 {
-	if ((unsigned)(x+w) > (unsigned)back_buffer.width)
+	if (x + w < 0 || x >= back_buffer.width)
 		return;
-	if ((unsigned)(y+h) > (unsigned)back_buffer.height)
+	if (y + h < 0 || y >= back_buffer.height)
 		return;
+	int xo = 0, yo = 0, ww = w, hh = h;
+	if (x < 0) {
+		xo = -x;
+		ww -= xo;
+		x = 0;
+	}
+	if (y < 0) {
+		yo = -y;
+		hh -= yo;
+		y = 0;
+	}
+	if (ww > back_buffer.width - x)
+		ww = back_buffer.width - x;
+	if (hh > back_buffer.height - y)
+		hh = back_buffer.height - y;
 
 	int sy;
 	struct tb_cell *dst = &CELL(&back_buffer, x, y);
-	size_t size = sizeof(struct tb_cell) * w;
+	const struct tb_cell *src = cells + yo * w + xo;
+	size_t size = sizeof(struct tb_cell) * ww;
 
-	for (sy = 0; sy < h; ++sy) {
-		memcpy(dst, cells, size);
+	for (sy = 0; sy < hh; ++sy) {
+		memcpy(dst, src, size);
 		dst += back_buffer.width;
-		cells += w;
+		src += w;
 	}
 }
+
 
 int tb_poll_event(struct tb_event *event)
 {
