@@ -76,6 +76,15 @@ API DOCUMENTATION
 See src/termbox.h header file.
 
 
+LINKS
+=====
+
+http://pecl.php.net/package/termbox - PHP termbox wrapper
+
+----
+
+If you want me to add your project here, send me a pull request or drop a note
+via email, you can find my email at the bottom of this file.
 
 BUGS & QUESTIONS
 ================
