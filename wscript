@@ -7,6 +7,7 @@ out = 'build'
 import sys
 
 def options(opt):
+	opt.load('gnu_dirs')
 	opt.load('compiler_c')
 	opt.add_option(
 		'--debug',
@@ -17,6 +18,7 @@ def options(opt):
 
 def configure(conf):
 	conf.env.VERSION = VERSION
+	conf.load('gnu_dirs')
 	conf.load('compiler_c')
 	conf.env.append_unique('CFLAGS', ['-std=gnu99', '-Wall', '-Wextra'])
 	if conf.options.debug:
