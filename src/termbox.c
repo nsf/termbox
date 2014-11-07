@@ -205,6 +205,15 @@ void tb_put_cell(int x, int y, const struct tb_cell *cell)
 	CELL(&back_buffer, x, y) = *cell;
 }
 
+uint32_t tb_get_ch(int x, int y)
+{
+	if ((unsigned)x >= (unsigned)back_buffer.width)
+		return 0;
+	if ((unsigned)y >= (unsigned)back_buffer.height)
+		return 0;
+	return CELL(&back_buffer, x, y).ch;
+}
+
 void tb_change_cell(int x, int y, uint32_t ch, uint16_t fg, uint16_t bg)
 {
 	struct tb_cell c = {ch, fg, bg};
