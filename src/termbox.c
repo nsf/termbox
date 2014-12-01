@@ -458,15 +458,15 @@ static void send_attr(uint16_t fg, uint16_t bg)
 			break;
 
 		case TB_OUTPUT_216:
-			fgcol = fg & 0xFF; if(fgcol > 215) fgcol = 7;
-			bgcol = bg & 0xFF; if(bgcol > 215) bgcol = 0;
+			fgcol = fg & 0xFF; if (fgcol > 215) fgcol = 7;
+			bgcol = bg & 0xFF; if (bgcol > 215) bgcol = 0;
 			fgcol += 0x10;
 			bgcol += 0x10;
 			break;
 
 		case TB_OUTPUT_GRAYSCALE:
-			fgcol = fg & 0xFF; if(fgcol > 23) fg = 23;
-			bgcol = bg & 0xFF; if(bgcol > 23) bg = 0;
+			fgcol = fg & 0xFF; if (fgcol > 23) fgcol = 23;
+			bgcol = bg & 0xFF; if (bgcol > 23) bgcol = 0;
 			fgcol += 0xe8;
 			bgcol += 0xe8;
 			break;
