@@ -245,6 +245,10 @@ void tb_blit(int x, int y, int w, int h, const struct tb_cell *cells)
 	}
 }
 
+struct tb_cell *tb_cell_buffer()
+{
+	return back_buffer.cells;
+}
 
 int tb_poll_event(struct tb_event *event)
 {
