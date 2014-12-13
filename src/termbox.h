@@ -95,7 +95,7 @@ extern "C" {
  * #define TB_KEY_CTRL_0 clash with '0'
  */
 
-/* Currently there is only one modificator. See also struct tb_event's mod
+/* Currently there is only one modifier. See also struct tb_event's mod
  * field.
  */
 #define TB_MOD_ALT 0x01
@@ -149,7 +149,7 @@ struct tb_event {
 };
 
 /* Error codes returned by tb_init(). All of them are self-explanatory, except
- * the pipe trap error. Termbox uses unix pipes in order to deliever a message
+ * the pipe trap error. Termbox uses unix pipes in order to deliver a message
  * from a signal handler (SIGWINCH) to the main event reading loop. Honestly in
  * most cases you should just check the returned code as < 0.
  */
@@ -179,7 +179,7 @@ SO_IMPORT int tb_height(void);
 SO_IMPORT void tb_clear(void);
 SO_IMPORT void tb_set_clear_attributes(uint16_t fg, uint16_t bg);
 
-/* Syncronizes the internal back buffer with the terminal. */
+/* Synchronizes the internal back buffer with the terminal. */
 SO_IMPORT void tb_present(void);
 
 #define TB_HIDE_CURSOR -1
@@ -256,7 +256,7 @@ SO_IMPORT int tb_select_input_mode(int mode);
  *
  * 2. TB_OUTPUT_216        => [0..216]
  *    This mode supports the 3rd range of the 256 mode only.
- *    But you dont need to provide an offset.
+ *    But you don't need to provide an offset.
  *
  * 3. TB_OUTPUT_GRAYSCALE  => [0..23]
  *    This mode supports the 4th range of the 256 mode only.
