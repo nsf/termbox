@@ -273,6 +273,7 @@ static int init_term(void) {
 	}
 
 	init_from_terminfo = true;
+	free(data);
 	return 0;
 }
 
