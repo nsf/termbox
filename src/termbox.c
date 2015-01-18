@@ -564,6 +564,36 @@ static void update_size(void)
 	send_clear();
 }
 
+static int read_up_to(int n) {
+	assert(n > 0);
+	const int prevlen = input_buffer.len;
+	bytebuffer_resize(&input_buffer, prevlen + n);
+
+	int read_n = 0;
+	while (read_n < n) {
+		ssize_t r = read(inout,	input_buffer.buf + prevlen + read_n, n - read_n);
+#ifdef __CYGWIN__
+		// While linux man for tty says when VMIN == 0 && VTIME == 0, read
+		// should return 0 when there is nothing to read, cygwin's read returns
+		// -1. Not sure why and if it's correct to ignore it, but let's pretend
+		// it's zero.
+		if (r < 0) r = 0;
+#endif
+		if (r < 0) {
+			// EAGAIN / EWOULDBLOCK shouldn't occur here
+			assert(errno != EAGAIN && errno != EWOULDBLOCK);
+			return -1;
+		} else if (r > 0) {
+			read_n += r;
+		} else {
+			bytebuffer_resize(&input_buffer, prevlen + read_n);
+			return read_n;
+		}
+	}
+	assert(!"unreachable");
+	return 0;
+}
+
 static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
 {
 	// ;-)
@@ -578,23 +608,13 @@ static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
 
 	// it looks like input buffer is incomplete, let's try the short path,
 	// but first make sure there is enough space
-	int prevlen = input_buffer.len;
-	bytebuffer_resize(&input_buffer, prevlen + ENOUGH_DATA_FOR_PARSING);
-	ssize_t r = read(inout,	input_buffer.buf + prevlen,
-		ENOUGH_DATA_FOR_PARSING);
-	if (r < 0) {
-		// EAGAIN / EWOULDBLOCK shouldn't occur here
-		assert(errno != EAGAIN && errno != EWOULDBLOCK);
+	int n = read_up_to(ENOUGH_DATA_FOR_PARSING);
+	if (n < 0)
 		return -1;
-	} else if (r > 0) {
-		bytebuffer_resize(&input_buffer, prevlen + r);
-		if (extract_event(event, &input_buffer, inputmode))
-			return TB_EVENT_KEY;
-	} else {
-		bytebuffer_resize(&input_buffer, prevlen);
-	}
+	if (n > 0 && extract_event(event, &input_buffer, inputmode))
+		return TB_EVENT_KEY;
 
-	// r == 0, or not enough data, let's go to select
+	// n == 0, or not enough data, let's go to select
 	while (1) {
 		FD_ZERO(&events);
 		FD_SET(inout, &events);
@@ -606,19 +626,13 @@ static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
 
 		if (FD_ISSET(inout, &events)) {
 			event->type = TB_EVENT_KEY;
-			prevlen = input_buffer.len;
-			bytebuffer_resize(&input_buffer,
-				prevlen + ENOUGH_DATA_FOR_PARSING);
-			r = read(inout, input_buffer.buf + prevlen,
-				ENOUGH_DATA_FOR_PARSING);
-			if (r < 0) {
-				// EAGAIN / EWOULDBLOCK shouldn't occur here
-				assert(errno != EAGAIN && errno != EWOULDBLOCK);
+			n = read_up_to(ENOUGH_DATA_FOR_PARSING);
+			if (n < 0)
 				return -1;
-			}
-			bytebuffer_resize(&input_buffer, prevlen + r);
-			if (r == 0)
+
+			if (n == 0)
 				continue;
+
 			if (extract_event(event, &input_buffer, inputmode))
 				return TB_EVENT_KEY;
 		}
