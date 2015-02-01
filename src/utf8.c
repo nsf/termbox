@@ -49,10 +49,7 @@ int tb_utf8_unicode_to_char(char *out, uint32_t c)
 	int first;
 	int i;
 
-	if (c == 0) {
-		first = 0;
-		len = 0;
-	} else if (c < 0x80) {
+	if (c < 0x80) {
 		first = 0;
 		len = 1;
 	} else if (c < 0x800) {
