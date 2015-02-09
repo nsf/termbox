@@ -513,13 +513,18 @@ void draw_keyboard()
 	printf_tb(21, 2, TB_MAGENTA, TB_DEFAULT, "(press CTRL+X and then CTRL+Q to exit)");
 	printf_tb(15, 3, TB_MAGENTA, TB_DEFAULT, "(press CTRL+X and then CTRL+C to change input mode)");
 
-	static const char *inputmodemap[] = {
-		0,
-		"TB_INPUT_ESC",
-		"TB_INPUT_ALT"
-	};
-	printf_tb(3, 18, TB_WHITE, TB_DEFAULT, "Input mode: %s",
-			inputmodemap[tb_select_input_mode(0)]);
+	int inputmode = tb_select_input_mode(0);
+	char inputmode_str[64];
+
+	if (inputmode & TB_INPUT_ESC)
+		sprintf(inputmode_str, "TB_INPUT_ESC");
+	if (inputmode & TB_INPUT_ALT)
+		sprintf(inputmode_str, "TB_INPUT_ALT");
+
+	if (inputmode & TB_INPUT_MOUSE)
+		sprintf(inputmode_str, "%s | TB_INPUT_MOUSE", inputmode_str);
+
+	printf_tb(3, 18, TB_WHITE, TB_DEFAULT, "Input mode: %s", inputmode_str);
 }
 
 const char *funckeymap(int k)
@@ -603,13 +608,13 @@ void pretty_print_press(struct tb_event *ev)
 	printf_tb(8, 21, TB_CYAN  , TB_DEFAULT, "octal:   0%o", ev->key);
 	printf_tb(8, 22, TB_RED   , TB_DEFAULT, "string:  %s", funckeymap(ev->key));
 
-	printf_tb(43, 19, TB_WHITE , TB_DEFAULT, "Char: ");
-	printf_tb(49, 19, TB_YELLOW, TB_DEFAULT, "decimal: %d", ev->ch);
-	printf_tb(49, 20, TB_GREEN , TB_DEFAULT, "hex:     0x%X", ev->ch);
-	printf_tb(49, 21, TB_CYAN  , TB_DEFAULT, "octal:   0%o", ev->ch);
-	printf_tb(49, 22, TB_RED   , TB_DEFAULT, "string:  %s", buf);
+	printf_tb(54, 19, TB_WHITE , TB_DEFAULT, "Char: ");
+	printf_tb(60, 19, TB_YELLOW, TB_DEFAULT, "decimal: %d", ev->ch);
+	printf_tb(60, 20, TB_GREEN , TB_DEFAULT, "hex:     0x%X", ev->ch);
+	printf_tb(60, 21, TB_CYAN  , TB_DEFAULT, "octal:   0%o", ev->ch);
+	printf_tb(60, 22, TB_RED   , TB_DEFAULT, "string:  %s", buf);
 
-	printf_tb(43, 18, TB_WHITE, TB_DEFAULT, "Modifier: %s",
+	printf_tb(54, 18, TB_WHITE, TB_DEFAULT, "Modifier: %s",
 			(ev->mod) ? "TB_MOD_ALT" : "none");
 
 }
@@ -617,6 +622,27 @@ void pretty_print_press(struct tb_event *ev)
 void pretty_print_resize(struct tb_event *ev)
 {
 	printf_tb(3, 19, TB_WHITE, TB_DEFAULT, "Resize event: %d x %d", ev->w, ev->h);
+}
+
+int counter = 0;
+
+void  pretty_print_mouse(struct tb_event *ev) {
+	printf_tb(3, 19, TB_WHITE, TB_DEFAULT, "Mouse event: %d x %d", ev->mouse_x, ev->mouse_y);
+	char *btn;
+	switch (ev->key) {
+	case TB_KEY_MOUSE_LEFT:
+		btn = "MouseLeft: %d";
+		break;
+	case TB_KEY_MOUSE_MIDDLE:
+		btn = "MouseMiddle: %d";
+		break;
+	case TB_KEY_MOUSE_RIGHT:
+		btn = "MouseRight: %d";
+		break;
+	}
+	counter++;
+	printf_tb(43, 19, TB_WHITE, TB_DEFAULT, "Key: ");
+	printf_tb(48, 19, TB_YELLOW, TB_DEFAULT, btn, counter);
 }
 
 void dispatch_press(struct tb_event *ev)
@@ -656,7 +682,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	tb_select_input_mode(TB_INPUT_ESC);
+	tb_select_input_mode(TB_INPUT_ESC | TB_INPUT_MOUSE);
 	struct tb_event ev;
 
 	tb_clear();
@@ -673,11 +699,16 @@ int main(int argc, char **argv)
 			}
 			if (ev.key == TB_KEY_CTRL_C && ctrlxpressed) {
 				static int chmap[] = {
-					0,
-					2,
-					1
+					TB_INPUT_ESC | TB_INPUT_MOUSE, /* 101 */
+					TB_INPUT_ALT | TB_INPUT_MOUSE, /* 110 */
+					TB_INPUT_ESC,                  /* 001 */
+					TB_INPUT_ALT,                  /* 010 */
 				};
-				tb_select_input_mode(chmap[tb_select_input_mode(0)]);
+				inputmode++;
+				if (inputmode >= 4) {
+					inputmode = 0;
+				}
+				tb_select_input_mode(chmap[inputmode]);
 			}
 			if (ev.key == TB_KEY_CTRL_X)
 				ctrlxpressed = 1;
@@ -694,6 +725,12 @@ int main(int argc, char **argv)
 			tb_clear();
 			draw_keyboard();
 			pretty_print_resize(&ev);
+			tb_present();
+			break;
+		case TB_EVENT_MOUSE:
+			tb_clear();
+			draw_keyboard();
+			pretty_print_mouse(&ev);
 			tb_present();
 			break;
 		default:
