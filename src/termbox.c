@@ -142,6 +142,7 @@ void tb_shutdown(void)
 	bytebuffer_puts(&output_buffer, funcs[T_CLEAR_SCREEN]);
 	bytebuffer_puts(&output_buffer, funcs[T_EXIT_CA]);
 	bytebuffer_puts(&output_buffer, funcs[T_EXIT_KEYPAD]);
+	bytebuffer_puts(&output_buffer, funcs[T_EXIT_MOUSE]);
 	bytebuffer_flush(&output_buffer, inout);
 	tcsetattr(inout, TCSAFLUSH, &orig_tios);
 
@@ -291,6 +292,11 @@ int tb_select_input_mode(int mode)
 {
 	if (mode)
 		inputmode = mode;
+	if (mode&TB_INPUT_MOUSE) {
+		bytebuffer_puts(&output_buffer, funcs[T_ENTER_MOUSE]);
+	} else {
+		bytebuffer_puts(&output_buffer, funcs[T_EXIT_MOUSE]);
+	}
 	return inputmode;
 }
 
@@ -604,7 +610,7 @@ static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
 	// try to extract event from input buffer, return on success
 	event->type = TB_EVENT_KEY;
 	if (extract_event(event, &input_buffer, inputmode))
-		return TB_EVENT_KEY;
+		return event->type;
 
 	// it looks like input buffer is incomplete, let's try the short path,
 	// but first make sure there is enough space
@@ -612,7 +618,7 @@ static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
 	if (n < 0)
 		return -1;
 	if (n > 0 && extract_event(event, &input_buffer, inputmode))
-		return TB_EVENT_KEY;
+		return event->type;
 
 	// n == 0, or not enough data, let's go to select
 	while (1) {
@@ -634,7 +640,7 @@ static int wait_fill_event(struct tb_event *event, struct timeval *timeout)
 				continue;
 
 			if (extract_event(event, &input_buffer, inputmode))
-				return TB_EVENT_KEY;
+				return event->type;
 		}
 		if (FD_ISSET(winch_fds[0], &events)) {
 			event->type = TB_EVENT_RESIZE;

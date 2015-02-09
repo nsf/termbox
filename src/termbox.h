@@ -18,28 +18,31 @@ extern "C" {
  * These are a safe subset of terminfo keys, which exist on all popular
  * terminals. Termbox uses only them to stay truly portable.
  */
-#define TB_KEY_F1          (0xFFFF-0)
-#define TB_KEY_F2          (0xFFFF-1)
-#define TB_KEY_F3          (0xFFFF-2)
-#define TB_KEY_F4          (0xFFFF-3)
-#define TB_KEY_F5          (0xFFFF-4)
-#define TB_KEY_F6          (0xFFFF-5)
-#define TB_KEY_F7          (0xFFFF-6)
-#define TB_KEY_F8          (0xFFFF-7)
-#define TB_KEY_F9          (0xFFFF-8)
-#define TB_KEY_F10         (0xFFFF-9)
-#define TB_KEY_F11         (0xFFFF-10)
-#define TB_KEY_F12         (0xFFFF-11)
-#define TB_KEY_INSERT      (0xFFFF-12)
-#define TB_KEY_DELETE      (0xFFFF-13)
-#define TB_KEY_HOME        (0xFFFF-14)
-#define TB_KEY_END         (0xFFFF-15)
-#define TB_KEY_PGUP        (0xFFFF-16)
-#define TB_KEY_PGDN        (0xFFFF-17)
-#define TB_KEY_ARROW_UP    (0xFFFF-18)
-#define TB_KEY_ARROW_DOWN  (0xFFFF-19)
-#define TB_KEY_ARROW_LEFT  (0xFFFF-20)
-#define TB_KEY_ARROW_RIGHT (0xFFFF-21)
+#define TB_KEY_F1           (0xFFFF-0)
+#define TB_KEY_F2           (0xFFFF-1)
+#define TB_KEY_F3           (0xFFFF-2)
+#define TB_KEY_F4           (0xFFFF-3)
+#define TB_KEY_F5           (0xFFFF-4)
+#define TB_KEY_F6           (0xFFFF-5)
+#define TB_KEY_F7           (0xFFFF-6)
+#define TB_KEY_F8           (0xFFFF-7)
+#define TB_KEY_F9           (0xFFFF-8)
+#define TB_KEY_F10          (0xFFFF-9)
+#define TB_KEY_F11          (0xFFFF-10)
+#define TB_KEY_F12          (0xFFFF-11)
+#define TB_KEY_INSERT       (0xFFFF-12)
+#define TB_KEY_DELETE       (0xFFFF-13)
+#define TB_KEY_HOME         (0xFFFF-14)
+#define TB_KEY_END          (0xFFFF-15)
+#define TB_KEY_PGUP         (0xFFFF-16)
+#define TB_KEY_PGDN         (0xFFFF-17)
+#define TB_KEY_ARROW_UP     (0xFFFF-18)
+#define TB_KEY_ARROW_DOWN   (0xFFFF-19)
+#define TB_KEY_ARROW_LEFT   (0xFFFF-20)
+#define TB_KEY_ARROW_RIGHT  (0xFFFF-21)
+#define TB_KEY_MOUSE_LEFT   (0xFFFF-22)
+#define TB_KEY_MOUSE_RIGHT  (0xFFFF-23)
+#define TB_KEY_MOUSE_MIDDLE (0xFFFF-24)
 
 /* These are all ASCII code points below SPACE character and a BACKSPACE key. */
 #define TB_KEY_CTRL_TILDE       0x00
@@ -134,6 +137,7 @@ struct tb_cell {
 
 #define TB_EVENT_KEY    1
 #define TB_EVENT_RESIZE 2
+#define TB_EVENT_MOUSE  3
 
 /* This struct represents a termbox event. The 'mod', 'key' and 'ch' fields are
  * valid if 'type' is TB_EVENT_KEY. The 'w' and 'h' fields are valid if 'type'
@@ -146,6 +150,8 @@ struct tb_event {
 	uint32_t ch;
 	int32_t w;
 	int32_t h;
+	int32_t mouse_x;
+	int32_t mouse_y;
 };
 
 /* Error codes returned by tb_init(). All of them are self-explanatory, except
@@ -211,9 +217,10 @@ SO_IMPORT void tb_blit(int x, int y, int w, int h, const struct tb_cell *cells);
  */
 SO_IMPORT struct tb_cell *tb_cell_buffer();
 
-#define TB_INPUT_CURRENT 0
-#define TB_INPUT_ESC     1
-#define TB_INPUT_ALT     2
+#define TB_INPUT_CURRENT 0 /* 000 */
+#define TB_INPUT_ESC     1 /* 001 */
+#define TB_INPUT_ALT     2 /* 010 */
+#define TB_INPUT_MOUSE   4 /* 100 */
 
 /* Sets the termbox input mode. Termbox has two input modes:
  * 1. Esc input mode.

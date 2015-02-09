@@ -15,6 +15,33 @@ static bool starts_with(const char *s1, int len, const char *s2)
 // convert escape sequence to event, and return consumed bytes on success (failure == 0)
 static int parse_escape_seq(struct tb_event *event, const char *buf, int len)
 {
+	if (len >= 6 && starts_with(buf, len, "\033[M")) {
+
+		switch (buf[3] & 3) {
+		case 0:
+			event->key = TB_KEY_MOUSE_LEFT;
+			break;
+		case 1:
+			event->key = TB_KEY_MOUSE_MIDDLE;
+			break;
+		case 2:
+			event->key = TB_KEY_MOUSE_RIGHT;
+			break;
+		case 3:
+			return -6;
+		}
+		event->type = TB_EVENT_MOUSE; // TB_EVENT_KEY by default
+		// wheel up outputs MouseLeft
+		if (buf[3] == 0x60 || buf[3] == 0x70) {
+			event->key = TB_KEY_MOUSE_MIDDLE;
+		}
+		// the coord is 1,1 for upper left
+		event->mouse_x = buf[4] - 1 - 32;
+		event->mouse_y = buf[5] - 1 - 32;
+
+		return 6;
+	}
+
 	// it's pretty simple here, find 'starts_with' match and return
 	// success, else return failure
 	int i;
@@ -37,14 +64,18 @@ static bool extract_event(struct tb_event *event, struct bytebuffer *inbuf, int 
 
 	if (buf[0] == '\033') {
 		int n = parse_escape_seq(event, buf, len);
-		if (n) {
+		if (n != 0) {
+			bool success = true;
+			if (n < 0) {
+				success = false;
+				n = -n;
+			}
 			bytebuffer_truncate(inbuf, n);
-			return true;
+			return success;
 		} else {
 			// it's not escape sequence, then it's ALT or ESC,
 			// check inputmode
-			switch (inputmode) {
-			case TB_INPUT_ESC:
+			if (inputmode&TB_INPUT_ESC) {
 				// if we're in escape mode, fill ESC event, pop
 				// buffer, return success
 				event->ch = 0;
@@ -52,16 +83,15 @@ static bool extract_event(struct tb_event *event, struct bytebuffer *inbuf, int 
 				event->mod = 0;
 				bytebuffer_truncate(inbuf, 1);
 				return true;
-			case TB_INPUT_ALT:
+			}
+			if (inputmode&TB_INPUT_ALT) {
 				// if we're in alt mode, set ALT modifier to
 				// event and redo parsing
 				event->mod = TB_MOD_ALT;
 				bytebuffer_truncate(inbuf, 1);
 				return extract_event(event, inbuf, inputmode);
-			default:
-				assert(!"never got here");
-				break;
 			}
+			assert(!"never got here");
 		}
 	}
 
