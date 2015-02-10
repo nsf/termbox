@@ -36,8 +36,8 @@ static int parse_escape_seq(struct tb_event *event, const char *buf, int len)
 			event->key = TB_KEY_MOUSE_MIDDLE;
 		}
 		// the coord is 1,1 for upper left
-		event->mouse_x = buf[4] - 1 - 32;
-		event->mouse_y = buf[5] - 1 - 32;
+		event->x = buf[4] - 1 - 32;
+		event->y = buf[5] - 1 - 32;
 
 		return 6;
 	}

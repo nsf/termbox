@@ -141,7 +141,8 @@ struct tb_cell {
 
 /* This struct represents a termbox event. The 'mod', 'key' and 'ch' fields are
  * valid if 'type' is TB_EVENT_KEY. The 'w' and 'h' fields are valid if 'type'
- * is TB_EVENT_RESIZE.
+ * is TB_EVENT_RESIZE. The 'x' and 'y' fields are valid if 'type' is
+ * TB_EVENT_MOUSE.
  */
 struct tb_event {
 	uint8_t type;
@@ -150,8 +151,8 @@ struct tb_event {
 	uint32_t ch;
 	int32_t w;
 	int32_t h;
-	int32_t mouse_x;
-	int32_t mouse_y;
+	int32_t x;
+	int32_t y;
 };
 
 /* Error codes returned by tb_init(). All of them are self-explanatory, except

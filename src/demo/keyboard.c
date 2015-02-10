@@ -627,7 +627,7 @@ void pretty_print_resize(struct tb_event *ev)
 int counter = 0;
 
 void  pretty_print_mouse(struct tb_event *ev) {
-	printf_tb(3, 19, TB_WHITE, TB_DEFAULT, "Mouse event: %d x %d", ev->mouse_x, ev->mouse_y);
+	printf_tb(3, 19, TB_WHITE, TB_DEFAULT, "Mouse event: %d x %d", ev->x, ev->y);
 	char *btn = "";
 	switch (ev->key) {
 	case TB_KEY_MOUSE_LEFT:
