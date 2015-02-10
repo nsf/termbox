@@ -628,7 +628,7 @@ int counter = 0;
 
 void  pretty_print_mouse(struct tb_event *ev) {
 	printf_tb(3, 19, TB_WHITE, TB_DEFAULT, "Mouse event: %d x %d", ev->mouse_x, ev->mouse_y);
-	char *btn;
+	char *btn = "";
 	switch (ev->key) {
 	case TB_KEY_MOUSE_LEFT:
 		btn = "MouseLeft: %d";
@@ -688,6 +688,7 @@ int main(int argc, char **argv)
 	tb_clear();
 	draw_keyboard();
 	tb_present();
+	int inputmode = 0;
 	int ctrlxpressed = 0;
 
 	while (tb_poll_event(&ev)) {
