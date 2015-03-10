@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <termios.h>
 #include <unistd.h>
+#include <wchar.h>
 
 #include "termbox.h"
 
@@ -159,7 +160,7 @@ void tb_shutdown(void)
 
 void tb_present(void)
 {
-	int x,y;
+	int x,y,w,i;
 	struct tb_cell *back, *front;
 
 	/* invalidate cursor position */
@@ -172,14 +173,32 @@ void tb_present(void)
 	}
 
 	for (y = 0; y < front_buffer.height; ++y) {
-		for (x = 0; x < front_buffer.width; ++x) {
+		for (x = 0; x < front_buffer.width; ) {
 			back = &CELL(&back_buffer, x, y);
 			front = &CELL(&front_buffer, x, y);
-			if (memcmp(back, front, sizeof(struct tb_cell)) == 0)
+			w = wcwidth(back->ch);
+			if (w < 1) w = 1;
+			if (memcmp(back, front, sizeof(struct tb_cell)) == 0) {
+				x += w;
 				continue;
-			send_attr(back->fg, back->bg);
-			send_char(x, y, back->ch);
+			}
 			memcpy(front, back, sizeof(struct tb_cell));
+			send_attr(back->fg, back->bg);
+			if (w > 1 && x >= front_buffer.width - (w - 1)) {
+				// Not enough room for wide ch, so send spaces
+				for (i = x; i < front_buffer.width; ++i) {
+					send_char(i, y, ' ');
+				}
+			} else {
+				send_char(x, y, back->ch);
+				for (i = 1; i < w; ++i) {
+					front = &CELL(&front_buffer, x + i, y);
+					front->ch = 0;
+					front->fg = back->fg;
+					front->bg = back->bg;
+				}
+			}
+			x += w;
 		}
 	}
 	if (!IS_CURSOR_HIDDEN(cursor_x, cursor_y))

@@ -20,7 +20,7 @@ def configure(conf):
 	conf.env.VERSION = VERSION
 	conf.load('gnu_dirs')
 	conf.load('compiler_c')
-	conf.env.append_unique('CFLAGS', ['-std=gnu99', '-Wall', '-Wextra'])
+	conf.env.append_unique('CFLAGS', ['-std=gnu99', '-Wall', '-Wextra', '-D_XOPEN_SOURCE'])
 	if conf.options.debug:
 		conf.env.append_unique('CFLAGS', ['-g', '-Og'])
 	else:
