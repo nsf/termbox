@@ -598,8 +598,11 @@ static int read_up_to(int n) {
 	bytebuffer_resize(&input_buffer, prevlen + n);
 
 	int read_n = 0;
-	while (read_n < n) {
-		ssize_t r = read(inout,	input_buffer.buf + prevlen + read_n, n - read_n);
+	while (read_n <= n) {
+		ssize_t r = 0;
+		if (read_n < n) {
+			r = read(inout, input_buffer.buf + prevlen + read_n, n - read_n);
+		}
 #ifdef __CYGWIN__
 		// While linux man for tty says when VMIN == 0 && VTIME == 0, read
 		// should return 0 when there is nothing to read, cygwin's read returns
