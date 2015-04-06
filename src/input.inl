@@ -28,6 +28,9 @@ static int parse_escape_seq(struct tb_event *event, const char *buf, int len)
 			event->key = TB_KEY_MOUSE_RIGHT;
 			break;
 		case 3:
+			event->key = TB_KEY_MOUSE_RELEASE;
+			break;
+		default:
 			return -6;
 		}
 		event->type = TB_EVENT_MOUSE; // TB_EVENT_KEY by default
