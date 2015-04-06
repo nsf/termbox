@@ -5,6 +5,10 @@ This is a binding module for termbox library.
 
 include "termboxconfig.pyx"
 
+## No unichr in python3, use chr instead.
+if PY_MAJOR_VERSION == 3:
+	unichr = chr
+
 cdef extern from "stdint.h":
 	ctypedef unsigned int uint32_t
 	ctypedef unsigned short uint16_t
@@ -18,6 +22,8 @@ cdef extern from "../termbox.h":
 		uint16_t mod
 		int32_t w
 		int32_t h
+		int32_t x
+		int32_t y
 	int tb_init()
 	void tb_shutdown()
 	void tb_present()
@@ -64,6 +70,11 @@ KEY_ARROW_UP         = (0xFFFF-18)
 KEY_ARROW_DOWN       = (0xFFFF-19)
 KEY_ARROW_LEFT       = (0xFFFF-20)
 KEY_ARROW_RIGHT      = (0xFFFF-21)
+KEY_MOUSE_LEFT      =(0xFFFF-22)
+KEY_MOUSE_RIGHT      =(0xFFFF-23)
+KEY_MOUSE_MIDDLE      =(0xFFFF-24)
+KEY_MOUSE_RELEASE      =(0xFFFF-25)
+
 KEY_CTRL_TILDE       = 0x00
 KEY_CTRL_2           = 0x00
 KEY_CTRL_A           = 0x01
@@ -141,6 +152,7 @@ OUTPUT_216       = 3
 OUTPUT_GRAYSCALE = 4
 EVENT_KEY        = 1
 EVENT_RESIZE     = 2
+EVENT_MOUSE		= 3
 
 cdef class Termbox:
 	cdef int created
@@ -238,7 +250,7 @@ cdef class Termbox:
 		"""Wait for an event up to 'timeout' milliseconds and return it.
 
 		   Returns None if there was no event and timeout is expired.
-		   Returns a tuple otherwise: (type, unicode character, key, mod, width, height).
+		   Returns a tuple otherwise: (type, unicode character, key, mod, width, height, mousex, mousey).
 		"""
 		cdef tb_event e
 		cdef int result
@@ -249,18 +261,15 @@ cdef class Termbox:
 		if result == 0:
 			return None
 		if e.ch:
-			IF PY_MAJOR_VERSION == 3:
-				uch = chr(e.ch)
-			ELIF PY_MAJOR_VERSION == 2:
-				uch = unichr(e.ch)
+			uch = unichr(e.ch)
 		else:
 			uch = None
-		return (e.type, uch, e.key, e.mod, e.w, e.h)
+		return (e.type, uch, e.key, e.mod, e.w, e.h, e.x, e.y)
 
 	def poll_event(self):
 		"""Wait for an event and return it.
 
-		   Returns a tuple: (type, unicode character, key, mod, width, height).
+		   Returns a tuple: (type, unicode character, key, mod, width, height, mousex, mousey).
 		"""
 		cdef tb_event e
 		cdef int result
@@ -269,10 +278,7 @@ cdef class Termbox:
 				result = tb_poll_event(&e)
 		assert(result >= 0)
 		if e.ch:
-			IF PY_MAJOR_VERSION == 3:
-				uch = chr(e.ch)
-			ELIF PY_MAJOR_VERSION == 2:
-				uch = unichr(e.ch)
+			uch = unichr(e.ch)
 		else:
 			uch = None
-		return (e.type, uch, e.key, e.mod, e.w, e.h)
+		return (e.type, uch, e.key, e.mod, e.w, e.h, e.x, e.y)
