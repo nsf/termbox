@@ -34,10 +34,15 @@ static int parse_escape_seq(struct tb_event *event, const char *buf, int len)
 			return -6;
 		}
 		event->type = TB_EVENT_MOUSE; // TB_EVENT_KEY by default
-		// wheel up outputs MouseLeft
-		if (buf[3] == 0x60 || buf[3] == 0x70) {
-			event->key = TB_KEY_MOUSE_MIDDLE;
+
+		//wheel up and down add 64 to mouse left and right
+		if (buf[3] == 0x60){
+			event->key = TB_KEY_MOUSE_WHEEL_UP;
 		}
+		if (buf[3] == 0x61){
+			event->key = TB_KEY_MOUSE_WHEEL_DOWN;
+		}
+
 		// the coord is 1,1 for upper left
 		event->x = buf[4] - 1 - 32;
 		event->y = buf[5] - 1 - 32;
