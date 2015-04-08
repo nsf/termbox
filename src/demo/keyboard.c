@@ -639,6 +639,14 @@ void  pretty_print_mouse(struct tb_event *ev) {
 	case TB_KEY_MOUSE_RIGHT:
 		btn = "MouseRight: %d";
 		break;
+	case TB_KEY_MOUSE_WHEEL_UP:
+		btn = "MouseWheelUp: %d";
+		break;
+	case TB_KEY_MOUSE_WHEEL_DOWN:
+		btn = "MouseWheelDown: %d";
+		break;
+	case TB_KEY_MOUSE_RELEASE:
+		btn = "MouseRelease: %d";
 	}
 	counter++;
 	printf_tb(43, 19, TB_WHITE, TB_DEFAULT, "Key: ");
