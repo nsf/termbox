@@ -1,0 +1,25 @@
+{
+  "name": "termbox",
+  "version": "1.0.1a1",
+  "repo": "nsf/termbox",
+  "description": "Library for writing text-based user interfaces",
+  "keywords": [
+    "termbox",
+    "terminal",
+    "term",
+    "tty",
+    "ansi",
+    "escape",
+    "colors",
+    "console"
+  ],
+  "license": "MIT",
+  "src": [
+    "src/bytebuffer.inl",
+    "src/input.inl",
+    "term.inl",
+    "termbox.c",
+    "termbox.h",
+    "utf8.c"
+   ]
+}
