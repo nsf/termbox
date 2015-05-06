@@ -17,9 +17,9 @@
   "src": [
     "src/bytebuffer.inl",
     "src/input.inl",
-    "term.inl",
-    "termbox.c",
-    "termbox.h",
-    "utf8.c"
+    "src/term.inl",
+    "src/termbox.c",
+    "src/termbox.h",
+    "src/utf8.c"
    ]
 }
