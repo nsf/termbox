@@ -236,9 +236,9 @@ SO_IMPORT struct tb_cell *tb_cell_buffer();
  *
  * You can also apply TB_INPUT_MOUSE via bitwise OR operation to either of the
  * modes (e.g. TB_INPUT_ESC | TB_INPUT_MOUSE). If none of the main two modes
- * were set, but the mouse mode was, TB_KEY_ESC mode is used. If for some reason
- * you've decided to use (TB_INPUT_ESC | TB_INPUT_ALT) combination, it will
- * behave as if TB_INPUT_ESC was selected.
+ * were set, but the mouse mode was, TB_INPUT_ESC mode is used. If for some
+ * reason you've decided to use (TB_INPUT_ESC | TB_INPUT_ALT) combination, it
+ * will behave as if only TB_INPUT_ESC was selected.
  *
  * If 'mode' is TB_INPUT_CURRENT, it returns the current input mode.
  *
