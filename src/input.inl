@@ -42,8 +42,8 @@ static int parse_escape_seq(struct tb_event *event, const char *buf, int len)
 		event->type = TB_EVENT_MOUSE; // TB_EVENT_KEY by default
 
 		// the coord is 1,1 for upper left
-		event->x = buf[4] - 1 - 32;
-		event->y = buf[5] - 1 - 32;
+		event->x = (uint8_t)buf[4] - 1 - 32;
+		event->y = (uint8_t)buf[5] - 1 - 32;
 
 		return 6;
 	}
