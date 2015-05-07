@@ -310,6 +310,14 @@ void tb_clear(void)
 int tb_select_input_mode(int mode)
 {
 	if (mode) {
+		if ((mode & (TB_INPUT_ESC | TB_INPUT_ALT)) == 0)
+			mode |= TB_INPUT_ESC;
+
+		/* technically termbox can handle that, but let's be nice and show here
+		   what mode is actually used */
+		if ((mode & (TB_INPUT_ESC | TB_INPUT_ALT)) == (TB_INPUT_ESC | TB_INPUT_ALT))
+			mode &= ~TB_INPUT_ALT;
+
 		inputmode = mode;
 		if (mode&TB_INPUT_MOUSE) {
 			bytebuffer_puts(&output_buffer, funcs[T_ENTER_MOUSE]);

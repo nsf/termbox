@@ -234,7 +234,15 @@ SO_IMPORT struct tb_cell *tb_cell_buffer();
  *    When ESC sequence is in the buffer and it doesn't match any known
  *    sequence => ESC enables TB_MOD_ALT modifier for the next keyboard event.
  *
+ * You can also apply TB_INPUT_MOUSE via bitwise OR operation to either of the
+ * modes (e.g. TB_INPUT_ESC | TB_INPUT_MOUSE). If none of the main two modes
+ * were set, but the mouse mode was, TB_KEY_ESC mode is used. If for some reason
+ * you've decided to use (TB_INPUT_ESC | TB_INPUT_ALT) combination, it will
+ * behave as if TB_INPUT_ESC was selected.
+ *
  * If 'mode' is TB_INPUT_CURRENT, it returns the current input mode.
+ *
+ * Default termbox input mode is TB_INPUT_ESC.
  */
 SO_IMPORT int tb_select_input_mode(int mode);
 
@@ -276,6 +284,8 @@ SO_IMPORT int tb_select_input_mode(int mode);
  * Execute build/src/demo/output to see its impact on your terminal.
  *
  * If 'mode' is TB_OUTPUT_CURRENT, it returns the current output mode.
+ *
+ * Default termbox output mode is TB_OUTPUT_NORMAL.
  */
 SO_IMPORT int tb_select_output_mode(int mode);
 
