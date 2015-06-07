@@ -105,7 +105,7 @@ with termbox.Termbox() as t:
 	while run_app:
 		event_here = t.poll_event()
 		while event_here:
-			(type, ch, key, mod, w, h) = event_here
+			(type, ch, key, mod, w, h, x, y) = event_here
 			if type == termbox.EVENT_KEY and key == termbox.KEY_ESC:
 				run_app = False
 			if type == termbox.EVENT_KEY:
