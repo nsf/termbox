@@ -92,7 +92,7 @@ extern "C" {
 #define TB_KEY_CTRL_UNDERSCORE  0x1F /* clash with 'CTRL_7' */
 #define TB_KEY_SPACE            0x20
 #define TB_KEY_BACKSPACE2       0x7F
-#define TB_KEY_CTRL_8           0x7F /* clash with 'DELETE' */
+#define TB_KEY_CTRL_8           0x7F /* clash with 'BACKSPACE2' */
 
 /* These are non-existing ones.
  *
@@ -142,16 +142,18 @@ struct tb_cell {
 #define TB_EVENT_RESIZE 2
 #define TB_EVENT_MOUSE  3
 
-/* This struct represents a termbox event. The 'mod', 'key' and 'ch' fields are
+/* An event, single interaction from the user. The 'mod' and 'ch' fields are
  * valid if 'type' is TB_EVENT_KEY. The 'w' and 'h' fields are valid if 'type'
  * is TB_EVENT_RESIZE. The 'x' and 'y' fields are valid if 'type' is
- * TB_EVENT_MOUSE.
+ * TB_EVENT_MOUSE. The 'key' field is valid if 'type' is either TB_EVENT_KEY
+ * or TB_EVENT_MOUSE. The fields 'key' and 'ch' are mutually exclusive; only
+ * one of them can be non-zero at a time.
  */
 struct tb_event {
 	uint8_t type;
-	uint8_t mod;
-	uint16_t key;
-	uint32_t ch;
+	uint8_t mod; /* modifiers to either 'key' or 'ch' below */
+	uint16_t key; /* one of the TB_KEY_* constants */
+	uint32_t ch; /* unicode character */
 	int32_t w;
 	int32_t h;
 	int32_t x;
