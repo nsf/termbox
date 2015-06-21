@@ -88,9 +88,12 @@ def draw_bottom_line(t, i):
 	w = t.width()
 	h = t.height()
 	c = i
+	palette = [termbox.DEFAULT, termbox.BLACK, termbox.RED, termbox.GREEN,
+	           termbox.YELLOW, termbox.BLUE, termbox.MAGENTA, termbox.CYAN,
+	           termbox.WHITE]
 	for x in range(w):
-		t.change_cell(x, h-1, ord(u' '), termbox.BLACK, c)
-		t.change_cell(x, h-2, ord(u' '), termbox.BLACK, c)
+		t.change_cell(x, h-1, ord(u' '), termbox.BLACK, palette[c])
+		t.change_cell(x, h-2, ord(u' '), termbox.BLACK, palette[c])
 		c += 1
 		if c > 7:
 			c = 0
