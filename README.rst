@@ -21,7 +21,7 @@ INSTALLATION
 ============
 
 Termbox comes with a waf-based build scripts. In order to configure, build and
-install it, do the following:
+install it, do the following::
 
   ./waf configure --prefix=/usr                                (configure)
   ./waf                                                        (build)
@@ -29,10 +29,12 @@ install it, do the following:
 
 By default termbox will install the header file and both shared and static
 libraries. If you want to install a shared library or static library alone, use
-the following as an install command:
+the following as an install command::
 
   ./waf install --targets=termbox_shared --destdir=PREFIX      (shared library)
-or
+  
+or::
+
   ./waf install --targets=termbox_static --destdir=PREFIX      (static library)
 
 
@@ -40,11 +42,11 @@ PYTHON
 ------
 
 In order to install the python module, use the following command (as root or
-via sudo):
+via sudo)::
 
   python setup.py install
 
-for Python 3:
+for Python 3::
 
   python3 setup.py install
 
@@ -53,28 +55,24 @@ for Python 3:
 GETTING STARTED
 ===============
 
-Termbox's interface only consists of 12 functions.
+Termbox's interface only consists of 12 functions::
 
-----
-
-tb_init() // initialization
-tb_shutdown() // shutdown
-
-tb_width() // width of the terminal screen
-tb_height() // height of the terminal screen
-
-tb_clear() // clear buffer
-tb_present() // sync internal buffer with terminal
-
-tb_put_cell()
-tb_change_cell()
-tb_blit() // drawing functions
-
-tb_select_input_mode() // change input mode
-tb_peek_event() // peek a keyboard event
-tb_poll_event() // wait for a keyboard event
-
-----
+  tb_init() // initialization
+  tb_shutdown() // shutdown
+  
+  tb_width() // width of the terminal screen
+  tb_height() // height of the terminal screen
+  
+  tb_clear() // clear buffer
+  tb_present() // sync internal buffer with terminal
+  
+  tb_put_cell()
+  tb_change_cell()
+  tb_blit() // drawing functions
+  
+  tb_select_input_mode() // change input mode
+  tb_peek_event() // peek a keyboard event
+  tb_poll_event() // wait for a keyboard event
 
 See src/termbox.h header file for full detail.
 
@@ -83,9 +81,9 @@ See src/termbox.h header file for full detail.
 LINKS
 =====
 
-http://pecl.php.net/package/termbox - PHP Termbox wrapper
-https://github.com/nsf/termbox-go - Go pure Termbox implementation
-https://github.com/gchp/rustbox - Rust Termbox wrapper
+- http://pecl.php.net/package/termbox - PHP Termbox wrapper
+- https://github.com/nsf/termbox-go - Go pure Termbox implementation
+- https://github.com/gchp/rustbox - Rust Termbox wrapper
 
 ----
 
@@ -106,6 +104,7 @@ CHANGES
 =======
 
 v1.1.0 (not released yet):
+
 - API: tb_width() and tb_height() are guaranteed to be negative if the termbox
   wasn't initialized.
 - API: Output mode switching is now possible, adds 256-color and grayscale color
@@ -114,6 +113,7 @@ v1.1.0 (not released yet):
 - Bug fixes in code and documentation.
 
 v1.0.0:
+
 - Remove the Go directory. People generally know about termbox-go and where
   to look for it.
 - Remove old terminfo-related python scripts and backport the new one from
