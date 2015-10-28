@@ -270,7 +270,7 @@ void tb_blit(int x, int y, int w, int h, const struct tb_cell *cells)
 	}
 }
 
-struct tb_cell *tb_cell_buffer()
+struct tb_cell *tb_cell_buffer(void)
 {
 	return back_buffer.cells;
 }
