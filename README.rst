@@ -85,6 +85,7 @@ LINKS
 - https://github.com/nsf/termbox-go - Go pure Termbox implementation
 - https://github.com/gchp/rustbox - Rust Termbox wrapper
 - https://github.com/fouric/cl-termbox - Common Lisp Termbox wrapper
+- https://github.com/zyedidia/termbox-d - D Termbox wrapper
 
 ----
 
