@@ -137,9 +137,9 @@ MAGENTA   = 0x06
 CYAN      = 0x07
 WHITE     = 0x08
 
-BOLD      = 0x10
-UNDERLINE = 0x20
-REVERSE   = 0x40
+BOLD      = 0x0100
+UNDERLINE = 0x0200
+REVERSE   = 0x0400
 
 # misc ----------------------------
 
