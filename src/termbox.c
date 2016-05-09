@@ -380,7 +380,7 @@ static void write_sgr(uint16_t fg, uint16_t bg) {
 	case TB_OUTPUT_256:
 	case TB_OUTPUT_216:
 	case TB_OUTPUT_GRAYSCALE:
-		WRITE_LITERAL("\033[")
+		WRITE_LITERAL("\033[");
 		if (fg != TB_DEFAULT) {
 			WRITE_LITERAL("38;5;");
 			WRITE_INT(fg);
@@ -396,7 +396,7 @@ static void write_sgr(uint16_t fg, uint16_t bg) {
 		break;
 	case TB_OUTPUT_NORMAL:
 	default:
-		WRITE_LITERAL("\033[")
+		WRITE_LITERAL("\033[");
 		if (fg != TB_DEFAULT) {
 			WRITE_LITERAL("3");
 			WRITE_INT(fg - 1);
