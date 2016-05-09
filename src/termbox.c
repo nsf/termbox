@@ -373,33 +373,43 @@ static void write_cursor(int x, int y) {
 static void write_sgr(uint16_t fg, uint16_t bg) {
 	char buf[32];
 
+	if (fg == TB_DEFAULT && bg == TB_DEFAULT)
+		return;
+
 	switch (outputmode) {
 	case TB_OUTPUT_256:
 	case TB_OUTPUT_216:
 	case TB_OUTPUT_GRAYSCALE:
+		WRITE_LITERAL("\033[")
 		if (fg != TB_DEFAULT) {
-			WRITE_LITERAL("\033[38;5;");
+			WRITE_LITERAL("38;5;");
 			WRITE_INT(fg);
-			WRITE_LITERAL("m");
+			if (bg != TB_DEFAULT) {
+				WRITE_LITERAL(";");
+			}
 		}
 		if (bg != TB_DEFAULT) {
-			WRITE_LITERAL("\033[48;5;");
+			WRITE_LITERAL("48;5;");
 			WRITE_INT(bg);
-			WRITE_LITERAL("m");
 		}
+		WRITE_LITERAL("m");
 		break;
 	case TB_OUTPUT_NORMAL:
 	default:
+		WRITE_LITERAL("\033[")
 		if (fg != TB_DEFAULT) {
-			WRITE_LITERAL("\033[3");
-			WRITE_INT(fg-1);
-			WRITE_LITERAL("m");
+			WRITE_LITERAL("3");
+			WRITE_INT(fg - 1);
+			if (bg != TB_DEFAULT) {
+				WRITE_LITERAL(";");
+			}
 		}
 		if (bg != TB_DEFAULT) {
-			WRITE_LITERAL("\033[4");
-			WRITE_INT(bg-1);
-			WRITE_LITERAL("m");
+			WRITE_LITERAL("4");
+			WRITE_INT(bg - 1);
 		}
+		WRITE_LITERAL("m");
+		break;
 	}
 }
 
