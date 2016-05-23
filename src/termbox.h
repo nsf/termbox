@@ -101,10 +101,12 @@ extern "C" {
  * #define TB_KEY_CTRL_0 clash with '0'
  */
 
-/* Currently there is only one modifier. See also struct tb_event's mod
- * field.
+/*
+ * Alt modifier constant, see tb_event.mod field and tb_select_input_mode function.
+ * Mouse-motion modifier
  */
-#define TB_MOD_ALT 0x01
+#define TB_MOD_ALT    0x01
+#define TB_MOD_MOTION 0x02
 
 /* Colors (see struct tb_cell's fg and bg fields). */
 #define TB_DEFAULT 0x00

@@ -12,20 +12,20 @@ static bool starts_with(const char *s1, int len, const char *s2)
 	return *s2 == 0;
 }
 
-// convert escape sequence to event, and return consumed bytes on success (failure == 0)
-static int parse_escape_seq(struct tb_event *event, const char *buf, int len)
-{
+static int parse_mouse_event(struct tb_event *event, const char *buf, int len) {
 	if (len >= 6 && starts_with(buf, len, "\033[M")) {
-
-		switch (buf[3] & 3) {
+		// X10 mouse encoding, the simplest one
+		// \033 [ M Cb Cx Cy
+		int b = buf[3] - 32;
+		switch (b & 3) {
 		case 0:
-			if (buf[3] == 0x60)
+			if ((b & 64) != 0)
 				event->key = TB_KEY_MOUSE_WHEEL_UP;
 			else
 				event->key = TB_KEY_MOUSE_LEFT;
 			break;
 		case 1:
-			if (buf[3] == 0x61)
+			if ((b & 64) != 0)
 				event->key = TB_KEY_MOUSE_WHEEL_DOWN;
 			else
 				event->key = TB_KEY_MOUSE_MIDDLE;
@@ -40,13 +40,110 @@ static int parse_escape_seq(struct tb_event *event, const char *buf, int len)
 			return -6;
 		}
 		event->type = TB_EVENT_MOUSE; // TB_EVENT_KEY by default
+		if ((b & 32) != 0)
+			event->mod |= TB_MOD_MOTION;
 
 		// the coord is 1,1 for upper left
 		event->x = (uint8_t)buf[4] - 1 - 32;
 		event->y = (uint8_t)buf[5] - 1 - 32;
 
 		return 6;
+	} else if (starts_with(buf, len, "\033[<") || starts_with(buf, len, "\033[")) {
+		// xterm 1006 extended mode or urxvt 1015 extended mode
+		// xterm: \033 [ < Cb ; Cx ; Cy (M or m)
+		// urxvt: \033 [ Cb ; Cx ; Cy M
+		int i, mi = -1, starti = -1;
+		int isM, isU, s1 = -1, s2 = -1;
+		int n1 = 0, n2 = 0, n3 = 0;
+
+		for (i = 0; i < len; i++) {
+			// We search the first (s1) and the last (s2) ';'
+			if (buf[i] == ';') {
+				if (s1 == -1)
+					s1 = i;
+				s2 = i;
+			}
+
+			// We search for the first 'm' or 'M'
+			if ((buf[i] == 'm' || buf[i] == 'M') && mi == -1) {
+				mi = i;
+				break;
+			}
+		}
+		if (mi == -1)
+			return 0;
+
+		// whether it's a capital M or not
+		isM = (buf[mi] == 'M');
+
+		if (buf[2] == '<') {
+			isU = 0;
+			starti = 3;
+		} else {
+			isU = 1;
+			starti = 2;
+		}
+
+		if (s1 == -1 || s2 == -1 || s1 == s2)
+			return 0;
+
+		n1 = strtoul(&buf[starti], NULL, 10);
+		n2 = strtoul(&buf[s1 + 1], NULL, 10);
+		n3 = strtoul(&buf[s2 + 1], NULL, 10);
+		
+		if (isU)
+			n1 -= 32;
+
+		switch (n1 & 3) {
+		case 0:
+			if ((n1&64) != 0) {
+				event->key = TB_KEY_MOUSE_WHEEL_UP;
+			} else {
+				event->key = TB_KEY_MOUSE_LEFT;
+			}
+			break;
+		case 1:
+			if ((n1&64) != 0) {
+				event->key = TB_KEY_MOUSE_WHEEL_DOWN;
+			} else {
+				event->key = TB_KEY_MOUSE_MIDDLE;
+			}
+			break;
+		case 2:
+			event->key = TB_KEY_MOUSE_RIGHT;
+			break;
+		case 3:
+			event->key = TB_KEY_MOUSE_RELEASE;
+			break;
+		default:
+			return mi + 1;
+		}
+
+		if (!isM) {
+			// on xterm mouse release is signaled by lowercase m
+			event->key = TB_KEY_MOUSE_RELEASE;
+		}
+
+		event->type = TB_EVENT_MOUSE; // TB_EVENT_KEY by default
+		if ((n1&32) != 0)
+			event->mod |= TB_MOD_MOTION;
+
+		event->x = (uint8_t)n2 - 1;
+		event->y = (uint8_t)n3 - 1;
+
+		return mi + 1;
 	}
+
+	return 0;
+}
+
+// convert escape sequence to event, and return consumed bytes on success (failure == 0)
+static int parse_escape_seq(struct tb_event *event, const char *buf, int len)
+{
+	int mouse_parsed = parse_mouse_event(event, buf, len);
+
+	if (mouse_parsed != 0)
+		return mouse_parsed;
 
 	// it's pretty simple here, find 'starts_with' match and return
 	// success, else return failure

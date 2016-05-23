@@ -276,8 +276,8 @@ static int init_term(void) {
 			str_offset + 2 * ti_funcs[i], table_offset);
 	}
 
-	funcs[T_FUNCS_NUM-2] = "\033[?1000h";
-	funcs[T_FUNCS_NUM-1] = "\033[?1000l";
+	funcs[T_FUNCS_NUM-2] = "\x1b[?1000h\x1b[?1002h\x1b[?1015h\x1b[?1006h";
+	funcs[T_FUNCS_NUM-1] = "\x1b[?1006l\x1b[?1015l\x1b[?1002l\x1b[?1000l";
 
 	init_from_terminfo = true;
 	free(data);
