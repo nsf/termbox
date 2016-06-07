@@ -17,11 +17,15 @@ really a thing termbox is aimed at. But rather pseudo-graphical user interfaces.
 
 
 
-INSTALLATION
+Installation
 ============
 
-Termbox comes with a waf-based build scripts. In order to configure, build and
-install it, do the following::
+Termbox comes with waf- and CMake-based build scripts.
+
+Build via waf
+-------------
+
+In order to configure, build and install it, using waf, do the following::
 
   ./waf configure --prefix=/usr                                (configure)
   ./waf                                                        (build)
@@ -38,7 +42,28 @@ or::
   ./waf install --targets=termbox_static --destdir=PREFIX      (static library)
 
 
-PYTHON
+Build via CMake
+---------------
+
+In order to configure, build and install it, using waf, do the following::
+
+  mkdir build && cd build
+  cmake ..
+  make
+  make install
+
+By default termbox will install the header file (/usr/local/include) and both shared and static non-debug
+libraries (/usr/local/lib). If you want to install debug libraries or change the install-prefix, use the
+following command for CMake configuration::
+
+  cmake -DCMAKE_INSTALL_PREFIX=/home/me -DCMAKE_BUILD_TYPE=Debug ..
+  
+or::
+
+  cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release ..
+
+
+Python
 ------
 
 In order to install the python module, use the following command (as root or
@@ -52,7 +77,7 @@ for Python 3::
 
 
 
-GETTING STARTED
+Getting started
 ===============
 
 Termbox's interface only consists of 12 functions::
@@ -78,7 +103,7 @@ See src/termbox.h header file for full detail.
 
 
 
-LINKS
+Links
 =====
 
 - http://pecl.php.net/package/termbox - PHP Termbox wrapper
