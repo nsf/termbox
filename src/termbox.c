@@ -541,12 +541,11 @@ static void send_char(int x, int y, uint32_t c)
 {
 	char buf[7];
 	int bw = tb_utf8_unicode_to_char(buf, c);
-	buf[bw] = '\0';
 	if (x-1 != lastx || y != lasty)
 		write_cursor(x, y);
 	lastx = x; lasty = y;
 	if(!c) buf[0] = ' '; // replace 0 with whitespace
-	bytebuffer_puts(&output_buffer, buf);
+	bytebuffer_append(&output_buffer, buf, bw);
 }
 
 static void send_clear(void)
