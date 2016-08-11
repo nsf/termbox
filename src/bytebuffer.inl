@@ -14,15 +14,7 @@ static void bytebuffer_reserve(struct bytebuffer *b, int cap) {
 		cap = b->cap * 2;
 	}
 
-	char *newbuf = malloc(cap);
-	if (b->len > 0) {
-		// copy what was there, b->len > 0 assumes b->buf != null
-		memcpy(newbuf, b->buf, b->len);
-	}
-	if (b->buf) {
-		// in case there was an allocated buffer, free it
-		free(b->buf);
-	}
+	char *newbuf = realloc(b->buf, cap);
 	b->buf = newbuf;
 	b->cap = cap;
 }
