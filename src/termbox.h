@@ -172,10 +172,11 @@ struct tb_event {
 #define TB_EPIPE_TRAP_ERROR      -3
 
 /* Initializes the termbox library. This function should be called before any
- * other functions. After successful initialization, the library must be
+ * other functions. Function tb_init is same as tb_init_file("/dev/tty"). After successful initialization, the library must be
  * finalized using the tb_shutdown() function.
  */
 SO_IMPORT int tb_init(void);
+SO_IMPORT int tb_init_file(const char* name);
 SO_IMPORT void tb_shutdown(void);
 
 /* Returns the size of the internal back buffer (which is the same as

@@ -74,9 +74,9 @@ static volatile int buffer_size_change_request;
 
 /* -------------------------------------------------------- */
 
-int tb_init(void)
+int tb_init_file(const char* name)
 {
-	inout = open("/dev/tty", O_RDWR);
+	inout = open(name, O_RDWR);
 	if (inout == -1) {
 		return TB_EFAILED_TO_OPEN_TTY;
 	}
@@ -127,6 +127,11 @@ int tb_init(void)
 	cellbuf_clear(&front_buffer);
 
 	return 0;
+}
+
+int tb_init(void)
+{
+	return tb_init_file("/dev/tty");
 }
 
 void tb_shutdown(void)
