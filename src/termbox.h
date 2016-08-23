@@ -171,14 +171,21 @@ struct tb_event {
 #define TB_EFAILED_TO_OPEN_TTY   -2
 #define TB_EPIPE_TRAP_ERROR      -3
 
+/* Flags passed to tb_init_with() to specify which features should be enabled.
+ */
+#define TB_INIT_ALTSCREEN   1
+#define TB_INIT_KEYPAD      2
+#define TB_INIT_EVERYTHING -1
+
 /* Initializes the termbox library. This function should be called before any
  * other functions. Function tb_init is same as tb_init_file("/dev/tty").
  * After successful initialization, the library must be
  * finalized using the tb_shutdown() function.
  */
 SO_IMPORT int tb_init(void);
+SO_IMPORT int tb_init_with(int flags);
 SO_IMPORT int tb_init_file(const char* name);
-SO_IMPORT int tb_init_fd(int inout);
+SO_IMPORT int tb_init_fd(int inout, int flags);
 SO_IMPORT void tb_shutdown(void);
 
 /* Returns the size of the internal back buffer (which is the same as

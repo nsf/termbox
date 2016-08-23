@@ -36,6 +36,8 @@ static struct cellbuf front_buffer;
 static struct bytebuffer output_buffer;
 static struct bytebuffer input_buffer;
 
+static int initflags = TB_INIT_EVERYTHING;
+
 static int termw = -1;
 static int termh = -1;
 
@@ -74,7 +76,7 @@ static volatile int buffer_size_change_request;
 
 /* -------------------------------------------------------- */
 
-int tb_init_fd(int inout_)
+int tb_init_fd(int inout_, int flags)
 {
 	inout = inout_;
 	if (inout == -1) {
@@ -115,8 +117,11 @@ int tb_init_fd(int inout_)
 	bytebuffer_init(&input_buffer, 128);
 	bytebuffer_init(&output_buffer, 32 * 1024);
 
-	bytebuffer_puts(&output_buffer, funcs[T_ENTER_CA]);
-	bytebuffer_puts(&output_buffer, funcs[T_ENTER_KEYPAD]);
+	initflags = flags;
+	if (initflags & TB_INIT_ALTSCREEN)
+		bytebuffer_puts(&output_buffer, funcs[T_ENTER_CA]);
+	if (initflags & TB_INIT_KEYPAD)
+		bytebuffer_puts(&output_buffer, funcs[T_ENTER_KEYPAD]);
 	bytebuffer_puts(&output_buffer, funcs[T_HIDE_CURSOR]);
 	send_clear();
 
@@ -129,13 +134,19 @@ int tb_init_fd(int inout_)
 	return 0;
 }
 
-int tb_init_file(const char* name){
-	return tb_init_fd(open(name, O_RDWR));
+int tb_init_file(const char* name)
+{
+	return tb_init_fd(open(name, O_RDWR), TB_INIT_EVERYTHING);
+}
+
+int tb_init_with(int flags)
+{
+	return tb_init_fd(open("/dev/tty", O_RDWR), flags);
 }
 
 int tb_init(void)
 {
-	return tb_init_file("/dev/tty");
+	return tb_init_fd(open("/dev/tty", O_RDWR), TB_INIT_EVERYTHING);
 }
 
 void tb_shutdown(void)
@@ -148,8 +159,10 @@ void tb_shutdown(void)
 	bytebuffer_puts(&output_buffer, funcs[T_SHOW_CURSOR]);
 	bytebuffer_puts(&output_buffer, funcs[T_SGR0]);
 	bytebuffer_puts(&output_buffer, funcs[T_CLEAR_SCREEN]);
-	bytebuffer_puts(&output_buffer, funcs[T_EXIT_CA]);
-	bytebuffer_puts(&output_buffer, funcs[T_EXIT_KEYPAD]);
+	if (initflags & TB_INIT_ALTSCREEN)
+		bytebuffer_puts(&output_buffer, funcs[T_EXIT_CA]);
+	if (initflags & TB_INIT_KEYPAD)
+		bytebuffer_puts(&output_buffer, funcs[T_EXIT_KEYPAD]);
 	bytebuffer_puts(&output_buffer, funcs[T_EXIT_MOUSE]);
 	bytebuffer_flush(&output_buffer, inout);
 	tcsetattr(inout, TCSAFLUSH, &orig_tios);
