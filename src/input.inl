@@ -1,19 +1,5 @@
-// if s1 starts with s2 returns true, else false
-// len is the length of s1
-// s2 should be null-terminated
-static bool starts_with(const char *s1, int len, const char *s2)
-{
-	int n = 0;
-	while (*s2 && n < len) {
-		if (*s1++ != *s2++)
-			return false;
-		n++;
-	}
-	return *s2 == 0;
-}
-
 static int parse_mouse_event(struct tb_event *event, const char *buf, int len) {
-	if (len >= 6 && starts_with(buf, len, "\033[M")) {
+	if (len >= 6 && strncmp(buf, "\033[M", len) == 0) {
 		// X10 mouse encoding, the simplest one
 		// \033 [ M Cb Cx Cy
 		int b = buf[3] - 32;
@@ -48,7 +34,7 @@ static int parse_mouse_event(struct tb_event *event, const char *buf, int len) {
 		event->y = (uint8_t)buf[5] - 1 - 32;
 
 		return 6;
-	} else if (starts_with(buf, len, "\033[<") || starts_with(buf, len, "\033[")) {
+	} else if (strncmp(buf, "\033[<", len) == 0 || strncmp(buf, "\033[", len) == 0) {
 		// xterm 1006 extended mode or urxvt 1015 extended mode
 		// xterm: \033 [ < Cb ; Cx ; Cy (M or m)
 		// urxvt: \033 [ Cb ; Cx ; Cy M
@@ -90,7 +76,7 @@ static int parse_mouse_event(struct tb_event *event, const char *buf, int len) {
 		n1 = strtoul(&buf[starti], NULL, 10);
 		n2 = strtoul(&buf[s1 + 1], NULL, 10);
 		n3 = strtoul(&buf[s2 + 1], NULL, 10);
-		
+
 		if (isU)
 			n1 -= 32;
 
@@ -145,11 +131,11 @@ static int parse_escape_seq(struct tb_event *event, const char *buf, int len)
 	if (mouse_parsed != 0)
 		return mouse_parsed;
 
-	// it's pretty simple here, find 'starts_with' match and return
+	// it's pretty simple here, find 'strncmp' match and return
 	// success, else return failure
 	int i;
 	for (i = 0; keys[i]; i++) {
-		if (starts_with(buf, len, keys[i])) {
+		if (strncmp(buf, keys[i], len) == 0) {
 			event->ch = 0;
 			event->key = 0xFFFF-i;
 			return strlen(keys[i]);
