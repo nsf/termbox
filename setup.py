@@ -19,5 +19,5 @@ setup(
     url = 'http://code.google.com/p/termbox/',
     license = 'MIT',
     cmdclass = {'build_ext': build_ext},
-    ext_modules = [Extension('termbox', sourcefiles, extra_compile_args=["-Wno-error=declaration-after-statement"])],
+    ext_modules = [Extension('termbox', sourcefiles, extra_compile_args=["-D_XOPEN_SOURCE", "-Wno-error=declaration-after-statement"])],
 )
