@@ -86,6 +86,7 @@ LINKS
 - https://github.com/gchp/rustbox - Rust Termbox wrapper
 - https://github.com/fouric/cl-termbox - Common Lisp Termbox wrapper
 - https://github.com/zyedidia/termbox-d - D Termbox wrapper
+- https://github.com/dduan/Termbox - Swift Termbox wrapper
 
 ----
 
