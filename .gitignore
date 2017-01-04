@@ -1,5 +1,1 @@
 build
-.waf*
-.lock*
-src/python/termboxconfig.pyx
-src/python/termboxmodule.c
