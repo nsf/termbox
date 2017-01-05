@@ -1,1 +1,7 @@
-build
+libtermbox.a
+*.o
+
+demo/output
+demo/paint
+demo/keyboard
+
