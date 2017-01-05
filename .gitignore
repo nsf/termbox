@@ -1,4 +1,5 @@
 libtermbox.a
+libtermbox.so
 *.o
 
 demo/output

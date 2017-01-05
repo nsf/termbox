@@ -1,11 +1,11 @@
 CC ?= cc
 AR ?= ar
 
-CFLAGS := -Wall -D_XOPEN_SOURCE
+CFLAGS += -D_XOPEN_SOURCE -fPIC
 
 .PHONY: all demos
 
-all: libtermbox.a
+all: libtermbox.a libtermbox.so
 
 demos: demo/*.c libtermbox.a
 	make -C demo
@@ -13,6 +13,9 @@ demos: demo/*.c libtermbox.a
 libtermbox.a: termbox.o utf8.o
 	$(AR) rc $@ $^
 	-ranlib $@
+
+libtermbox.so: termbox.o utf8.o
+	$(CC) $(LDFLAGS) -shared -o $@ $^
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $< -o $@
