@@ -87,6 +87,7 @@ LINKS
 - https://github.com/fouric/cl-termbox - Common Lisp Termbox wrapper
 - https://github.com/zyedidia/termbox-d - D Termbox wrapper
 - https://github.com/dduan/Termbox - Swift Termbox wrapper
+- https://github.com/andrewsuzuki/termbox-crystal - Crystal Termbox Wrapper
 
 ----
 
