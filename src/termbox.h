@@ -280,11 +280,11 @@ SO_IMPORT int tb_select_input_mode(int mode);
  *        tb_change_cell(x, y, '@', 184, 240);
  *        tb_change_cell(x, y, '@', 0xb8, 0xf0);
  *
- * 2. TB_OUTPUT_216        => [0..216]
+ * 3. TB_OUTPUT_216        => [0..216]
  *    This mode supports the 3rd range of the 256 mode only.
  *    But you don't need to provide an offset.
  *
- * 3. TB_OUTPUT_GRAYSCALE  => [0..23]
+ * 4. TB_OUTPUT_GRAYSCALE  => [0..23]
  *    This mode supports the 4th range of the 256 mode only.
  *    But you dont need to provide an offset.
  *
