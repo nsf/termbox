@@ -6,6 +6,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <sys/select.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
 #include <sys/stat.h>
