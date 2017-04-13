@@ -98,6 +98,7 @@ void reallocBackBuffer(int w, int h) {
 }
 
 int main(int argv, char **argc) {
+	(void)argc; (void)argv;
 	int code = tb_init();
 	if (code < 0) {
 		fprintf(stderr, "termbox init failed, code: %d\n", code);
