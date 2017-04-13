@@ -17,65 +17,70 @@ simplicity. And KISS principle is important.
 At this point one should realize, that CLI (command-line interfaces) aren't
 really a thing termbox is aimed at. But rather pseudo-graphical user interfaces.
 
-
-
 ### Installation
 
 Termbox comes with a waf-based build scripts. In order to configure, build and
 install it, do the following::
 
-  ./waf configure --prefix=/usr                                (configure)
-  ./waf                                                        (build)
-  ./waf install --destdir=DESTDIR                              (install)
+```
+./waf configure --prefix=/usr                                (configure)
+./waf                                                        (build)
+./waf install --destdir=DESTDIR                              (install)
+```
 
 By default termbox will install the header file and both shared and static
 libraries. If you want to install a shared library or static library alone, use
 the following as an install command::
 
-  ./waf install --targets=termbox_shared --destdir=PREFIX      (shared library)
+```
+./waf install --targets=termbox_shared --destdir=PREFIX      (shared library)
+```
 
 or::
 
-  ./waf install --targets=termbox_static --destdir=PREFIX      (static library)
-
+```
+./waf install --targets=termbox_static --destdir=PREFIX      (static library)
+```
 
 ##### Python
 
 In order to install the python module, use the following command (as root or
 via sudo)::
 
-  python setup.py install
+```
+python setup.py install
+```
 
 for Python 3::
 
-  python3 setup.py install
-
-
+```
+python3 setup.py install
+```
 
 ### Getting started
 
 Termbox's interface only consists of 12 functions::
 
-  tb_init() // initialization
-  tb_shutdown() // shutdown
+```
+tb_init() // initialization
+tb_shutdown() // shutdown
 
-  tb_width() // width of the terminal screen
-  tb_height() // height of the terminal screen
+tb_width() // width of the terminal screen
+tb_height() // height of the terminal screen
 
-  tb_clear() // clear buffer
-  tb_present() // sync internal buffer with terminal
+tb_clear() // clear buffer
+tb_present() // sync internal buffer with terminal
 
-  tb_put_cell()
-  tb_change_cell()
-  tb_blit() // drawing functions
+tb_put_cell()
+tb_change_cell()
+tb_blit() // drawing functions
 
-  tb_select_input_mode() // change input mode
-  tb_peek_event() // peek a keyboard event
-  tb_poll_event() // wait for a keyboard event
+tb_select_input_mode() // change input mode
+tb_peek_event() // peek a keyboard event
+tb_poll_event() // wait for a keyboard event
+```
 
 See src/termbox.h header file for full detail.
-
-
 
 ### Links
 
@@ -100,14 +105,10 @@ a note via email, you can find my email below.
 
 - https://github.com/adsr/mle - a small, flexible terminal-based text editor
 
-
-
 ### Bugs & questions
 
 Report bugs to the https://github.com/nsf/termbox issue tracker. Send rants
 and questions to me: no.smile.face@gmail.com.
-
-
 
 ### Changes
 
