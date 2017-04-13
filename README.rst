@@ -1,3 +1,5 @@
+# Termbox
+
 Termbox is a library that provides minimalistic API which allows the
 programmer to write text-based user interfaces.
 
@@ -17,8 +19,7 @@ really a thing termbox is aimed at. But rather pseudo-graphical user interfaces.
 
 
 
-INSTALLATION
-============
+### Installation
 
 Termbox comes with a waf-based build scripts. In order to configure, build and
 install it, do the following::
@@ -38,8 +39,7 @@ or::
   ./waf install --targets=termbox_static --destdir=PREFIX      (static library)
 
 
-PYTHON
-------
+##### Python
 
 In order to install the python module, use the following command (as root or
 via sudo)::
@@ -52,8 +52,7 @@ for Python 3::
 
 
 
-GETTING STARTED
-===============
+### Getting started
 
 Termbox's interface only consists of 12 functions::
 
@@ -78,34 +77,39 @@ See src/termbox.h header file for full detail.
 
 
 
-LINKS
-=====
+### Links
 
-- http://pecl.php.net/package/termbox - PHP Termbox wrapper
+If you want me to add your Termbox project here, send me a pull request or drop
+a note via email, you can find my email below.
+
+##### Language bindings
+
+- https://github.com/nsf/termbox - Python
+- https://github.com/adsr/termbox-php - PHP
+- https://github.com/gchp/rustbox - Rust
+- https://github.com/fouric/cl-termbox - Common Lisp
+- https://github.com/zyedidia/termbox-d - D
+- https://github.com/dduan/Termbox - Swift
+- https://github.com/andrewsuzuki/termbox-crystal - Crystal
+
+##### Other implementations
+
 - https://github.com/nsf/termbox-go - Go pure Termbox implementation
-- https://github.com/gchp/rustbox - Rust Termbox wrapper
-- https://github.com/fouric/cl-termbox - Common Lisp Termbox wrapper
-- https://github.com/zyedidia/termbox-d - D Termbox wrapper
-- https://github.com/dduan/Termbox - Swift Termbox wrapper
-- https://github.com/andrewsuzuki/termbox-crystal - Crystal Termbox Wrapper
 
-----
+##### Applications
 
-If you want me to add your project here, send me a pull request or drop a note
-via email, you can find my email below.
+- https://github.com/adsr/mle - a small, flexible terminal-based text editor
 
 
 
-BUGS & QUESTIONS
-================
+### Bugs & questions
 
 Report bugs to the https://github.com/nsf/termbox issue tracker. Send rants
 and questions to me: no.smile.face@gmail.com.
 
 
 
-CHANGES
-=======
+### Changes
 
 v1.1.0:
 
