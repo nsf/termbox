@@ -212,6 +212,7 @@ SO_IMPORT void tb_set_cursor(int cx, int cy);
  */
 SO_IMPORT void tb_put_cell(int x, int y, const struct tb_cell *cell);
 SO_IMPORT void tb_change_cell(int x, int y, uint32_t ch, uint16_t fg, uint16_t bg);
+SO_IMPORT uint32_t tb_get_ch(int x, int y);
 
 /* Copies the buffer from 'cells' at the specified position, assuming the
  * buffer is a two-dimensional array of size ('w' x 'h'), represented as a
