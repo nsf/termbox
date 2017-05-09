@@ -4,7 +4,7 @@
 
 static const char chars[] = "nnnnnnnnnbbbbbbbbbuuuuuuuuuBBBBBBBBB";
 
-static const uint16_t all_attrs[] = {
+static const uint32_t all_attrs[] = {
 	0,
 	TB_BOLD,
 	TB_UNDERLINE,
@@ -18,12 +18,12 @@ static int next_char(int current) {
 	return current;
 }
 
-static void draw_line(int x, int y, uint16_t bg) {
+static void draw_line(int x, int y, uint32_t bg) {
 	int a, c;
 	int current_char = 0;
 	for (a = 0; a < 4; a++) {
 		for (c = TB_DEFAULT; c <= TB_WHITE; c++) {
-			uint16_t fg = all_attrs[a] | c;
+			uint32_t fg = all_attrs[a] | c;
 			tb_change_cell(x, y, chars[current_char], fg, bg);
 			current_char = next_char(current_char);
 			x++;
@@ -31,11 +31,11 @@ static void draw_line(int x, int y, uint16_t bg) {
 	}
 }
 
-static void print_combinations_table(int sx, int sy, const uint16_t *attrs, int attrs_n) {
+static void print_combinations_table(int sx, int sy, const uint32_t *attrs, int attrs_n) {
 	int i, c;
 	for (i = 0; i < attrs_n; i++) {
 		for (c = TB_DEFAULT; c <= TB_WHITE; c++) {
-			uint16_t bg = attrs[i] | c;
+			uint32_t bg = attrs[i] | c;
 			draw_line(sx, sy, bg);
 			sy++;
 		}
@@ -46,8 +46,8 @@ static void draw_all() {
 	tb_clear();
 
 	tb_select_output_mode(TB_OUTPUT_NORMAL);
-	static const uint16_t col1[] = {0, TB_BOLD};
-	static const uint16_t col2[] = {TB_REVERSE};
+	static const uint32_t col1[] = {0, TB_BOLD};
+	static const uint32_t col2[] = {TB_REVERSE};
 	print_combinations_table(1, 1, col1, 2);
 	print_combinations_table(2 + strlen(chars), 1, col2, 1);
 	tb_present();

@@ -51,11 +51,11 @@ static int lasty = LAST_COORD_INIT;
 static int cursor_x = -1;
 static int cursor_y = -1;
 
-static uint16_t background = TB_DEFAULT;
-static uint16_t foreground = TB_DEFAULT;
+static uint32_t background = TB_DEFAULT;
+static uint32_t foreground = TB_DEFAULT;
 
 static void write_cursor(int x, int y);
-static void write_sgr(uint16_t fg, uint16_t bg);
+static void write_sgr(uint32_t fg, uint32_t bg);
 
 static void cellbuf_init(struct cellbuf *buf, int width, int height);
 static void cellbuf_resize(struct cellbuf *buf, int width, int height);
@@ -64,7 +64,7 @@ static void cellbuf_free(struct cellbuf *buf);
 
 static void update_size(void);
 static void update_term_size(void);
-static void send_attr(uint16_t fg, uint16_t bg);
+static void send_attr(uint32_t fg, uint32_t bg);
 static void send_char(int x, int y, uint32_t c);
 static void send_clear(void);
 static void sigwinch_handler(int xxx);
@@ -238,7 +238,7 @@ void tb_put_cell(int x, int y, const struct tb_cell *cell)
 	CELL(&back_buffer, x, y) = *cell;
 }
 
-void tb_change_cell(int x, int y, uint32_t ch, uint16_t fg, uint16_t bg)
+void tb_change_cell(int x, int y, uint32_t ch, uint32_t fg, uint32_t bg)
 {
 	struct tb_cell c = {ch, fg, bg};
 	tb_put_cell(x, y, &c);
@@ -345,7 +345,7 @@ int tb_select_output_mode(int mode)
 	return outputmode;
 }
 
-void tb_set_clear_attributes(uint16_t fg, uint16_t bg)
+void tb_set_clear_attributes(uint32_t fg, uint32_t bg)
 {
 	foreground = fg;
 	background = bg;
@@ -380,13 +380,28 @@ static void write_cursor(int x, int y) {
 	WRITE_LITERAL("H");
 }
 
-static void write_sgr(uint16_t fg, uint16_t bg) {
+static void write_sgr(uint32_t fg, uint32_t bg) {
 	char buf[32];
 
-	if (fg == TB_DEFAULT && bg == TB_DEFAULT)
+	if (outputmode != TB_OUTPUT_TRUECOLOR && fg == TB_DEFAULT && bg == TB_DEFAULT)
 		return;
 
 	switch (outputmode) {
+	case TB_OUTPUT_TRUECOLOR:
+		WRITE_LITERAL("\033[38;2;");
+		WRITE_INT(fg >> 16 & 0xFF);
+		WRITE_LITERAL(";");
+		WRITE_INT(fg >> 8 & 0xFF);
+		WRITE_LITERAL(";");
+		WRITE_INT(fg & 0xFF);
+		WRITE_LITERAL(";48;2;");
+		WRITE_INT(bg >> 16 & 0xFF);
+		WRITE_LITERAL(";");
+		WRITE_INT(bg >> 8 & 0xFF);
+		WRITE_LITERAL(";");
+		WRITE_INT(bg & 0xFF);
+		WRITE_LITERAL("m");
+		break;
 	case TB_OUTPUT_256:
 	case TB_OUTPUT_216:
 	case TB_OUTPUT_GRAYSCALE:
@@ -495,17 +510,22 @@ static void update_term_size(void)
 	termh = sz.ws_row;
 }
 
-static void send_attr(uint16_t fg, uint16_t bg)
+static void send_attr(uint32_t fg, uint32_t bg)
 {
-#define LAST_ATTR_INIT 0xFFFF
-	static uint16_t lastfg = LAST_ATTR_INIT, lastbg = LAST_ATTR_INIT;
+#define LAST_ATTR_INIT 0xFFFFFFFF
+	static uint32_t lastfg = LAST_ATTR_INIT, lastbg = LAST_ATTR_INIT;
 	if (fg != lastfg || bg != lastbg) {
 		bytebuffer_puts(&output_buffer, funcs[T_SGR0]);
 
-		uint16_t fgcol;
-		uint16_t bgcol;
+		uint32_t fgcol;
+		uint32_t bgcol;
 
 		switch (outputmode) {
+		case TB_OUTPUT_TRUECOLOR:
+			fgcol = fg;
+			bgcol = bg;
+			break;
+
 		case TB_OUTPUT_256:
 			fgcol = fg & 0xFF;
 			bgcol = bg & 0xFF;

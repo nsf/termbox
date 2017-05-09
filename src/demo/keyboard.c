@@ -341,7 +341,7 @@ struct combo func_combos[] = {
 	{{K_ARROW_RIGHT,0}}
 };
 
-void print_tb(const char *str, int x, int y, uint16_t fg, uint16_t bg)
+void print_tb(const char *str, int x, int y, uint32_t fg, uint32_t bg)
 {
 	while (*str) {
 		uint32_t uni;
@@ -351,7 +351,7 @@ void print_tb(const char *str, int x, int y, uint16_t fg, uint16_t bg)
 	}
 }
 
-void printf_tb(int x, int y, uint16_t fg, uint16_t bg, const char *fmt, ...)
+void printf_tb(int x, int y, uint32_t fg, uint32_t bg, const char *fmt, ...)
 {
 	char buf[4096];
 	va_list vl;
@@ -361,7 +361,7 @@ void printf_tb(int x, int y, uint16_t fg, uint16_t bg, const char *fmt, ...)
 	print_tb(buf, x, y, fg, bg);
 }
 
-void draw_key(struct key *k, uint16_t fg, uint16_t bg)
+void draw_key(struct key *k, uint32_t fg, uint32_t bg)
 {
 	while (k->x) {
 		tb_change_cell(k->x+2, k->y+4, k->ch, fg, bg);
