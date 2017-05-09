@@ -18,7 +18,7 @@ static const uint32_t runes[] = {
 
 #define len(a) (sizeof(a)/sizeof(a[0]))
 
-static const uint16_t colors[] = {
+static const uint32_t colors[] = {
 	TB_BLACK,
 	TB_RED,
 	TB_GREEN,
@@ -29,7 +29,7 @@ static const uint16_t colors[] = {
 	TB_WHITE,
 };
 
-void updateAndDrawButtons(int *current, int x, int y, int mx, int my, int n, void (*attrFunc)(int, uint32_t*, uint16_t*, uint16_t*)) {
+void updateAndDrawButtons(int *current, int x, int y, int mx, int my, int n, void (*attrFunc)(int, uint32_t*, uint32_t*, uint32_t*)) {
 	int lx = x;
 	int ly = y;
 	for (int i = 0; i < n; i++) {
@@ -37,7 +37,7 @@ void updateAndDrawButtons(int *current, int x, int y, int mx, int my, int n, voi
 			*current = i;
 		}
 		uint32_t r;
-		uint16_t fg, bg;
+		uint32_t fg, bg;
 		(*attrFunc)(i, &r, &fg, &bg);
                 tb_change_cell(lx+0, ly+0, r, fg, bg);
                 tb_change_cell(lx+1, ly+0, r, fg, bg);
@@ -53,8 +53,8 @@ void updateAndDrawButtons(int *current, int x, int y, int mx, int my, int n, voi
 	ly = y;
         for (int i = 0; i < n; i++) {
                 if (*current == i) {
-                        uint16_t fg = TB_RED | TB_BOLD;
-                        uint16_t bg = TB_DEFAULT;
+                        uint32_t fg = TB_RED | TB_BOLD;
+                        uint32_t bg = TB_DEFAULT;
                         tb_change_cell(lx+0, ly+2, '^', fg, bg);
                         tb_change_cell(lx+1, ly+2, '^', fg, bg);
                         tb_change_cell(lx+2, ly+2, '^', fg, bg);
@@ -64,13 +64,13 @@ void updateAndDrawButtons(int *current, int x, int y, int mx, int my, int n, voi
         }
 }
 
-void runeAttrFunc(int i, uint32_t *r, uint16_t *fg, uint16_t *bg) {
+void runeAttrFunc(int i, uint32_t *r, uint32_t *fg, uint32_t *bg) {
 	*r = runes[i];
 	*fg = TB_DEFAULT;
 	*bg = TB_DEFAULT;
 }
 
-void colorAttrFunc(int i, uint32_t *r, uint16_t *fg, uint16_t *bg) {
+void colorAttrFunc(int i, uint32_t *r, uint32_t *fg, uint32_t *bg) {
 	*r = ' ';
 	*fg = TB_DEFAULT;
 	*bg = colors[i];

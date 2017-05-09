@@ -28,7 +28,7 @@ cdef extern from "../termbox.h":
 	void tb_shutdown()
 	void tb_present()
 	void tb_clear()
-	void tb_change_cell(int x, int y, uint32_t ch, uint16_t fg, uint16_t bg)
+	void tb_change_cell(int x, int y, uint32_t ch, uint32_t fg, uint32_t bg)
 	int tb_width()
 	int tb_height()
 	void tb_set_cursor(int x, int y)
@@ -202,7 +202,7 @@ cdef class Termbox:
 		tb_present()
 		pass
 
-	def change_cell(self, int x, int y, int ch, uint16_t fg, uint16_t bg):
+	def change_cell(self, int x, int y, int ch, uint32_t fg, uint32_t bg):
 		"""Change cell in position (x;y).
 		"""
 		tb_change_cell(x, y, ch, fg, bg)
