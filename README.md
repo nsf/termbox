@@ -96,6 +96,7 @@ a note via email, you can find my email below.
 - https://github.com/zyedidia/termbox-d - D
 - https://github.com/dduan/Termbox - Swift
 - https://github.com/andrewsuzuki/termbox-crystal - Crystal
+- https://github.com/jgoldfar/Termbox.jl - Julia
 
 ##### Other implementations
 
