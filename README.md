@@ -113,6 +113,13 @@ and questions to me: no.smile.face@gmail.com.
 
 ### Changes
 
+v1.1.2:
+
+- Properly include changelog into the tagged version commit. I.e. I messed up
+  by tagging v1.1.1 and describing it in changelog after tagged commit. This
+  commit marked as v1.1.2 includes changelog for both v1.1.1 and v1.1.2. There
+  are no code changes in this minor release.
+
 v1.1.1:
 
 - Ncurses 6.1 compatibility fix. See https://github.com/nsf/termbox-go/issues/185.
