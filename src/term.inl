@@ -224,6 +224,7 @@ static char *load_terminfo(void) {
 }
 
 #define TI_MAGIC 0432
+#define TI_ALT_MAGIC 542
 #define TI_HEADER_LENGTH 12
 #define TB_KEYS_NUM 22
 
@@ -255,13 +256,16 @@ static int init_term(void) {
 	}
 
 	int16_t *header = (int16_t*)data;
+
+	const int number_sec_len = header[0] == TI_ALT_MAGIC ? 4 : 2;
+
 	if ((header[1] + header[2]) % 2) {
 		// old quirk to align everything on word boundaries
 		header[2] += 1;
 	}
 
 	const int str_offset = TI_HEADER_LENGTH +
-		header[1] + header[2] +	2 * header[3];
+		header[1] + header[2] +	number_sec_len * header[3];
 	const int table_offset = str_offset + 2 * header[4];
 
 	keys = malloc(sizeof(const char*) * (TB_KEYS_NUM+1));
