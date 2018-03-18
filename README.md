@@ -113,6 +113,10 @@ and questions to me: no.smile.face@gmail.com.
 
 ### Changes
 
+v1.1.1:
+
+- Ncurses 6.1 compatibility fix. See https://github.com/nsf/termbox-go/issues/185.
+
 v1.1.0:
 
 - API: tb_width() and tb_height() are guaranteed to be negative if the termbox
