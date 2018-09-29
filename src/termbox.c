@@ -296,6 +296,19 @@ int tb_peek_event(struct tb_event *event, int timeout)
 	return wait_fill_event(event, &tv);
 }
 
+size_t tb_poll_fds(int *fds, size_t fds_size)
+{
+	if (fds != NULL) {
+		if (fds_size >= 1) {
+			fds[0] = inout;
+		}
+		if (fds_size >= 2) {
+			fds[1] = winch_fds[0];
+		}
+	}
+	return 2;
+}
+
 int tb_width(void)
 {
 	return termw;

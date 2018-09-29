@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <stddef.h>
 
 /* for shared objects */
 #if __GNUC__ >= 4
@@ -308,6 +309,15 @@ SO_IMPORT int tb_peek_event(struct tb_event *event, int timeout);
  * constants) or -1 if there was an error.
  */
 SO_IMPORT int tb_poll_event(struct tb_event *event);
+
+
+/* Obtains a list of internal file descriptors which can be watched for events.
+ * This can be used to integrate termbox into fd-based event loops.
+ * If fds is not NULL, up to fds_size file descriptors are stored there.
+ * Returns the number of available file descriptors, which
+ * may be more or less than fds_size.
+*/
+SO_IMPORT size_t tb_poll_fds(int *fds, size_t fds_size);
 
 /* Utility utf8 functions. */
 #define TB_EOF -1
