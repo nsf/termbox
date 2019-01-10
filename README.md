@@ -98,6 +98,7 @@ a note via email, you can find my email below.
 - https://github.com/andrewsuzuki/termbox-crystal - Crystal
 - https://github.com/jgoldfar/Termbox.jl - Julia
 - https://github.com/mitchellwrosen/termbox - Haskell
+- https://github.com/dom96/nimbox - Nim
 
 ##### Other implementations
 
