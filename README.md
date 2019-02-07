@@ -99,6 +99,7 @@ a note via email, you can find my email below.
 - https://github.com/jgoldfar/Termbox.jl - Julia
 - https://github.com/mitchellwrosen/termbox - Haskell
 - https://github.com/dom96/nimbox - Nim
+- https://github.com/ndreynolds/ex_termbox - Elixir
 
 ##### Other implementations
 
