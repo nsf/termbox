@@ -108,6 +108,7 @@ a note via email, you can find my email below.
 ##### Applications
 
 - https://github.com/adsr/mle - a small, flexible terminal-based text editor
+- https://github.com/colinta/Ashen - framework for building terminal applications based on the Elm architecture
 
 ### Bugs & questions
 
