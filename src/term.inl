@@ -124,6 +124,8 @@ static int init_term_builtin(void)
 			return 0;
 		if (try_compatible(term, "screen", screen_keys, screen_funcs) == 0)
 			return 0;
+		if (try_compatible(term, "tmux", screen_keys, screen_funcs) == 0)
+			return 0;
 		/* let's assume that 'cygwin' is xterm compatible */
 		if (try_compatible(term, "cygwin", xterm_keys, xterm_funcs) == 0)
 			return 0;
