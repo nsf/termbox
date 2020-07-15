@@ -101,6 +101,7 @@ a note via email, you can find my email below.
 - https://github.com/dom96/nimbox - Nim
 - https://github.com/ndreynolds/ex_termbox - Elixir
 - https://github.com/bmsauer/termbox-ada - Ada
+- https://github.com/luxint/termbox - newLISP
 
 ##### Other implementations
 
