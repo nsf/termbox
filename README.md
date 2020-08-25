@@ -1,4 +1,11 @@
-# Termbox
+## IMPORTANT
+
+This library is no longer maintained. It's pretty small if you have a big
+project that relies on it, just maintain it yourself. Or look for forks. Or look
+for alternatives. Or better - avoid using terminals for UI. Never the less, thanks
+to all who ever contributed.
+
+## Termbox
 
 Termbox is a library that provides minimalistic API which allows the
 programmer to write text-based user interfaces.
