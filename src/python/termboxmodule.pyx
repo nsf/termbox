@@ -3,6 +3,8 @@
 This is a binding module for termbox library.
 """
 
+from libc.stdlib cimport malloc, free
+
 include "termboxconfig.pyx"
 
 ## No unichr in python3, use chr instead.
@@ -36,6 +38,7 @@ cdef extern from "../termbox.h":
 	int tb_select_output_mode(int mode)
 	int tb_peek_event(tb_event *event, int timeout) nogil
 	int tb_poll_event(tb_event *event) nogil
+	int tb_poll_fds(int *fds, int fds_size)
 
 class TermboxException(Exception):
 	def __init__(self, msg):
@@ -284,3 +287,16 @@ cdef class Termbox:
 		else:
 			uch = None
 		return (e.type, uch, e.key, e.mod, e.w, e.h, e.x, e.y)
+
+	def poll_fds(self):
+		"""Returns a list of file descriptors that can be polled to see when an event has arrived
+		"""
+		cdef size_t fds_count;
+		cdef int *fds;
+		try:
+			fds_count = tb_poll_fds(NULL, 0)
+			fds = <int *> malloc(fds_count * sizeof(int))
+			tb_poll_fds(fds, fds_count)
+			return [fd for fd in fds[:fds_count]]
+		finally:
+			free(fds)
